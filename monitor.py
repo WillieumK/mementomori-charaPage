@@ -24,15 +24,10 @@ def get_range(sheet_id,range_str):
     sheet=client.open_by_key(sheet_id).sheet1
     return sheet.get(range_str)
 
-# 生成图片
 def create_table_image(data,filename):
     os.makedirs("assets",exist_ok=True)
-
     try:
-        font=ImageFont.truetype(
-            "NotoSansCJK-Regular.ttc",
-            28
-        )
+        font=ImageFont.truetype("NotoSansCJK-Regular.ttc",28)
     except:
         font=ImageFont.load_default()
 
@@ -46,26 +41,17 @@ def create_table_image(data,filename):
 
     rows=len(data)
     cols=max(len(row) for row in data)
-
     cw=w//cols
     rh=h//rows
 
     for y,row in enumerate(data):
         for x,value in enumerate(row):
             draw.rectangle(
-                [
-                    x*cw,
-                    y*rh,
-                    (x+1)*cw,
-                    (y+1)*rh
-                ],
+                [x*cw,y*rh,(x+1)*cw,(y+1)*rh],
                 outline="black"
             )
             draw.text(
-                (
-                    x*cw+10,
-                    y*rh+10
-                ),
+                (x*cw+10,y*rh+10),
                 str(value),
                 font=font,
                 fill="black"
@@ -75,18 +61,12 @@ def create_table_image(data,filename):
         f"assets/{filename}",
         dpi=(300,300)
     )
+    print(f"生成图片:{filename} {w}x{h}")
 
-    print(
-        f"生成 {filename}: {w}x{h}"
-    )
-
-# HTML表格
 def table_html(data):
     html="<table><thead><tr>"
-
     for cell in data[0]:
         html+=f"<th>{cell}</th>"
-
     html+="</tr></thead><tbody>"
 
     for row in data[1:]:
@@ -98,7 +78,6 @@ def table_html(data):
     html+="</tbody></table>"
     return html
 
-# 生成HTML
 def generate_html(usage_data,card_data):
     bj=datetime.now(timezone.utc)+timedelta(hours=8)
     update=bj.strftime("%Y-%m-%d %H:%M:%S")
@@ -160,7 +139,7 @@ height:auto;
 """
 
 def main():
-    print("开始读取Google Sheets")
+    print("读取Google Sheets...")
 
     usage_data=get_range(
         USAGE_SHEET_ID,
@@ -171,6 +150,8 @@ def main():
         CARD_SHEET_ID,
         "B1:K16"
     )
+
+    print("生成图片...")
 
     create_table_image(
         usage_data,
@@ -194,7 +175,7 @@ def main():
     ) as f:
         f.write(html)
 
-    print("完成 index.html")
+    print("完成")
 
 if __name__=="__main__":
     main()
