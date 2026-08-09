@@ -204,8 +204,10 @@ const SHEET_ID = "1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA";
 const CSV_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv";
 const ICON_BASE = "https://mentemori.icu/assets/CHR_";
 const ICON_SUFFIX = "_00_s.png";
+const CARD0_GID = "157463114";
+const CARD0_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?gid=" + CARD0_GID + "&tqx=out:json";
 
-const CACHE_KEY = "mmt_card_cache_v1";
+const CACHE_KEY = "mmt_card_cache_v2";
 const CACHE_TTL = 60 * 60 * 1000; // 缓存 1 小时
 
 const ELEMENT_TAG = { "光":"light", "暗":"dark", "蓝":"blue", "红":"red", "绿":"green", "金":"gold" };
@@ -345,9 +347,9 @@ function readCache(){
   }catch(e){ return null; }
 }
 
-function writeCache(csv){
+function writeCache(csv, prevName){
   try{
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), csv: csv }));
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), csv: csv, prevName: prevName || "" }));
   }catch(e){ /* 隐私模式等场景忽略 */ }
 }
 
@@ -358,6 +360,66 @@ function setCacheBadge(text, cls){
 }
 
 // ---------- 数据读取 ----------
+function parseGvizJson(text){
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  return JSON.parse(text.slice(start, end + 1));
+}
+
+function gvizDateVal(v){
+  const m = /^Date\((\d+),(\d+),(\d+)\)$/.exec(String(v || ""));
+  if (!m) return null;
+  return Date.UTC(+m[1], +m[2], +m[3]);
+}
+
+// 按汇总表 D4 同款公式从 卡-0 原始数据计算“上个卡池”：
+// LARGE(VSTACK(I4:I153,J4:J153),2) -> XMATCH -> INDEX(G4:G153, MOD(pos-1,150)+1)
+function computePrevRerunName(rows0){
+  const arr = [];
+  for (let i = 3; i < 153; i++){
+    const c = rows0[i] && rows0[i].c ? rows0[i].c : [];
+    arr.push(gvizDateVal(c[8] ? c[8].v : null));
+  }
+  for (let i = 3; i < 153; i++){
+    const c = rows0[i] && rows0[i].c ? rows0[i].c : [];
+    arr.push(gvizDateVal(c[9] ? c[9].v : null));
+  }
+  const valid = arr.filter(v => v !== null).sort((a, b) => b - a);
+  if (valid.length < 2) return "";
+  const secd = valid[1];
+  const pos = arr.indexOf(secd) + 1;
+  if (!pos) return "";
+  const gidx = ((pos - 1) % 150) + 1;
+  const row = rows0[gidx + 2];
+  const cell = row && row.c ? row.c[6] : null;
+  return cell ? String(cell.v || "").trim() : "";
+}
+
+function setPrevBanner(name, computed){
+  const tr = document.querySelector("#tbl-overview tbody tr:nth-child(2)");
+  if (!tr) return;
+  const td = tr.children[2];
+  if (!td) return;
+  td.textContent = name || "—";
+  if (computed && name) td.title = "由卡-0表实时计算";
+}
+
+async function ensurePrevBanner(rows){
+  if (String(rows[3][3] || "").trim()){
+    setPrevBanner(String(rows[3][3]).trim(), false);
+    return "";
+  }
+  try{
+    const resp = await fetch(CARD0_URL);
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    const data = parseGvizJson(await resp.text());
+    const trows = data && data.table ? data.table.rows : [];
+    const name = computePrevRerunName(trows);
+    if (name){ setPrevBanner(name, true); return name; }
+  }catch(e){ /* 卡-0 读取失败则保持原样 */ }
+  return "";
+}
+
 async function fetchCsv(){
   const resp = await fetch(CSV_URL);
   if (!resp.ok) throw new Error("HTTP " + resp.status);
@@ -380,6 +442,7 @@ async function load(force){
     if (cache && (Date.now() - cache.ts) < CACHE_TTL){
       try{
         applyRows(parseCSV(cache.csv));
+        if (cache.prevName) setPrevBanner(cache.prevName, true);
         const mins = Math.max(1, Math.round((Date.now() - cache.ts) / 60000));
         setCacheBadge("缓存：" + fmtClock(cache.ts) + " 读取，已用 " + mins + " 分钟", "cache-ok");
         document.getElementById("fetch-time").textContent = "页面读取：缓存（" + fmtClock(cache.ts) + "）";
@@ -394,8 +457,10 @@ async function load(force){
   for (let attempt = 1; attempt <= 4; attempt++){
     try{
       const text = await fetchCsv();
-      applyRows(parseCSV(text));
-      writeCache(text);
+      const rows = parseCSV(text);
+      applyRows(rows);
+      const prevName = await ensurePrevBanner(rows);
+      writeCache(text, prevName);
       setCacheBadge("缓存：刚刚在线读取", "cache-ok");
       document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
       return;
@@ -412,6 +477,7 @@ async function load(force){
   if (cache){
     try{
       applyRows(parseCSV(cache.csv));
+      if (cache.prevName) setPrevBanner(cache.prevName, true);
       setCacheBadge("在线读取失败，显示缓存（" + fmtClock(cache.ts) + "）", "cache-warn");
       document.getElementById("fetch-time").textContent = "页面读取：失败，用缓存（" + fmtNow() + "）";
       return;
