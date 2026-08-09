@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>📊 MementoMori 卡池监测（在线）</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --bg:#0d0b14;
+  --panel:rgba(255,255,255,.045);
+  --panel-border:rgba(255,255,255,.09);
+  --gold:#d9b26a;
+  --accent:#7c6cf0;
+  --text:#e8e6f0;
+  --muted:#9a94ad;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--text);
+  font-family:"Segoe UI","Microsoft YaHei","PingFang SC",Arial,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(124,108,240,.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(217,178,106,.10), transparent 60%),
+    linear-gradient(180deg,#0d0b14 0%,#12101c 55%,#0a0910 100%);
+  background-attachment:fixed;
+}
+.wrap{max-width:1200px;margin:0 auto;padding:36px 20px 60px}
+header.top{
+  text-align:center;
+  padding:34px 20px 26px;
+  border-bottom:1px solid var(--panel-border);
+  margin-bottom:30px;
+}
+header.top h1{
+  margin:0 0 12px;
+  font-size:34px;
+  letter-spacing:2px;
+  background:linear-gradient(90deg,#f5e6c4,#d9b26a 45%,#a78bfa);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+header.top .subtitle{margin:0 0 14px;color:var(--muted);font-size:15px}
+.badge{
+  display:inline-block;
+  padding:6px 14px;
+  border:1px solid rgba(217,178,106,.4);
+  border-radius:999px;
+  color:var(--gold);
+  font-size:13px;
+  background:rgba(217,178,106,.08);
+  margin:3px;
+}
+.badge .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:7px;vertical-align:1px;box-shadow:0 0 8px #4ade80}
+.toolbar{display:flex;justify-content:flex-end;gap:10px;margin:0 0 14px}
+.toolbar button{
+  background:linear-gradient(90deg,#7c6cf0,#5b4fd6);
+  color:#fff;border:none;border-radius:999px;
+  padding:8px 18px;font-size:13px;cursor:pointer;
+  transition:filter .2s,transform .1s;
+}
+.toolbar button:hover{filter:brightness(1.12)}
+.toolbar button:active{transform:scale(.97)}
+section.card{
+  background:var(--panel);
+  border:1px solid var(--panel-border);
+  border-radius:16px;
+  padding:22px 24px 26px;
+  margin:0 0 26px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+section.card h2{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 0 16px;
+  font-size:19px;
+  color:#f1eef8;
+}
+section.card h2::before{
+  content:"";
+  width:5px;
+  height:20px;
+  border-radius:3px;
+  background:linear-gradient(180deg,var(--gold),var(--accent));
+}
+.table-wrap{
+  overflow-x:auto;
+  border:1px solid var(--panel-border);
+  border-radius:10px;
+  background:rgba(0,0,0,.18);
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+thead th{
+  position:sticky;
+  top:0;
+  background:#1c1730;
+  color:var(--gold);
+  font-weight:600;
+  text-align:left;
+  white-space:nowrap;
+  padding:10px 14px;
+  border-bottom:1px solid rgba(217,178,106,.25);
+}
+tbody td{
+  padding:9px 14px;
+  white-space:nowrap;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  vertical-align:middle;
+}
+tbody tr:nth-child(even){background:rgba(255,255,255,.03)}
+tbody tr:hover{background:rgba(124,108,240,.14)}
+tbody tr:last-child td{border-bottom:none}
+.cell-name{font-weight:600;color:#f1eef8}
+.cell-ico{min-width:64px}
+.cell-ico .ico{
+  display:inline-block;
+  width:52px;height:52px;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid var(--panel-border);
+  background:rgba(0,0,0,.3);
+  vertical-align:middle;
+}
+.cell-ico img{width:100%;height:100%;object-fit:cover;display:block}
+.cell-ico .empty{color:var(--muted);opacity:.5}
+.cell-ico .icofallback{display:inline-block;width:52px;height:52px;line-height:52px;text-align:center;border-radius:10px;border:1px dashed var(--panel-border);color:var(--muted);font-size:12px}
+.tag{
+  display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;
+  border:1px solid var(--panel-border);background:rgba(255,255,255,.05);
+}
+.tag.light{color:#ffe9a8;border-color:rgba(255,233,168,.45);background:rgba(255,233,168,.08)}
+.tag.dark{color:#c9b8ff;border-color:rgba(201,184,255,.45);background:rgba(201,184,255,.08)}
+.tag.blue{color:#9ecfff;border-color:rgba(158,207,255,.45);background:rgba(158,207,255,.08)}
+.tag.red{color:#ffb4a8;border-color:rgba(255,180,168,.45);background:rgba(255,180,168,.08)}
+.tag.green{color:#b5f0c3;border-color:rgba(181,240,195,.45);background:rgba(181,240,195,.08)}
+.tag.gold{color:#ffe9a8;border-color:rgba(255,233,168,.45);background:rgba(255,233,168,.08)}
+.loading,.error{color:var(--muted);padding:30px;text-align:center}
+.error{color:#ff9d9d}
+.error a{color:#ffd0d0}
+.spinner{
+  display:inline-block;width:28px;height:28px;margin-bottom:10px;
+  border:3px solid rgba(255,255,255,.12);border-top-color:var(--gold);
+  border-radius:50%;animation:spin 1s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  margin-top:10px;
+  line-height:1.9;
+}
+footer a{color:#a99fd9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>📊 MementoMori 卡池监测</h1>
+    <p class="subtitle" id="page-title">《每日60秒，读懂Mmt》</p>
+    <p>
+      <span class="badge"><span class="dot"></span>在线读取 Google Sheets</span>
+      <span class="badge" id="sheet-time">表格时间：—</span>
+      <span class="badge" id="fetch-time">页面读取：—</span>
+    </p>
+  </header>
+
+  <div class="toolbar">
+    <button id="btn-refresh" onclick="load()">🔄 刷新数据</button>
+  </div>
+
+  <section class="card">
+    <h2>MMT 卡池 · 最新总览</h2>
+    <div class="table-wrap" id="tbl-overview"></div>
+  </section>
+
+  <section class="card">
+    <h2>MMT 卡池 · 属性限定记录</h2>
+    <div class="table-wrap" id="tbl-elements"></div>
+  </section>
+
+  <footer>
+    数据实时读取自 <a href="https://docs.google.com/spreadsheets/d/1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA" target="_blank" rel="noopener">Google Sheets 卡池表</a>
+    · 角色图标来自 <a href="https://mentemori.icu" target="_blank" rel="noopener">mentemori.icu</a>
+    · 页面每小时自动刷新
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+const SHEET_ID = "1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA";
+const CSV_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv";
+const ICON_BASE = "https://mentemori.icu/assets/CHR_";
+const ICON_SUFFIX = "_00_s.png";
+
+const ELEMENT_TAG = { "光":"light", "暗":"dark", "蓝":"blue", "红":"red", "绿":"green", "金":"gold" };
+
+// ---------- 简易 RFC4180 CSV 解析 ----------
+function parseCSV(text){
+  const rows = [];
+  let row = [], cell = "", inQ = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (inQ){
+      if (ch === '"'){
+        if (text[i+1] === '"'){ cell += '"'; i++; }
+        else inQ = false;
+      } else cell += ch;
+    } else {
+      if (ch === '"') inQ = true;
+      else if (ch === ","){ row.push(cell); cell = ""; }
+      else if (ch === "\n"){ row.push(cell); rows.push(row); row = []; cell = ""; }
+      else if (ch === "\r"){ /* 忽略 */ }
+      else cell += ch;
+    }
+  }
+  if (cell.length || row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+
+function idsFromRow(r){
+  return [12,13,14,15,16,17].map(j => String(r[j] || "").trim());
+}
+
+function idsFromText(t){
+  return String(t || "").split(/\s+/).map(s => s.trim()).filter(s => /^\d+$/.test(s));
+}
+
+function padId(id){
+  id = String(id || "").trim();
+  return id ? id.padStart(6, "0") : "";
+}
+
+function iconHtml(id){
+  id = String(id || "").trim();
+  const p = padId(id);
+  if (!p) return '<span class="empty">—</span>';
+  return '<span class="ico"><img src="' + ICON_BASE + p + ICON_SUFFIX
+       + '" alt="ID ' + id + '" loading="lazy" title="角色ID ' + id + '"'
+       + ' onerror="imgFail(this)" data-id="' + id + '"></span>';
+}
+
+function imgFail(el){
+  el.outerHTML = '<span class="icofallback" title="角色ID ' + el.dataset.id + '">' + el.dataset.id + '</span>';
+}
+
+function iconsCell(ids){
+  return ids.map(id => '<td class="cell-ico">' + iconHtml(id) + '</td>').join("");
+}
+
+function esc(v){
+  return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ---------- 渲染 ----------
+function renderOverview(rows){
+  const R = [2,3,4,5,6,7];
+  let body = "";
+  for (const i of R){
+    const r = rows[i] || [];
+    let ids = idsFromRow(r);
+    if (ids.every(v => !v)) ids = idsFromText(r[2]).slice(0,6);
+    while (ids.length < 6) ids.push("");
+    const cellIco = iconsCell(ids);
+    body += "<tr>"
+      + '<td class="cell-name">' + esc(r[1]) + "</td>"
+      + "<td>" + esc(r[2]) + "</td>"
+      + "<td>" + esc(r[3]) + "</td>"
+      + "<td>" + esc(r[4]) + "</td>"
+      + cellIco
+      + "</tr>";
+  }
+  document.getElementById("tbl-overview").innerHTML =
+    '<table><thead><tr><th>卡池</th><th>最新卡池</th><th>上个卡池</th><th>即将 或已过期~</th>'
+    + '<th>图1</th><th>图2</th><th>图3</th><th>图4</th><th>图5</th><th>图6</th>'
+    + "</tr></thead><tbody>" + body + "</tbody></table>";
+}
+
+function renderElements(rows){
+  const R = [9,10,11,12,13,14];
+  let body = "";
+  for (const i of R){
+    const r = rows[i] || [];
+    const ids = idsFromRow(r);
+    const ele = String(r[18] || "").trim();
+    const tagCls = ELEMENT_TAG[ele] || "";
+    body += "<tr>"
+      + '<td class="cell-name">' + esc(r[1]) + (ele ? ' <span class="tag ' + tagCls + '">' + esc(ele) + "</span>" : "") + "</td>"
+      + "<td>" + esc(r[2]) + "</td>"
+      + "<td>" + esc(r[3]) + "</td>"
+      + "<td>" + esc(r[4]) + "</td>"
+      + iconsCell(ids)
+      + "</tr>";
+  }
+  document.getElementById("tbl-elements").innerHTML =
+    '<table><thead><tr><th>属性</th><th>限定数</th><th>等待天数</th><th>上个角色</th>'
+    + '<th>-1</th><th>-2</th><th>-3</th><th>-4</th><th>-5</th><th>-6</th>'
+    + "</tr></thead><tbody>" + body + "</tbody></table>";
+}
+
+function fmtNow(){
+  const d = new Date();
+  const p = n => String(n).padStart(2,"0");
+  return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate())
+       + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+}
+
+async function load(){
+  const ov = document.getElementById("tbl-overview");
+  const el = document.getElementById("tbl-elements");
+  ov.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在在线读取 Google Sheets…</div>';
+  el.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在在线读取 Google Sheets…</div>';
+  let lastErr = null;
+  for (let attempt = 1; attempt <= 4; attempt++){
+    try{
+      const resp = await fetch(CSV_URL);
+      if (!resp.ok) throw new Error("HTTP " + resp.status);
+      const text = await resp.text();
+      const rows = parseCSV(text);
+      if (!rows[1] || String(rows[1][1] || "").trim() !== "卡池") throw new Error("表格结构不符合预期");
+
+      const title = String(rows[0][2] || "").trim();
+      if (title) document.getElementById("page-title").textContent = title;
+      document.getElementById("sheet-time").textContent = "表格时间：" + (String(rows[0][1] || "").trim() || "—");
+
+      renderOverview(rows);
+      renderElements(rows);
+      document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
+      return;
+    }catch(err){
+      lastErr = err;
+      if (attempt < 4){
+        await new Promise(r => setTimeout(r, attempt * 1500));
+      }
+    }
+  }
+  ov.innerHTML = '<div class="error">❌ 在线读取失败：' + esc(lastErr ? lastErr.message : "未知错误")
+    + '<br>已自动重试 4 次仍未成功。请确认：① 表格已开启“知道链接的任何人可查看”；② 页面需通过 http(s) 访问（如 GitHub Pages 或本地服务器），不能直接用 file:// 打开；③ 稍后再点“刷新数据”。</div>';
+  el.innerHTML = "";
+  document.getElementById("fetch-time").textContent = "页面读取：失败（" + fmtNow() + "）";
+}
+
+document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
+load();
+setInterval(load, 3600 * 1000);
+</script>
+</body>
+</html>
