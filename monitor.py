@@ -2,147 +2,180 @@ import os
 import json
 import gspread
 from google.oauth2.service_account import Credentials
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+from PIL import Image, ImageDraw, ImageFont
 
-# Google Sheets 授权
-creds_json = json.loads(os.environ['GOOGLE_SHEETS_CREDENTIALS'])
-creds = Credentials.from_service_account_info(
+# Google Sheets授权
+creds_json=json.loads(os.environ["GOOGLE_SHEETS_CREDENTIALS"])
+creds=Credentials.from_service_account_info(
     creds_json,
     scopes=[
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive.readonly"
     ]
 )
-client = gspread.authorize(creds)
+client=gspread.authorize(creds)
 
-# 表格 ID
-USAGE_SHEET_ID = "1VrnhPswVqPPbbC-Gps_e9Um7tWulYg4BI66HMt_OBZw"
-CARD_SHEET_ID = "1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA"
+# Sheet ID
+USAGE_SHEET_ID="1VrnhPswVqPPbbC-Gps_e9Um7tWulYg4BI66HMt_OBZw"
+CARD_SHEET_ID="1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA"
 
-def get_range(sheet_id, range_str):
-    sheet = client.open_by_key(sheet_id).sheet1
+def get_range(sheet_id,range_str):
+    sheet=client.open_by_key(sheet_id).sheet1
     return sheet.get(range_str)
 
-def main():
-    print("📊 开始读取 Google Sheets 数据...")
+def create_table_image(data,filename):
+    os.makedirs("assets",exist_ok=True)
+    try:
+        font=ImageFont.truetype("NotoSansCJK-Regular.ttc",28)
+    except:
+        font=ImageFont.load_default()
 
-    print("读取巅峰自动 A1:K7...")
-    usage_data = get_range(USAGE_SHEET_ID, "A1:K7")
-    print(f"✅ 巅峰自动读取成功，{len(usage_data)} 行")
+    if filename=="usage.png":
+        w,h=1150,690
+    else:
+        w,h=900,610
 
-    print("读取 mmt#卡3 B1:K16...")
-    card_data = get_range(CARD_SHEET_ID, "B1:K16")
-    print(f"✅ mmt#卡3读取成功，{len(card_data)} 行")
+    img=Image.new("RGB",(w,h),"white")
+    draw=ImageDraw.Draw(img)
 
-    html_content = generate_html(usage_data, card_data)
+    rows=len(data)
+    cols=max(len(row) for row in data)
+    cw=w//cols
+    rh=h//rows
 
-    with open("index.html", "w", encoding="utf-8") as f:
-        f.write(html_content)
+    for y,row in enumerate(data):
+        for x,value in enumerate(row):
+            draw.rectangle(
+                [x*cw,y*rh,(x+1)*cw,(y+1)*rh],
+                outline="black"
+            )
+            draw.text(
+                (x*cw+10,y*rh+10),
+                str(value),
+                font=font,
+                fill="black"
+            )
 
-    print("🎉 网页已生成: index.html")
+    img.save(
+        f"assets/{filename}",
+        dpi=(300,300)
+    )
+    print(f"生成图片:{filename} {w}x{h}")
 
-def generate_html(usage_data, card_data):
-    html = """<!DOCTYPE html>
-<html lang="zh-CN">
+def table_html(data):
+    html="<table><thead><tr>"
+    for cell in data[0]:
+        html+=f"<th>{cell}</th>"
+    html+="</tr></thead><tbody>"
+
+    for row in data[1:]:
+        html+="<tr>"
+        for cell in row:
+            html+=f"<td>{cell}</td>"
+        html+="</tr>"
+
+    html+="</tbody></table>"
+    return html
+
+def generate_html(usage_data,card_data):
+    bj=datetime.now(timezone.utc)+timedelta(hours=8)
+    update=bj.strftime("%Y-%m-%d %H:%M:%S")
+
+    return f"""
+<!DOCTYPE html>
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MementoMori 数据监测</title>
+<title>📊 MementoMori 数据监测</title>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background:#f5f5f5;
-    padding:20px;
-    max-width:1400px;
-    margin:auto;
-}
-h1 {
-    color:#333;
-}
-.container {
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
-}
-.card {
-    background:white;
-    border-radius:12px;
-    padding:20px;
-}
-table {
-    border-collapse:collapse;
-    width:100%;
-}
-th,td {
-    border:1px solid #ddd;
-    padding:8px;
-}
-th {
-    background:#4CAF50;
-    color:white;
-}
-.timestamp {
-    margin-top:20px;
-    text-align:right;
-    color:#888;
-}
+body{{
+font-family:Arial,"Microsoft YaHei";
+padding:20px;
+}}
+table{{
+border-collapse:collapse;
+margin-bottom:30px;
+}}
+th,td{{
+border:1px solid #999;
+padding:8px;
+white-space:nowrap;
+}}
+th{{
+background:#eee;
+}}
+.imgbox{{
+overflow-x:auto;
+}}
+.imgbox img{{
+width:auto;
+height:auto;
+}}
 </style>
 </head>
 <body>
 <h1>📊 MementoMori 数据监测</h1>
-<div class="container">
-<div class="card">
-<h2>📈 巅峰自动（使用率）</h2>
-<table>
-"""
+<p>更新时间：{update}（北京时间）</p>
 
-    if usage_data:
-        html += "<thead><tr>"
-        for cell in usage_data[0]:
-            html += f"<th>{cell}</th>"
-        html += "</tr></thead><tbody>"
-
-        for row in usage_data[1:]:
-            html += "<tr>"
-            for cell in row:
-                html += f"<td>{cell}</td>"
-            html += "</tr>"
-
-        html += "</tbody>"
-
-    html += """
-</table>
+<h2>巅峰自动图片</h2>
+<div class="imgbox">
+<img src="assets/usage.png">
 </div>
-<div class="card">
-<h2>🎴 卡池表</h2>
-<table>
-"""
 
-    if card_data:
-        html += "<thead><tr>"
-        for cell in card_data[0]:
-            html += f"<th>{cell}</th>"
-        html += "</tr></thead><tbody>"
-
-        for row in card_data[1:]:
-            html += "<tr>"
-            for cell in row:
-                html += f"<td>{cell}</td>"
-            html += "</tr>"
-
-        html += "</tbody>"
-
-    html += f"""
-</table>
+<h2>MMT卡池图片</h2>
+<div class="imgbox">
+<img src="assets/card.png">
 </div>
-</div>
-<div class="timestamp">
-更新时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-</div>
+
+<h2>巅峰自动数据</h2>
+{table_html(usage_data)}
+
+<h2>MMT卡池数据</h2>
+{table_html(card_data)}
+
 </body>
 </html>
 """
-    return html
 
-if __name__ == "__main__":
+def main():
+    print("读取Google Sheets...")
+
+    usage_data=get_range(
+        USAGE_SHEET_ID,
+        "A1:K7"
+    )
+
+    card_data=get_range(
+        CARD_SHEET_ID,
+        "B1:K16"
+    )
+
+    print("生成图片...")
+
+    create_table_image(
+        usage_data,
+        "usage.png"
+    )
+
+    create_table_image(
+        card_data,
+        "card.png"
+    )
+
+    html=generate_html(
+        usage_data,
+        card_data
+    )
+
+    with open(
+        "index.html",
+        "w",
+        encoding="utf-8"
+    ) as f:
+        f.write(html)
+
+    print("完成")
+
+if __name__=="__main__":
     main()
