@@ -55,6 +55,8 @@ header.top .subtitle{margin:0 0 14px;color:var(--muted);font-size:15px}
   margin:3px;
 }
 .badge .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:7px;vertical-align:1px;box-shadow:0 0 8px #4ade80}
+.badge.cache-ok{color:#9be8b2;border-color:rgba(155,232,178,.4);background:rgba(155,232,178,.08)}
+.badge.cache-warn{color:#ffcf9e;border-color:rgba(255,207,158,.4);background:rgba(255,207,158,.08)}
 .toolbar{display:flex;justify-content:flex-end;gap:10px;margin:0 0 14px}
 .toolbar button{
   background:linear-gradient(90deg,#7c6cf0,#5b4fd6);
@@ -170,11 +172,12 @@ footer a{color:#a99fd9}
       <span class="badge"><span class="dot"></span>在线读取 Google Sheets</span>
       <span class="badge" id="sheet-time">表格时间：—</span>
       <span class="badge" id="fetch-time">页面读取：—</span>
+      <span class="badge" id="cache-time">缓存：—</span>
     </p>
   </header>
 
   <div class="toolbar">
-    <button id="btn-refresh" onclick="load()">🔄 刷新数据</button>
+    <button id="btn-refresh" onclick="load(true)">🔄 刷新数据</button>
   </div>
 
   <section class="card">
@@ -201,6 +204,9 @@ const SHEET_ID = "1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA";
 const CSV_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv";
 const ICON_BASE = "https://mentemori.icu/assets/CHR_";
 const ICON_SUFFIX = "_00_s.png";
+
+const CACHE_KEY = "mmt_card_cache_v1";
+const CACHE_TTL = 60 * 60 * 1000; // 缓存 1 小时
 
 const ELEMENT_TAG = { "光":"light", "暗":"dark", "蓝":"blue", "红":"red", "绿":"green", "金":"gold" };
 
@@ -270,13 +276,12 @@ function renderOverview(rows){
     let ids = idsFromRow(r);
     if (ids.every(v => !v)) ids = idsFromText(r[2]).slice(0,6);
     while (ids.length < 6) ids.push("");
-    const cellIco = iconsCell(ids);
     body += "<tr>"
       + '<td class="cell-name">' + esc(r[1]) + "</td>"
       + "<td>" + esc(r[2]) + "</td>"
       + "<td>" + esc(r[3]) + "</td>"
       + "<td>" + esc(r[4]) + "</td>"
-      + cellIco
+      + iconsCell(ids)
       + "</tr>";
   }
   document.getElementById("tbl-overview").innerHTML =
@@ -307,6 +312,15 @@ function renderElements(rows){
     + "</tr></thead><tbody>" + body + "</tbody></table>";
 }
 
+function applyRows(rows){
+  const title = String(rows[0][2] || "").trim();
+  if (title) document.getElementById("page-title").textContent = title;
+  document.getElementById("sheet-time").textContent = "表格时间：" + (String(rows[0][1] || "").trim() || "—");
+  renderOverview(rows);
+  renderElements(rows);
+}
+
+// ---------- 时间 ----------
 function fmtNow(){
   const d = new Date();
   const p = n => String(n).padStart(2,"0");
@@ -314,26 +328,75 @@ function fmtNow(){
        + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
 }
 
-async function load(){
-  const ov = document.getElementById("tbl-overview");
-  const el = document.getElementById("tbl-elements");
-  ov.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在在线读取 Google Sheets…</div>';
-  el.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在在线读取 Google Sheets…</div>';
+function fmtClock(ts){
+  const d = new Date(ts);
+  const p = n => String(n).padStart(2,"0");
+  return p(d.getHours()) + ":" + p(d.getMinutes());
+}
+
+// ---------- 缓存 ----------
+function readCache(){
+  try{
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj || typeof obj.ts !== "number" || typeof obj.csv !== "string") return null;
+    return obj;
+  }catch(e){ return null; }
+}
+
+function writeCache(csv){
+  try{
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), csv: csv }));
+  }catch(e){ /* 隐私模式等场景忽略 */ }
+}
+
+function setCacheBadge(text, cls){
+  const el = document.getElementById("cache-time");
+  el.textContent = text;
+  el.className = "badge" + (cls ? " " + cls : "");
+}
+
+// ---------- 数据读取 ----------
+async function fetchCsv(){
+  const resp = await fetch(CSV_URL);
+  if (!resp.ok) throw new Error("HTTP " + resp.status);
+  const text = await resp.text();
+  const rows = parseCSV(text);
+  if (!rows[1] || String(rows[1][1] || "").trim() !== "卡池") throw new Error("表格结构不符合预期");
+  return text;
+}
+
+function showLoading(){
+  const html = '<div class="loading"><span class="spinner"></span><br>正在在线读取 Google Sheets…</div>';
+  document.getElementById("tbl-overview").innerHTML = html;
+  document.getElementById("tbl-elements").innerHTML = html;
+}
+
+async function load(force){
+  // 1) 缓存命中：1 小时内不再请求，直接秒开
+  if (!force){
+    const cache = readCache();
+    if (cache && (Date.now() - cache.ts) < CACHE_TTL){
+      try{
+        applyRows(parseCSV(cache.csv));
+        const mins = Math.max(1, Math.round((Date.now() - cache.ts) / 60000));
+        setCacheBadge("缓存：" + fmtClock(cache.ts) + " 读取，已用 " + mins + " 分钟", "cache-ok");
+        document.getElementById("fetch-time").textContent = "页面读取：缓存（" + fmtClock(cache.ts) + "）";
+        return;
+      }catch(e){ /* 缓存损坏则重新在线读取 */ }
+    }
+  }
+
+  // 2) 需要在线读取
+  showLoading();
   let lastErr = null;
   for (let attempt = 1; attempt <= 4; attempt++){
     try{
-      const resp = await fetch(CSV_URL);
-      if (!resp.ok) throw new Error("HTTP " + resp.status);
-      const text = await resp.text();
-      const rows = parseCSV(text);
-      if (!rows[1] || String(rows[1][1] || "").trim() !== "卡池") throw new Error("表格结构不符合预期");
-
-      const title = String(rows[0][2] || "").trim();
-      if (title) document.getElementById("page-title").textContent = title;
-      document.getElementById("sheet-time").textContent = "表格时间：" + (String(rows[0][1] || "").trim() || "—");
-
-      renderOverview(rows);
-      renderElements(rows);
+      const text = await fetchCsv();
+      applyRows(parseCSV(text));
+      writeCache(text);
+      setCacheBadge("缓存：刚刚在线读取", "cache-ok");
       document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
       return;
     }catch(err){
@@ -343,15 +406,28 @@ async function load(){
       }
     }
   }
-  ov.innerHTML = '<div class="error">❌ 在线读取失败：' + esc(lastErr ? lastErr.message : "未知错误")
+
+  // 3) 在线读取失败：有旧缓存就先用旧缓存
+  const cache = readCache();
+  if (cache){
+    try{
+      applyRows(parseCSV(cache.csv));
+      setCacheBadge("在线读取失败，显示缓存（" + fmtClock(cache.ts) + "）", "cache-warn");
+      document.getElementById("fetch-time").textContent = "页面读取：失败，用缓存（" + fmtNow() + "）";
+      return;
+    }catch(e){ /* 缓存也无法用，走报错 */ }
+  }
+  document.getElementById("tbl-overview").innerHTML =
+    '<div class="error">❌ 在线读取失败：' + esc(lastErr ? lastErr.message : "未知错误")
     + '<br>已自动重试 4 次仍未成功。请确认：① 表格已开启“知道链接的任何人可查看”；② 页面需通过 http(s) 访问（如 GitHub Pages 或本地服务器），不能直接用 file:// 打开；③ 稍后再点“刷新数据”。</div>';
-  el.innerHTML = "";
+  document.getElementById("tbl-elements").innerHTML = "";
+  setCacheBadge("缓存：无", "");
   document.getElementById("fetch-time").textContent = "页面读取：失败（" + fmtNow() + "）";
 }
 
 document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
-load();
-setInterval(load, 3600 * 1000);
-</script>
+load(false);
+setInterval(load, 60 * 60 * 1000);
+</script></script>
 </body>
 </html>
