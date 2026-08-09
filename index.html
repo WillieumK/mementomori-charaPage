@@ -170,8 +170,7 @@ footer a{color:#a99fd9}
     <p class="subtitle" id="page-title">《每日60秒，读懂Mmt》</p>
     <p>
       <span class="badge"><span class="dot"></span>在线读取 Google Sheets</span>
-      <span class="badge" id="sheet-time">表格时间：—</span>
-      <span class="badge" id="fetch-time">页面读取：—</span>
+            <span class="badge" id="fetch-time">页面读取：—</span>
       <span class="badge" id="cache-time">缓存：—</span>
     </p>
   </header>
@@ -201,89 +200,156 @@ footer a{color:#a99fd9}
 "use strict";
 
 const SHEET_ID = "1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA";
-const CSV_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv";
-const ICON_BASE = "https://mentemori.icu/assets/CHR_";
-const ICON_SUFFIX = "_00_s.png";
 const CARD0_GID = "157463114";
 const CARD0_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?gid=" + CARD0_GID + "&tqx=out:json";
+const ICON_BASE = "https://mentemori.icu/assets/CHR_";
+const ICON_SUFFIX = "_00_s.png";
 
-const CACHE_KEY = "mmt_card_cache_v2";
+const CACHE_KEY = "mmt_card_cache_v3";
 const CACHE_TTL = 60 * 60 * 1000; // 缓存 1 小时
 
 const ELEMENT_TAG = { "光":"light", "暗":"dark", "蓝":"blue", "红":"red", "绿":"green", "金":"gold" };
+const ELEMENTS = [
+  { name: "天光", attr: "光" },
+  { name: "幽冥", attr: "暗" },
+  { name: "忧蓝", attr: "蓝" },
+  { name: "业红", attr: "红" },
+  { name: "苍翠", attr: "绿" },
+  { name: "流金", attr: "金" }
+];
 
-// ---------- 简易 RFC4180 CSV 解析 ----------
-function parseCSV(text){
-  const rows = [];
-  let row = [], cell = "", inQ = false;
-  for (let i = 0; i < text.length; i++){
-    const ch = text[i];
-    if (inQ){
-      if (ch === '"'){
-        if (text[i+1] === '"'){ cell += '"'; i++; }
-        else inQ = false;
-      } else cell += ch;
-    } else {
-      if (ch === '"') inQ = true;
-      else if (ch === ","){ row.push(cell); cell = ""; }
-      else if (ch === "\n"){ row.push(cell); rows.push(row); row = []; cell = ""; }
-      else if (ch === "\r"){ /* 忽略 */ }
-      else cell += ch;
+// ---------- gviz JSON 解析 ----------
+function parseGvizJson(text){
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  return JSON.parse(text.slice(start, end + 1));
+}
+
+// ---------- 日期工具 ----------
+function dateOrd(v){
+  const m = /^Date\((\d+),(\d+),(\d+)\)$/.exec(String(v || ""));
+  if (!m) return null;
+  return Date.UTC(+m[1], +m[2], +m[3]);
+}
+function fmtMd(ord){
+  const d = new Date(ord);
+  return (d.getUTCMonth() + 1) + "/" + String(d.getUTCDate()).padStart(2, "0");
+}
+function getV(row, c){
+  const cell = row && row.c ? row.c[c] : null;
+  return cell ? cell.v : null;
+}
+function rowMaxOrd(r, cols){
+  let best = null;
+  for (const c of cols){
+    const o = dateOrd(getV(r, c));
+    if (o !== null && (best === null || o > best)) best = o;
+  }
+  return best;
+}
+
+// ---------- 核心：从 卡-0 原始数据直接计算两张表 ----------
+function computeTables(rows){
+  const R = rows.slice(3, 153);          // 卡-0 第4~153行
+  const ids = r => String(getV(r, 0) == null ? "" : getV(r, 0)).trim();
+  const name = r => String(getV(r, 6) || "").trim();
+
+  // --- 新角色：H 最大 ---
+  let maxH = null;
+  for (const r of R){ const o = dateOrd(getV(r, 7)); if (o !== null && (maxH === null || o > maxH)) maxH = o; }
+  const newRows = R.filter(r => dateOrd(getV(r, 7)) === maxH);
+  const newIds = newRows.map(ids);
+  const newName = newRows.length ? name(newRows[0]) : "";
+
+  // --- 新复刻：I/J 行最大值 = 全局最大；以及复刻队列 top3 ---
+  let maxIJ = null;
+  for (const r of R){ const o = rowMaxOrd(r, [8, 9]); if (o !== null && (maxIJ === null || o > maxIJ)) maxIJ = o; }
+  const rerunMaxRows = R.filter(r => rowMaxOrd(r, [8, 9]) === maxIJ);
+  const rerunNames = rerunMaxRows.map(name);
+  const rerunList = [];
+  for (const r of R){
+    for (const c of [8, 9]){
+      const o = dateOrd(getV(r, c));
+      if (o !== null) rerunList.push({ o: o, id: ids(r), n: name(r) });
     }
   }
-  if (cell.length || row.length){ row.push(cell); rows.push(row); }
-  return rows;
+  rerunList.sort((a, b) => b.o - a.o);
+  const rerunTop3 = rerunList.slice(0, 3);
+  const rerunIds = rerunTop3.map(x => x.id);
+
+  // --- 新星辰：K~Q 行最大值 = 全局最大 ---
+  let maxKQ = null;
+  for (const r of R){ const o = rowMaxOrd(r, [10, 11, 12, 13, 14]); if (o !== null && (maxKQ === null || o > maxKQ)) maxKQ = o; }
+  const starRows = R.filter(r => rowMaxOrd(r, [10, 11, 12, 13, 14]) === maxKQ);
+  const starNames = starRows.map(name).join(" ");
+  const starIds = starRows.map(ids);
+
+  const pad6 = a => {
+    const out = a.slice(0, 6);
+    while (out.length < 6) out.push("");
+    return out;
+  };
+
+  const overview = [
+    { name: "新角色", latest: newName,          prev: "",                       upcoming: "",                ids: pad6(newIds) },
+    { name: "新复刻", latest: rerunNames.join("、"), prev: rerunTop3[1] ? rerunTop3[1].n : "", upcoming: rerunTop3[2] ? rerunTop3[2].n : "", ids: pad6(rerunIds) },
+    { name: "新星辰", latest: starNames,         prev: "",                       upcoming: "",                ids: pad6(starIds) },
+    { name: "#1",     latest: newIds.join(" "),  prev: "",                       upcoming: "新池-" + (maxH !== null ? fmtMd(maxH) : ""),     ids: pad6(newIds) },
+    { name: "#2",     latest: rerunIds.join(" "), prev: "",                      upcoming: "新池-" + (maxIJ !== null ? fmtMd(maxIJ) : ""),    ids: pad6(rerunIds) },
+    { name: "#3",     latest: starIds.join(" "), prev: "",                       upcoming: "新池-" + (maxKQ !== null ? fmtMd(maxKQ) : ""),    ids: pad6(starIds) }
+  ];
+
+  // --- 表二：六属性 ---
+  const elements = ELEMENTS.map((el, i) => {
+    const anchor = R[i];                        // 卡-0 第4~9行：B=限定数 C=等待天数
+    const B = getV(anchor, 1);
+    const C = getV(anchor, 2);
+    const wait = (C !== null && C !== undefined)
+      ? (Math.floor(Number(C) * 24) / 24).toFixed(2) + "天"
+      : "";
+    const attrRows = R
+      .filter(r => getV(r, 5) === el.attr && dateOrd(getV(r, 7)) !== null)
+      .sort((a, b) => dateOrd(getV(b, 7)) - dateOrd(getV(a, 7)));
+    return {
+      name: el.name,
+      attr: el.attr,
+      count: String(B == null ? "" : B).trim() + "个",
+      wait: wait,
+      last: attrRows.length ? name(attrRows[0]) : "",
+      ids: pad6(attrRows.slice(0, 6).map(ids))
+    };
+  });
+
+  return { overview: overview, elements: elements };
 }
 
-function idsFromRow(r){
-  return [12,13,14,15,16,17].map(j => String(r[j] || "").trim());
-}
-
-function idsFromText(t){
-  return String(t || "").split(/\s+/).map(s => s.trim()).filter(s => /^\d+$/.test(s));
-}
-
-function padId(id){
-  id = String(id || "").trim();
-  return id ? id.padStart(6, "0") : "";
-}
-
+// ---------- 渲染 ----------
 function iconHtml(id){
   id = String(id || "").trim();
-  const p = padId(id);
+  const p = id ? id.padStart(6, "0") : "";
   if (!p) return '<span class="empty">—</span>';
   return '<span class="ico"><img src="' + ICON_BASE + p + ICON_SUFFIX
        + '" alt="ID ' + id + '" loading="lazy" title="角色ID ' + id + '"'
        + ' onerror="imgFail(this)" data-id="' + id + '"></span>';
 }
-
 function imgFail(el){
   el.outerHTML = '<span class="icofallback" title="角色ID ' + el.dataset.id + '">' + el.dataset.id + '</span>';
 }
-
 function iconsCell(ids){
   return ids.map(id => '<td class="cell-ico">' + iconHtml(id) + '</td>').join("");
 }
-
 function esc(v){
   return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
-
-// ---------- 渲染 ----------
-function renderOverview(rows){
-  const R = [2,3,4,5,6,7];
+function renderOverview(ov){
   let body = "";
-  for (const i of R){
-    const r = rows[i] || [];
-    let ids = idsFromRow(r);
-    if (ids.every(v => !v)) ids = idsFromText(r[2]).slice(0,6);
-    while (ids.length < 6) ids.push("");
+  for (const r of ov){
     body += "<tr>"
-      + '<td class="cell-name">' + esc(r[1]) + "</td>"
-      + "<td>" + esc(r[2]) + "</td>"
-      + "<td>" + esc(r[3]) + "</td>"
-      + "<td>" + esc(r[4]) + "</td>"
-      + iconsCell(ids)
+      + '<td class="cell-name">' + esc(r.name) + "</td>"
+      + "<td>" + esc(r.latest) + "</td>"
+      + "<td>" + esc(r.prev) + "</td>"
+      + "<td>" + esc(r.upcoming) + "</td>"
+      + iconsCell(r.ids)
       + "</tr>";
   }
   document.getElementById("tbl-overview").innerHTML =
@@ -291,21 +357,16 @@ function renderOverview(rows){
     + '<th>图1</th><th>图2</th><th>图3</th><th>图4</th><th>图5</th><th>图6</th>'
     + "</tr></thead><tbody>" + body + "</tbody></table>";
 }
-
-function renderElements(rows){
-  const R = [9,10,11,12,13,14];
+function renderElements(el){
   let body = "";
-  for (const i of R){
-    const r = rows[i] || [];
-    const ids = idsFromRow(r);
-    const ele = String(r[18] || "").trim();
-    const tagCls = ELEMENT_TAG[ele] || "";
+  for (const r of el){
+    const tagCls = ELEMENT_TAG[r.attr] || "";
     body += "<tr>"
-      + '<td class="cell-name">' + esc(r[1]) + (ele ? ' <span class="tag ' + tagCls + '">' + esc(ele) + "</span>" : "") + "</td>"
-      + "<td>" + esc(r[2]) + "</td>"
-      + "<td>" + esc(r[3]) + "</td>"
-      + "<td>" + esc(r[4]) + "</td>"
-      + iconsCell(ids)
+      + '<td class="cell-name">' + esc(r.name) + ' <span class="tag ' + tagCls + '">' + esc(r.attr) + "</span></td>"
+      + "<td>" + esc(r.count) + "</td>"
+      + "<td>" + esc(r.wait) + "</td>"
+      + "<td>" + esc(r.last) + "</td>"
+      + iconsCell(r.ids)
       + "</tr>";
   }
   document.getElementById("tbl-elements").innerHTML =
@@ -313,13 +374,12 @@ function renderElements(rows){
     + '<th>-1</th><th>-2</th><th>-3</th><th>-4</th><th>-5</th><th>-6</th>'
     + "</tr></thead><tbody>" + body + "</tbody></table>";
 }
-
-function applyRows(rows){
-  const title = String(rows[0][2] || "").trim();
-  if (title) document.getElementById("page-title").textContent = title;
-  document.getElementById("sheet-time").textContent = "表格时间：" + (String(rows[0][1] || "").trim() || "—");
-  renderOverview(rows);
-  renderElements(rows);
+function applyTables(text){
+  const data = parseGvizJson(text);
+  const trows = data && data.table ? data.table.rows : [];
+  const t = computeTables(trows);
+  renderOverview(t.overview);
+  renderElements(t.elements);
 }
 
 // ---------- 时间 ----------
@@ -329,7 +389,6 @@ function fmtNow(){
   return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate())
        + " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
 }
-
 function fmtClock(ts){
   const d = new Date(ts);
   const p = n => String(n).padStart(2,"0");
@@ -342,17 +401,15 @@ function readCache(){
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const obj = JSON.parse(raw);
-    if (!obj || typeof obj.ts !== "number" || typeof obj.csv !== "string") return null;
+    if (!obj || typeof obj.ts !== "number" || typeof obj.text !== "string") return null;
     return obj;
   }catch(e){ return null; }
 }
-
-function writeCache(csv, prevName){
+function writeCache(text){
   try{
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), csv: csv, prevName: prevName || "" }));
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), text: text }));
   }catch(e){ /* 隐私模式等场景忽略 */ }
 }
-
 function setCacheBadge(text, cls){
   const el = document.getElementById("cache-time");
   el.textContent = text;
@@ -360,77 +417,18 @@ function setCacheBadge(text, cls){
 }
 
 // ---------- 数据读取 ----------
-function parseGvizJson(text){
-  const start = text.indexOf("{");
-  const end = text.lastIndexOf("}");
-  return JSON.parse(text.slice(start, end + 1));
-}
-
-function gvizDateVal(v){
-  const m = /^Date\((\d+),(\d+),(\d+)\)$/.exec(String(v || ""));
-  if (!m) return null;
-  return Date.UTC(+m[1], +m[2], +m[3]);
-}
-
-// 按汇总表 D4 同款公式从 卡-0 原始数据计算“上个卡池”：
-// LARGE(VSTACK(I4:I153,J4:J153),2) -> XMATCH -> INDEX(G4:G153, MOD(pos-1,150)+1)
-function computePrevRerunName(rows0){
-  const arr = [];
-  for (let i = 3; i < 153; i++){
-    const c = rows0[i] && rows0[i].c ? rows0[i].c : [];
-    arr.push(gvizDateVal(c[8] ? c[8].v : null));
-  }
-  for (let i = 3; i < 153; i++){
-    const c = rows0[i] && rows0[i].c ? rows0[i].c : [];
-    arr.push(gvizDateVal(c[9] ? c[9].v : null));
-  }
-  const valid = arr.filter(v => v !== null).sort((a, b) => b - a);
-  if (valid.length < 2) return "";
-  const secd = valid[1];
-  const pos = arr.indexOf(secd) + 1;
-  if (!pos) return "";
-  const gidx = ((pos - 1) % 150) + 1;
-  const row = rows0[gidx + 2];
-  const cell = row && row.c ? row.c[6] : null;
-  return cell ? String(cell.v || "").trim() : "";
-}
-
-function setPrevBanner(name, computed){
-  const tr = document.querySelector("#tbl-overview tbody tr:nth-child(2)");
-  if (!tr) return;
-  const td = tr.children[2];
-  if (!td) return;
-  td.textContent = name || "—";
-  if (computed && name) td.title = "由卡-0表实时计算";
-}
-
-async function ensurePrevBanner(rows){
-  if (String(rows[3][3] || "").trim()){
-    setPrevBanner(String(rows[3][3]).trim(), false);
-    return "";
-  }
-  try{
-    const resp = await fetch(CARD0_URL);
-    if (!resp.ok) throw new Error("HTTP " + resp.status);
-    const data = parseGvizJson(await resp.text());
-    const trows = data && data.table ? data.table.rows : [];
-    const name = computePrevRerunName(trows);
-    if (name){ setPrevBanner(name, true); return name; }
-  }catch(e){ /* 卡-0 读取失败则保持原样 */ }
-  return "";
-}
-
-async function fetchCsv(){
-  const resp = await fetch(CSV_URL);
+async function fetchCard0(){
+  const resp = await fetch(CARD0_URL);
   if (!resp.ok) throw new Error("HTTP " + resp.status);
   const text = await resp.text();
-  const rows = parseCSV(text);
-  if (!rows[1] || String(rows[1][1] || "").trim() !== "卡池") throw new Error("表格结构不符合预期");
+  const data = parseGvizJson(text);
+  if (!data || !data.table || !Array.isArray(data.table.rows) || data.table.rows.length < 153){
+    throw new Error("表格结构不符合预期");
+  }
   return text;
 }
-
 function showLoading(){
-  const html = '<div class="loading"><span class="spinner"></span><br>正在在线读取 Google Sheets…</div>';
+  const html = '<div class="loading"><span class="spinner"></span><br>正在在线读取 卡-0 并计算…</div>';
   document.getElementById("tbl-overview").innerHTML = html;
   document.getElementById("tbl-elements").innerHTML = html;
 }
@@ -441,8 +439,7 @@ async function load(force){
     const cache = readCache();
     if (cache && (Date.now() - cache.ts) < CACHE_TTL){
       try{
-        applyRows(parseCSV(cache.csv));
-        if (cache.prevName) setPrevBanner(cache.prevName, true);
+        applyTables(cache.text);
         const mins = Math.max(1, Math.round((Date.now() - cache.ts) / 60000));
         setCacheBadge("缓存：" + fmtClock(cache.ts) + " 读取，已用 " + mins + " 分钟", "cache-ok");
         document.getElementById("fetch-time").textContent = "页面读取：缓存（" + fmtClock(cache.ts) + "）";
@@ -456,11 +453,9 @@ async function load(force){
   let lastErr = null;
   for (let attempt = 1; attempt <= 4; attempt++){
     try{
-      const text = await fetchCsv();
-      const rows = parseCSV(text);
-      applyRows(rows);
-      const prevName = await ensurePrevBanner(rows);
-      writeCache(text, prevName);
+      const text = await fetchCard0();
+      applyTables(text);
+      writeCache(text);
       setCacheBadge("缓存：刚刚在线读取", "cache-ok");
       document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
       return;
@@ -476,8 +471,7 @@ async function load(force){
   const cache = readCache();
   if (cache){
     try{
-      applyRows(parseCSV(cache.csv));
-      if (cache.prevName) setPrevBanner(cache.prevName, true);
+      applyTables(cache.text);
       setCacheBadge("在线读取失败，显示缓存（" + fmtClock(cache.ts) + "）", "cache-warn");
       document.getElementById("fetch-time").textContent = "页面读取：失败，用缓存（" + fmtNow() + "）";
       return;
