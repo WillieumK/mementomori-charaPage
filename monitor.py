@@ -16,8 +16,8 @@ creds = Credentials.from_service_account_info(
 client = gspread.authorize(creds)
 
 # 表格 ID
-USAGE_SHEET_ID = "1VrnhPswVqPPbbC-Gps_e9Um7tWUyIg4Bl66HMt_O8Zw"
-CARD_SHEET_ID = "1zfViKEEZCK1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA"
+USAGE_SHEET_ID = "1VrnhPswVqPPbbC-Gps_e9Um7tWulYg4BI66HMt_OBZw"
+CARD_SHEET_ID = "1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA"
 
 def get_range(sheet_id, range_str):
     sheet = client.open_by_key(sheet_id).sheet1
