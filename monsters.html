@@ -50,6 +50,13 @@ section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;backg
 .qrow label{color:var(--muted);font-size:13px}
 .qrow select,.qrow input{background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:7px 10px;font-size:13px;outline:none}
 .qrow .num-inp{width:64px;padding:7px 8px}
+.qrow .chk{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:13px;cursor:pointer}
+.sres{border:1px solid var(--panel-border);border-radius:10px;margin:10px 0;background:rgba(0,0,0,.18);overflow:hidden}
+.sres-head{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--panel-border);background:#1c1730}
+.sres-stage{font-weight:700;color:var(--gold)}
+.sres-n{color:var(--muted);font-size:12px}
+.sres-head .mini{margin-left:auto}
+.sres-full{display:none}
 .qrow input[type=text]{width:180px}
 .table-wrap{overflow-x:auto;border:1px solid var(--panel-border);border-radius:10px;background:rgba(0,0,0,.18)}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -78,6 +85,8 @@ footer a{color:#a99fd9}
 .side{position:fixed;left:0;top:0;bottom:0;width:345px;background:rgba(16,13,26,.97);border-right:1px solid var(--panel-border);padding:22px 14px;z-index:80;transform:translateX(-100%);transition:transform .25s ease;overflow-y:auto}
 .side.open{transform:translateX(0)}
 .side .side-title{color:var(--gold);font-weight:700;font-size:19px;margin:0 0 16px;padding:0 6px;letter-spacing:1px}
+.side .side-title .cyl{display:inline-block;width:18px;height:18px;background:var(--gold);-webkit-mask:url("cyl.png") center/contain no-repeat;mask:url("cyl.png") center/contain no-repeat;vertical-align:-3px;margin-right:6px}
+
 .side .side-link{display:block;color:var(--text);text-decoration:none;padding:14px 16px;border-radius:10px;margin-bottom:8px;font-size:17px;line-height:1.4}
 .side .side-link:hover{background:rgba(124,108,240,.18)}
 .side .side-link.active{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;font-weight:600}
@@ -107,7 +116,7 @@ section[id]{scroll-margin-top:16px}
 <body>
 <div class="side-mask" id="side-mask" onclick="toggleSide(false)"></div>
 <nav class="side" id="side">
-  <div class="side-title">📊 MementoMori 数据</div>
+  <div class="side-title"><span class="cyl"></span>MementoMori 数据</div>
   <a class="side-link" href="index.html#sec-usage">巅峰使用率<span class="sub">18%+ / 13%+ / 3%+ 分组</span></a>
   <a class="side-link" href="index.html#sec-overview">当期卡池记录<span class="sub">新角色 · 新复刻 · 新星辰</span></a>
   <a class="side-link" href="index.html#sec-elements">属性轮档记录<span class="sub">天光 · 幽冥 · 忧蓝 · 业红 · 苍翠 · 流金</span></a>
@@ -136,22 +145,26 @@ section[id]{scroll-margin-top:16px}
       <button id="tab-quest" class="active" onclick="setMode('quest')">主线 Quest</button>
       <button id="tab-tower" onclick="setMode('tower')">塔 Tower</button>
     </div>
-    <div class="qrow" id="q-quest" style="display:flex">
+    <div class="qrow" id="q-quest" style="display:flex;flex-wrap:wrap">
       <label>章节</label>
-      <select id="sel-chapter" onchange="syncChapter()"></select>
-      <input id="inp-chapter" class="num-inp" placeholder="或输入" onchange="onChapterChange()">
+      <select id="sel-chapter" onchange="onChapterChange()"></select>
       <label>关卡</label>
-      <select id="sel-stage" onchange="syncStage()"></select>
-      <input id="inp-stage" class="num-inp" placeholder="或输入" onchange="onQueryChange()">
+      <select id="sel-stage" onchange="onQueryChange()"></select>
+      <label class="chk"><input type="checkbox" id="chk-manual" onchange="onQueryChange()"> 填写关卡模式</label>
+      <input id="inp-stage-manual" class="num-inp" style="width:110px" placeholder="如 39-23" onchange="onQueryChange()">
     </div>
-    <div class="qrow" id="q-tower" style="display:none">
+    <div class="qrow" id="q-tower" style="display:none;flex-wrap:wrap">
       <label>塔</label><select id="sel-tower" onchange="onTowerChange()"></select>
       <label>层数</label>
-      <select id="sel-level" onchange="syncLevel()"></select>
-      <input id="inp-level" class="num-inp" placeholder="或输入" onchange="onQueryChange()">
+      <select id="sel-level" onchange="onQueryChange()"></select>
+      <label class="chk"><input type="checkbox" id="chk-manual-t" onchange="onQueryChange()"> 填写关卡模式</label>
+      <input id="inp-level-manual" class="num-inp" style="width:90px" placeholder="如 500" onchange="onQueryChange()">
     </div>
-    <div class="qrow" style="margin-top:12px">
-      <label>怪物名搜索（可选）</label><input type="text" id="inp-name" placeholder="输入怪物名过滤" oninput="onQueryChange()">
+    <div class="qrow" style="margin-top:12px;flex-wrap:wrap">
+      <label class="chk"><input type="checkbox" id="chk-all" onchange="doSearch()"> 搜索全部章节</label>
+      <label>条件1</label><input type="text" id="inp-m1" class="num-inp" style="width:120px" placeholder="怪物名" onchange="doSearch()">
+      <label>条件2</label><input type="text" id="inp-m2" class="num-inp" style="width:120px" placeholder="怪物名" onchange="doSearch()">
+      <label>条件3</label><input type="text" id="inp-m3" class="num-inp" style="width:120px" placeholder="怪物名" onchange="doSearch()">
     </div>
   </section>
 
@@ -198,8 +211,8 @@ function cellVal(r, i){
 }
 function iconRarity(r){
   const s = String(r || "").toLowerCase();
-  const m = /^lr\+(\d+)$/.exec(s);
-  if (m) return "lr" + m[1];
+  const m = /^lr\+(\d*)$/.exec(s);
+  if (m) return "lr" + (m[1] || "1");
   return s.replace(/\+/g, "plus");
 }
 function esc(v){
@@ -243,18 +256,12 @@ function buildQuestSelects(){
   }
   const chapters = [...set].sort((a, b) => a - b);
   const selC = document.getElementById("sel-chapter");
-  selC.innerHTML = chapters.map(c => '<option value="' + c + '">' + c + '</option>').join("");
-  const inpC = document.getElementById("inp-chapter");
-  inpC.value = chapters.length ? String(chapters[0]) : "";
-  selC.value = inpC.value;
-  onChapterChange();
-}
-function syncChapter(){
-  document.getElementById("inp-chapter").value = document.getElementById("sel-chapter").value;
+  selC.innerHTML = chapters.map(c => '<option value="' + c + '">第 ' + c + ' 章</option>').join("");
+  selC.value = chapters.length ? String(chapters[0]) : "";
   onChapterChange();
 }
 function onChapterChange(){
-  const ch = parseInt(document.getElementById("inp-chapter").value, 10);
+  const ch = parseInt(document.getElementById("sel-chapter").value, 10);
   if (isNaN(ch)) { onQueryChange(); return; }
   const set = new Set();
   for (const r of questData.rows){
@@ -264,13 +271,7 @@ function onChapterChange(){
   const stages = [...set].sort();
   const selS = document.getElementById("sel-stage");
   selS.innerHTML = stages.map(s => '<option value="' + s + '">' + s + '</option>').join("");
-  const inpS = document.getElementById("inp-stage");
-  inpS.value = stages.length ? stages[0] : "";
-  selS.value = inpS.value;
-  onQueryChange();
-}
-function syncStage(){
-  document.getElementById("inp-stage").value = document.getElementById("sel-stage").value;
+  selS.value = stages.length ? stages[0] : "";
   onQueryChange();
 }
 function buildTowerSelects(){
@@ -289,13 +290,7 @@ function onTowerChange(){
   const levels = [...set].sort((a, b) => a - b);
   const selL = document.getElementById("sel-level");
   selL.innerHTML = levels.map(l => '<option value="' + l + '">' + l + '</option>').join("");
-  const inpL = document.getElementById("inp-level");
-  inpL.value = levels.length ? String(levels[0]) : "";
-  selL.value = inpL.value;
-  onQueryChange();
-}
-function syncLevel(){
-  document.getElementById("inp-level").value = document.getElementById("sel-level").value;
+  selL.value = levels.length ? String(levels[0]) : "";
   onQueryChange();
 }
 function setMode(m){
@@ -306,38 +301,33 @@ function setMode(m){
   document.getElementById("q-tower").style.display = m === "tower" ? "flex" : "none";
   onQueryChange();
 }
+function currentStageStr(){
+  if (mode === "quest"){
+    if (document.getElementById("chk-manual").checked && document.getElementById("inp-stage-manual").value.trim()){
+      return document.getElementById("inp-stage-manual").value.trim();
+    }
+    return document.getElementById("sel-stage").value;
+  }
+  const ti = parseInt(document.getElementById("sel-tower").value, 10);
+  const prefix = TOWERS[ti].prefix;
+  if (document.getElementById("chk-manual-t").checked && document.getElementById("inp-level-manual").value.trim()){
+    return prefix + document.getElementById("inp-level-manual").value.trim();
+  }
+  return prefix + document.getElementById("sel-level").value;
+}
 function onQueryChange(){
   const el = document.getElementById("tbl-res");
+  if (activeConds().length){ doSearch(); return; }
   if (mode === "quest" && questData){
-    const stage = document.getElementById("inp-stage").value;
+    const stage = currentStageStr();
     renderRows(questData, r => String(r[0]) === stage, "关卡 " + stage);
   } else if (mode === "tower" && towerData){
-    const ti = parseInt(document.getElementById("sel-tower").value, 10);
-    const lv = document.getElementById("inp-level").value;
-    const prefix = TOWERS[ti].prefix;
-    renderRows(towerData, r => String(r[0]) === prefix + lv, lv + " 层");
+    const st = currentStageStr();
+    const num = st.replace(/^.+?(\d+)$/, "$1");
+    renderRows(towerData, r => String(r[0]) === st, num + " 层");
   }
 }
-function renderRows(data, filter, note){
-  const el = document.getElementById("tbl-res");
-  const nameFilter = document.getElementById("inp-name").value.trim();
-  let rows = data.rows.filter(filter);
-  if (nameFilter){
-    rows = rows.filter(r => String(r[1] || "").toLowerCase().indexOf(nameFilter.toLowerCase()) >= 0);
-  }
-  document.getElementById("res-note").textContent = note + " · 共 " + rows.length + " 只怪物";
-  let icons = "";
-  for (const r of rows){
-    const icon = String(r[16] || "").trim();
-    if (!icon) continue;
-    const rarity = iconRarity(r[3]);
-    const level = String(r[4] || "");
-    const type = (parseInt(icon, 10) || 0) < 10000 ? 0 : 1;
-    const src = "https://api.tamamo.dev/Generate/Character?icon=" + encodeURIComponent(icon)
-      + "&rarity=" + encodeURIComponent(rarity) + "&level=" + encodeURIComponent(level)
-      + "&link=0&type=" + type;
-    icons += '<span class="eicon" title="' + esc(r[1]) + " (" + esc(r[3]) + " Lv" + esc(level) + ')"><img src="' + src + '" loading="lazy" alt="' + esc(r[1]) + '"></span>';
-  }
+function rowTableHtml(rows){
   let body = "";
   for (const r of rows){
     const stageShow = mode === "tower" ? String(r[0]).replace(/^.+?(\d+)$/, "$1") : String(r[0]);
@@ -357,12 +347,87 @@ function renderRows(data, filter, note){
       + "<td>" + esc(r[15]) + "</td>"
       + "</tr>";
   }
-  const table = '<table><thead><tr><th>关卡</th><th>怪物名</th><th>速度</th><th>共鸣</th><th>攻击</th><th>防御</th><th>血量</th><th>魔防</th><th>物防</th><th>战技</th><th>耐力</th><th>魔力</th><th>力量</th></tr></thead><tbody>'
+  return '<table><thead><tr><th>关卡</th><th>怪物名</th><th>速度</th><th>共鸣</th><th>攻击</th><th>防御</th><th>血量</th><th>魔防</th><th>物防</th><th>战技</th><th>耐力</th><th>魔力</th><th>力量</th></tr></thead><tbody>'
     + (body || '<tr><td colspan="13" style="color:var(--muted)">无匹配怪物</td></tr>')
     + "</tbody></table>";
-  el.innerHTML = (icons ? '<div class="eicons">' + icons + "</div>" : "") + table;
 }
-
+function stageIconsHtml(rows){
+  let icons = "";
+  for (const r of rows){
+    const icon = String(r[16] || "").trim();
+    if (!icon) continue;
+    const rarity = iconRarity(r[3]);
+    const level = String(r[4] || "");
+    const type = (parseInt(icon, 10) || 0) < 10000 ? 0 : 1;
+    const src = "https://api.tamamo.dev/Generate/Character?icon=" + encodeURIComponent(icon)
+      + "&rarity=" + encodeURIComponent(rarity) + "&level=" + encodeURIComponent(level)
+      + "&link=0&type=" + type;
+    icons += '<span class="eicon" title="' + esc(r[1]) + " (" + esc(r[3]) + " Lv" + esc(level) + ')"><img src="' + src + '" loading="lazy" alt="' + esc(r[1]) + '"></span>';
+  }
+  return icons ? '<div class="eicons">' + icons + "</div>" : "";
+}
+function stageContentHtml(rows){
+  return stageIconsHtml(rows) + rowTableHtml(rows);
+}
+function renderRows(data, filter, note){
+  const el = document.getElementById("tbl-res");
+  const rows = data.rows.filter(filter);
+  document.getElementById("res-note").textContent = note + " · 共 " + rows.length + " 只怪物";
+  el.innerHTML = stageContentHtml(rows);
+}
+function activeConds(){
+  return ["inp-m1", "inp-m2", "inp-m3"].map(id => document.getElementById(id).value.trim()).filter(Boolean);
+}
+function doSearch(){
+  const conds = activeConds();
+  if (!conds.length){ onQueryChange(); return; }
+  const data = mode === "quest" ? questData : towerData;
+  if (!data) return;
+  const all = document.getElementById("chk-all").checked;
+  const pool = all ? data.rows : data.rows.filter(r => String(r[0]) === currentStageStr());
+  const map = {};
+  for (const r of pool){ const s = String(r[0]); (map[s] = map[s] || []).push(r); }
+  const lower = conds.map(c => c.toLowerCase());
+  const results = Object.keys(map)
+    .map(s => ({ stage: s, rows: map[s], hit: conds.filter((c, i) => map[s].some(r => String(r[1]).toLowerCase().indexOf(lower[i]) >= 0)) }))
+    .filter(x => x.hit.length === conds.length)
+    .sort((a, b) => a.stage.localeCompare(b.stage, undefined, { numeric: true }));
+  renderSearch(results, conds, all);
+}
+function renderSearch(results, conds, all){
+  const el = document.getElementById("tbl-res");
+  document.getElementById("res-note").textContent = "搜索：“" + conds.join("、") + "” · " + (all ? "全部章节" : "当前关卡") + " · 命中 " + results.length + " 个关卡";
+  let html = "";
+  for (const rs of results){
+    const full = '<div class="sres-full">' + stageContentHtml(rs.rows) + '</div>';
+    if (conds.length === 1){
+      const c = conds[0].toLowerCase();
+      const matched = rs.rows.filter(r => String(r[1]).toLowerCase().indexOf(c) >= 0);
+      html += '<div class="sres">'
+        + '<div class="sres-head"><span class="sres-stage">' + esc(rs.stage) + '</span>'
+        + '<span class="sres-n">命中 ' + matched.length + ' 只</span>'
+        + '<button class="mini" onclick="toggleSres(this)">展开本关全部敌人</button></div>'
+        + rowTableHtml(matched)
+        + full
+        + '</div>';
+    } else {
+      html += '<div class="sres">'
+        + '<div class="sres-head"><span class="sres-stage">' + esc(rs.stage) + '</span>'
+        + '<span class="sres-n">含 ' + conds.length + ' 个条件</span>'
+        + '<button class="mini" onclick="toggleSres(this)">展开本关敌人</button></div>'
+        + full
+        + '</div>';
+    }
+  }
+  el.innerHTML = html || '<div class="error">未找到满足条件的关卡</div>';
+}
+function toggleSres(btn){
+  const wrap = btn.closest(".sres");
+  const full = wrap.querySelector(".sres-full");
+  const open = full.style.display !== "none";
+  full.style.display = open ? "none" : "block";
+  btn.textContent = open ? "展开本关敌人" : "收起";
+}
 function toggleSide(force){
   const s = document.getElementById("side");
   const m = document.getElementById("side-mask");
