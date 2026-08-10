@@ -8,3 +8,5 @@
 - 浏览器本地缓存：同一浏览器 1 小时内再次打开直接秒开（不请求 Google），整点后才重新在线读取一次；“刷新数据”按钮可强制重新读取。
 - 注意：页面需通过 http(s) 访问（GitHub Pages 或本地服务器，如 `python -m http.server`）；直接双击 `file://` 打开会因浏览器跨域限制无法读取。
 - `.github/workflows/deploy.yml` 仅负责把页面部署到 GitHub Pages，不再生成内容。
+
+- 预览图：GitHub 仓库只保留一张 `preview_screenshot.png`（随版本更新，不留档）；每个版本另存本地 `previews/260810_HHMM.png` 存档（`.gitignore` 忽略，不上传）。

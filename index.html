@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>📊 MementoMori 巅峰使用率统计 &amp; 卡池轮转表</title>
+<title>MementoMori 巅峰使用率统计 &amp; 卡池轮转表</title>
 <link rel="icon" href="icon.png">
 <style>
 :root{
@@ -170,6 +170,19 @@ tbody tr:last-child td{border-bottom:none}
 .down{color:var(--down)}
 .flat{color:var(--muted)}
 .usage-pct{font-weight:600;color:#f1eef8}
+.usage-wrap{padding:8px 10px}
+.grp{display:flex;align-items:flex-start;border-bottom:1px solid rgba(255,255,255,.06)}
+.grp:last-child{border-bottom:none}
+.grp-label{flex:0 0 72px;padding:14px 10px;font-weight:700;color:var(--gold);font-size:15px;line-height:52px}
+.grp .icons{display:flex;flex-wrap:wrap;width:520px;gap:0;padding:8px 0}
+.ic{width:52px;height:52px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+.ic img{width:100%;height:100%;object-fit:cover;display:block}
+.ic .pct{display:none;position:absolute;left:0;right:0;bottom:0;background:rgba(10,8,20,.72);color:#ffe9a8;font-size:10px;line-height:14px;text-align:center}
+.usage-wrap.expanded .ic .pct{display:block}
+.h2-note{display:flex;align-items:center;gap:8px}
+.h2-note select{background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:5px 8px;font-size:12px;outline:none}
+button.mini{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;border:none;border-radius:999px;padding:6px 14px;font-size:12px;cursor:pointer}
+button.mini:hover{filter:brightness(1.12)}
 .usage-prev{color:var(--muted);font-size:13px}
 .loading,.error{color:var(--muted);padding:30px;text-align:center}
 .error{color:#ff9d9d}
@@ -207,8 +220,11 @@ footer a{color:#a99fd9}
   </div>
 
   <section class="card">
-    <h2>巅峰使用率 · 今日排行<span class="h2-note" id="usage-note"></span></h2>
-    <div class="table-wrap" id="tbl-usage"></div>
+    <h2>巅峰使用率 · 阈值分组<span class="h2-note">
+      <select id="usage-day" onchange="onDayChange()"></select>
+      <button type="button" id="btn-pct" class="mini" onclick="togglePct()">展开百分率</button>
+    </span></h2>
+    <div class="table-wrap usage-wrap" id="tbl-usage"></div>
   </section>
 
   <section class="card">
@@ -360,27 +376,33 @@ function computeCardTables(rows){
 }
 
 // ---------- 巅峰使用率：动态率表（gid 1850986413）----------
+function fmtDayLabel(label){
+  const m = /^(\d{2})(\d{2})(\d{2})/.exec(String(label || ""));
+  return m ? "20" + m[1] + "-" + m[2] + "-" + m[3] : String(label || "");
+}
 function computeUsage(data){
   const cols = data.table ? data.table.cols : [];
   const rows = data.table ? data.table.rows : [];
-  const todayLabel = cols[2] ? String(cols[2].label || "") : "";
-  const prevLabel = cols[3] ? String(cols[3].label || "") : "";
-  const list = [];
-  for (const r of rows){
-    const id = getV(r, 0);
-    if (id === null || id === undefined) continue;
-    const tv = getV(r, 2);
-    const pv = getV(r, 3);
-    list.push({
-      id: String(id).trim(),
-      tv: typeof tv === "number" ? tv : NaN,
-      pv: typeof pv === "number" ? pv : NaN,
-      tf: getF(r, 2) || (typeof tv === "number" ? (tv * 100).toFixed(2) + "%" : "—"),
-      pf: getF(r, 3) || (typeof pv === "number" ? (pv * 100).toFixed(2) + "%" : "—")
-    });
+  const days = [];
+  for (let c = 2; c < cols.length; c++){
+    const label = String(cols[c].label || "").trim();
+    if (!label) continue;
+    days.push({ c: c, label: label, display: fmtDayLabel(label) });
   }
-  list.sort((a, b) => b.tv - a.tv);
-  return { todayLabel: todayLabel, prevLabel: prevLabel, list: list.slice(0, USAGE_TOP) };
+  const perDay = {};
+  for (const d of days){
+    const list = [];
+    for (const r of rows){
+      const id = getV(r, 0);
+      if (id === null || id === undefined) continue;
+      const v = getV(r, d.c);
+      if (typeof v !== "number") continue;
+      list.push({ id: String(id).trim(), v: v, f: getF(r, d.c) || (v * 100).toFixed(2) + "%" });
+    }
+    list.sort((a, b) => b.v - a.v);
+    perDay[d.c] = list;
+  }
+  return { days: days, perDay: perDay };
 }
 
 // ---------- 角色名映射（卡-0 A -> G/F）----------
@@ -447,37 +469,55 @@ function renderElements(el){
     + '<th>-1</th><th>-2</th><th>-3</th><th>-4</th><th>-5</th><th>-6</th>'
     + "</tr></thead><tbody>" + body + "</tbody></table>";
 }
-function renderUsage(usage, names){
-  const fmtLabel = l => {
-    const m = /^(\d{2})(\d{2})(\d{2})/.exec(String(l || ""));
-    return m ? "20" + m[1] + "-" + m[2] + "-" + m[3] : l;
-  };
-  document.getElementById("usage-note").textContent = "数据日期：" + fmtLabel(usage.todayLabel);
-  let body = "";
-  usage.list.forEach((u, i) => {
-    const rank = i + 1;
-    const rankCls = rank === 1 ? "top1" : rank === 2 ? "top2" : rank === 3 ? "top3" : "";
-    const nm = names[u.id] || "";
-    const diff = u.tv - u.pv;
-    let trend;
-    if (!isNaN(diff)){
-      if (diff > 0.00005) trend = '<span class="up">▲ +' + (diff * 100).toFixed(2) + "%</span>";
-      else if (diff < -0.00005) trend = '<span class="down">▼ ' + (diff * 100).toFixed(2) + "%</span>";
-      else trend = '<span class="flat">— 0.00%</span>';
-    } else {
-      trend = '<span class="flat">—</span>';
+let usageState = null;
+let selectedDay = null;
+let pctOpen = false;
+
+function groupsFor(list){
+  return [
+    { label: "18%+", th: 0.18 },
+    { label: "13%+", th: 0.13 },
+    { label: "3%+",  th: 0.03 }
+  ].map(g => ({ label: g.label, items: list.filter(x => x.v >= g.th) }));
+}
+function renderUsage(){
+  const wrap = document.getElementById("tbl-usage");
+  const sel = document.getElementById("usage-day");
+  const btn = document.getElementById("btn-pct");
+  if (!usageState || selectedDay === null || !usageState.perDay[selectedDay]){
+    wrap.innerHTML = '<div class="error">暂无使用率数据</div>';
+    return;
+  }
+  const names = usageState.names || {};
+  const groups = groupsFor(usageState.perDay[selectedDay]);
+  let html = "";
+  for (const g of groups){
+    html += '<div class="grp"><span class="grp-label">' + esc(g.label) + '</span><div class="icons">';
+    for (const x of g.items){
+      const p = x.id.padStart(6, "0");
+      const nm = names[x.id] || ("ID " + x.id);
+      html += '<span class="ic" title="' + esc(nm) + " " + esc(x.f) + '">'
+            + '<img src="' + ICON_BASE + p + ICON_SUFFIX + '" alt="' + esc(x.id) + '" loading="lazy"'
+            + ' onerror="imgFail(this)" data-id="' + esc(x.id) + '">'
+            + '<span class="pct">' + esc(x.f) + '</span>'
+            + '</span>';
     }
-    body += "<tr>"
-      + '<td class="rank ' + rankCls + '">' + rank + "</td>"
-      + '<td class="cell-name">' + iconHtml(u.id, "sm") + " " + esc(nm || ("ID " + u.id)) + "</td>"
-      + '<td class="usage-pct">' + esc(u.tf) + "</td>"
-      + '<td class="usage-prev">' + esc(u.pf) + "</td>"
-      + "<td>" + trend + "</td>"
-      + "</tr>";
-  });
-  document.getElementById("tbl-usage").innerHTML =
-    '<table><thead><tr><th>排名</th><th>角色</th><th>今日使用率</th><th>昨日使用率</th><th>变化</th>'
-    + "</tr></thead><tbody>" + body + "</tbody></table>";
+    html += '</div></div>';
+  }
+  wrap.innerHTML = html;
+  wrap.classList.toggle("expanded", pctOpen);
+  btn.textContent = pctOpen ? "收起百分率" : "展开百分率";
+  sel.innerHTML = usageState.days.map(d =>
+    '<option value="' + d.c + '"' + (d.c === selectedDay ? " selected" : "") + ">" + esc(d.display) + "</option>"
+  ).join("");
+}
+function onDayChange(){
+  selectedDay = parseInt(document.getElementById("usage-day").value, 10);
+  renderUsage();
+}
+function togglePct(){
+  pctOpen = !pctOpen;
+  renderUsage();
 }
 
 // ---------- 时间 ----------
@@ -536,7 +576,12 @@ function applyAll(card0Text, usageText){
   const t = computeCardTables(card0.table.rows);
   renderOverview(t.overview);
   renderElements(t.elements);
-  renderUsage(computeUsage(usage), nameMapOf(card0.table.rows));
+  usageState = computeUsage(usage);
+  usageState.names = nameMapOf(card0.table.rows);
+  if (!selectedDay || !usageState.perDay[selectedDay]){
+    selectedDay = usageState.days.length ? usageState.days[0].c : null;
+  }
+  renderUsage();
 }
 function showLoading(){
   const html = '<div class="loading"><span class="spinner"></span><br>正在在线读取并计算…</div>';
