@@ -83,13 +83,11 @@ footer a{color:#a99fd9}
 .side-close{position:absolute;right:10px;top:10px;width:30px;height:30px;border:none;background:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
 .side-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:70;display:none}
 .side-mask.show{display:block}
+body.side-collapsed .side-open{display:block}
 @media (min-width:769px){
-  .side{transform:none}
-  .side-close{display:none}
-  body{padding-left:460px}
+  body:not(.side-collapsed){padding-left:460px}
 }
 @media (max-width:768px){
-  .side-open{display:block}
   header.top{padding-top:52px}
   .wrap{padding:16px 10px 40px}
   header.top h1{font-size:22px;flex-wrap:wrap}
@@ -327,7 +325,11 @@ function toggleSide(force){
   const m = document.getElementById("side-mask");
   const open = typeof force === "boolean" ? force : !s.classList.contains("open");
   s.classList.toggle("open", open);
-  if (m) m.classList.toggle("show", open);
+  if (m){
+    const isM = window.matchMedia("(max-width: 768px)").matches;
+    m.classList.toggle("show", open && isM);
+  }
+  document.body.classList.toggle("side-collapsed", !open);
 }
 function detectDevice(){
   const mq = window.matchMedia("(max-width: 768px)");
@@ -343,6 +345,7 @@ function detectDevice(){
 }
 
 detectDevice();
+toggleSide(window.matchMedia("(min-width: 769px)").matches);
 loadData(false);
 </script>
 </body>
