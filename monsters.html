@@ -72,10 +72,10 @@ tbody tr:last-child td{border-bottom:none}
 footer{text-align:center;color:var(--muted);font-size:12px;margin-top:10px;line-height:1.9}
 footer a{color:#a99fd9}
 /* ===== 左侧悬浮标题列 ===== */
-.side{position:fixed;left:0;top:0;bottom:0;width:230px;background:rgba(16,13,26,.97);border-right:1px solid var(--panel-border);padding:22px 14px;z-index:80;transform:translateX(-100%);transition:transform .25s ease;overflow-y:auto}
+.side{position:fixed;left:0;top:0;bottom:0;width:345px;background:rgba(16,13,26,.97);border-right:1px solid var(--panel-border);padding:22px 14px;z-index:80;transform:translateX(-100%);transition:transform .25s ease;overflow-y:auto}
 .side.open{transform:translateX(0)}
-.side .side-title{color:var(--gold);font-weight:700;font-size:15px;margin:0 0 16px;padding:0 6px;letter-spacing:1px}
-.side .side-link{display:block;color:var(--text);text-decoration:none;padding:11px 12px;border-radius:9px;margin-bottom:6px;font-size:14px;line-height:1.35}
+.side .side-title{color:var(--gold);font-weight:700;font-size:19px;margin:0 0 16px;padding:0 6px;letter-spacing:1px}
+.side .side-link{display:block;color:var(--text);text-decoration:none;padding:14px 16px;border-radius:10px;margin-bottom:8px;font-size:17px;line-height:1.4}
 .side .side-link:hover{background:rgba(124,108,240,.18)}
 .side .side-link.active{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;font-weight:600}
 .side .side-link .sub{display:block;font-size:11px;color:var(--muted);margin-top:2px}
@@ -83,13 +83,11 @@ footer a{color:#a99fd9}
 .side-close{position:absolute;right:10px;top:10px;width:30px;height:30px;border:none;background:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
 .side-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:70;display:none}
 .side-mask.show{display:block}
+body.side-collapsed .side-open{display:block}
 @media (min-width:769px){
-  .side{transform:none}
-  .side-close{display:none}
-  body{padding-left:230px}
+  body:not(.side-collapsed){padding-left:345px}
 }
 @media (max-width:768px){
-  .side-open{display:block}
   header.top{padding-top:52px}
   .wrap{padding:16px 10px 40px}
   header.top h1{font-size:22px;flex-wrap:wrap}
@@ -118,7 +116,7 @@ footer a{color:#a99fd9}
     <p>
       <span class="badge"><span class="dot"></span>GitHub 缓存 · Google Sheets</span>
       <span class="badge" id="data-date">数据日期：—</span>
-      <span class="badge" id="device">💻 PC 端</span>
+      <span class="badge" id="device">💻 desktop 端</span>
     </p>
   </header>
 
@@ -327,7 +325,11 @@ function toggleSide(force){
   const m = document.getElementById("side-mask");
   const open = typeof force === "boolean" ? force : !s.classList.contains("open");
   s.classList.toggle("open", open);
-  if (m) m.classList.toggle("show", open);
+  if (m){
+    const isM = window.matchMedia("(max-width: 768px)").matches;
+    m.classList.toggle("show", open && isM);
+  }
+  document.body.classList.toggle("side-collapsed", !open);
 }
 function detectDevice(){
   const mq = window.matchMedia("(max-width: 768px)");
@@ -335,7 +337,7 @@ function detectDevice(){
   const apply = () => {
     const isM = mq.matches;
     document.documentElement.classList.toggle("mobile", isM);
-    if (el) el.textContent = isM ? "📱 移动端" : "💻 PC 端";
+    if (el) el.textContent = isM ? "📱 移动端" : "💻 desktop 端";
   };
   apply();
   if (mq.addEventListener) mq.addEventListener("change", apply);
@@ -343,6 +345,7 @@ function detectDevice(){
 }
 
 detectDevice();
+toggleSide(window.matchMedia("(min-width: 769px)").matches);
 loadData(false);
 </script>
 </body>
