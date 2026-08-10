@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MementoMori 巅峰使用率统计 &amp; 卡池轮转表</title>
+<title>MementoMori 巅峰使用率统计 &amp; 当期卡池表</title>
 <link rel="icon" href="icon.png">
 <style>
 :root{
@@ -173,11 +173,11 @@ tbody tr:last-child td{border-bottom:none}
 .usage-wrap{padding:8px 10px}
 .grp{display:flex;align-items:flex-start;border-bottom:1px solid rgba(255,255,255,.06)}
 .grp:last-child{border-bottom:none}
-.grp-label{flex:0 0 72px;padding:14px 10px;font-weight:700;color:var(--gold);font-size:15px;line-height:52px}
-.grp .icons{display:flex;flex-wrap:wrap;width:520px;gap:0;padding:8px 0}
-.ic{width:52px;height:52px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+.grp-label{flex:0 0 100px;padding:14px 10px;font-weight:700;color:var(--gold);font-size:22px;line-height:130px}
+.grp .icons{display:flex;flex-wrap:wrap;flex:0 0 1300px;width:1300px;gap:0;padding:8px 0}
+.ic{width:130px;height:130px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
 .ic img{width:100%;height:100%;object-fit:cover;display:block}
-.ic .pct{display:none;position:absolute;left:0;right:0;bottom:0;background:rgba(10,8,20,.72);color:#ffe9a8;font-size:10px;line-height:14px;text-align:center}
+.ic .pct{display:none;position:absolute;left:0;right:0;bottom:0;background:rgba(10,8,20,.72);color:#ffe9a8;font-size:20px;line-height:30px;text-align:center}
 .usage-wrap.expanded .ic .pct{display:block}
 .h2-note{display:flex;align-items:center;gap:8px}
 .h2-note select{background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:5px 8px;font-size:12px;outline:none}
@@ -206,7 +206,7 @@ footer a{color:#a99fd9}
 <body>
 <div class="wrap">
   <header class="top">
-    <h1><img class="logo" src="icon.png" alt="icon"><span class="title-grad">MementoMori 巅峰使用率统计 &amp; 卡池轮转表</span></h1>
+    <h1><img class="logo" src="icon.png" alt="icon"><span class="title-grad">MementoMori 巅峰使用率统计 &amp; 当期卡池表</span></h1>
     <p class="subtitle" id="page-title">《每日60秒，读懂Mmt》</p>
     <p>
       <span class="badge"><span class="dot"></span>在线读取 Google Sheets</span>
@@ -220,7 +220,7 @@ footer a{color:#a99fd9}
   </div>
 
   <section class="card">
-    <h2>巅峰使用率 · 阈值分组<span class="h2-note">
+    <h2>巅峰使用率 · 使用率分组<span class="h2-note">
       <select id="usage-day" onchange="onDayChange()"></select>
       <button type="button" id="btn-pct" class="mini" onclick="togglePct()">展开百分率</button>
     </span></h2>
@@ -240,7 +240,7 @@ footer a{color:#a99fd9}
   <footer>
     数据实时读取自 <a href="https://docs.google.com/spreadsheets/d/1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA" target="_blank" rel="noopener">卡池表</a>
     · <a href="https://docs.google.com/spreadsheets/d/1VrnhPswVqPPbbC-Gps_e9Um7tWulYg4BI66HMt_OBZw" target="_blank" rel="noopener">使用率表</a>
-    · 角色图标来自 <a href="https://mentemori.icu" target="_blank" rel="noopener">mentemori.icu</a> · 页面每小时自动刷新
+    · 角色图标来自 <a href="https://mentemori.icu" target="_blank" rel="noopener">mentemori.icu</a> · 每天 4 / 10 / 16 / 22 点刷新
   </footer>
 </div>
 
@@ -257,7 +257,7 @@ const ICON_BASE = "https://mentemori.icu/assets/CHR_";
 const ICON_SUFFIX = "_00_s.png";
 
 const CACHE_KEY = "mmt_page_cache_v4";
-const CACHE_TTL = 60 * 60 * 1000; // 缓存 1 小时
+const REFRESH_HOURS = [4, 10, 16, 22]; // 每天 4/10/16/22 点刷新
 const USAGE_TOP = 20;
 
 const ELEMENT_TAG = { "光":"light", "暗":"dark", "蓝":"blue", "红":"red", "绿":"green", "金":"gold" };
@@ -475,10 +475,10 @@ let pctOpen = false;
 
 function groupsFor(list){
   return [
-    { label: "18%+", th: 0.18 },
-    { label: "13%+", th: 0.13 },
-    { label: "3%+",  th: 0.03 }
-  ].map(g => ({ label: g.label, items: list.filter(x => x.v >= g.th) }));
+    { label: "20以上", min: 0.20,  max: Infinity },
+    { label: "10-20",  min: 0.10,  max: 0.20 },
+    { label: "10以下", min: 1e-9,  max: 0.10 }
+  ].map(g => ({ label: g.label, items: list.filter(x => x.v >= g.min && x.v < g.max) }));
 }
 function renderUsage(){
   const wrap = document.getElementById("tbl-usage");
@@ -548,6 +548,35 @@ function writeCache(card0, usage){
     localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), card0: card0, usage: usage }));
   }catch(e){ /* 隐私模式等场景忽略 */ }
 }
+function lastRefreshTs(){
+  const now = new Date();
+  const y = now.getFullYear(), mo = now.getMonth(), d = now.getDate();
+  let best = new Date(y, mo, d, 0, 0, 0, 0);
+  for (const h of REFRESH_HOURS){
+    const t = new Date(y, mo, d, h, 0, 0, 0);
+    if (t.getTime() <= now.getTime()) best = t;
+  }
+  return best.getTime();
+}
+function isCacheFresh(ts){
+  return typeof ts === "number" && ts >= lastRefreshTs();
+}
+function nextRefreshMs(){
+  const now = new Date();
+  const y = now.getFullYear(), mo = now.getMonth(), d = now.getDate();
+  for (const h of REFRESH_HOURS){
+    const t = new Date(y, mo, d, h, 0, 0, 0);
+    if (t.getTime() > now.getTime()) return t.getTime() - now.getTime();
+  }
+  const t = new Date(y, mo, d + 1, REFRESH_HOURS[0], 0, 0, 0);
+  return t.getTime() - now.getTime();
+}
+function scheduleRefresh(){
+  setTimeout(() => {
+    load(true);
+    scheduleRefresh();
+  }, nextRefreshMs());
+}
 function setCacheBadge(text, cls){
   const el = document.getElementById("cache-time");
   el.textContent = text;
@@ -594,7 +623,7 @@ async function load(force){
   // 1) 缓存命中
   if (!force){
     const cache = readCache();
-    if (cache && (Date.now() - cache.ts) < CACHE_TTL){
+    if (cache && isCacheFresh(cache.ts)){
       try{
         applyAll(cache.card0, cache.usage);
         const mins = Math.max(1, Math.round((Date.now() - cache.ts) / 60000));
@@ -646,7 +675,7 @@ async function load(force){
 
 document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
 load(false);
-setInterval(load, 60 * 60 * 1000);
+scheduleRefresh();
 </script>
 </body>
 </html>
