@@ -52,6 +52,14 @@ section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;backg
 .qrow .num-inp{width:64px;padding:7px 8px}
 .qrow .chk{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:13px;cursor:pointer}
 .qrow .lbl-manual{color:var(--muted);font-size:13px}
+.dd{position:relative;display:inline-block}
+.dd-btn{background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.dd-arrow{font-size:10px;opacity:.8}
+.dd-panel{position:absolute;top:calc(100% + 4px);left:0;z-index:40;background:#141020;border:1px solid var(--panel-border);border-radius:10px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.4);max-height:300px;overflow:auto;max-width:92vw}
+.dd-grid{display:grid;grid-template-columns:repeat(15,1fr);gap:4px;min-width:360px}
+.dd-grid button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:5px 2px;font-size:12px;cursor:pointer}
+.dd-grid button:hover{background:rgba(124,108,240,.25)}
+.dd-grid button.sel{background:#ffb400;color:#111;border-color:#ffb400;font-weight:700}
 .sres{border:1px solid var(--panel-border);border-radius:10px;margin:10px 0;background:rgba(0,0,0,.18);overflow:hidden}
 .sres-head{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--panel-border);background:#1c1730}
 .sres-stage{font-weight:700;color:var(--gold)}
@@ -61,6 +69,7 @@ section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;backg
 .sres tbody td{padding:5px 8px}
 .sres .mini{padding:5px 10px;font-size:11px}
 .sres-full-head{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--panel-border);background:#1c1730}
+.sres-full-head .mini{margin-left:auto}
 .qrow input[type=text]{width:180px}
 .table-wrap{overflow-x:auto;border:1px solid var(--panel-border);border-radius:10px;background:rgba(0,0,0,.18)}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -151,9 +160,15 @@ section[id]{scroll-margin-top:16px}
     </div>
     <div class="qrow" id="q-quest" style="display:flex;flex-wrap:wrap">
       <label>章节</label>
-      <select id="sel-chapter" onchange="onChapterChange()"></select>
+      <div class="dd" id="dd-chapter">
+        <button class="dd-btn" onclick="toggleDD('chapter')"><span id="dd-chapter-label">—</span><span class="dd-arrow">▾</span></button>
+        <div class="dd-panel" id="ddp-chapter" style="display:none"><div class="dd-grid" id="ddg-chapter"></div></div>
+      </div>
       <label>关卡</label>
-      <select id="sel-stage" onchange="onQueryChange()"></select>
+      <div class="dd" id="dd-stage">
+        <button class="dd-btn" onclick="toggleDD('stage')"><span id="dd-stage-label">—</span><span class="dd-arrow">▾</span></button>
+        <div class="dd-panel" id="ddp-stage" style="display:none"><div class="dd-grid" id="ddg-stage"></div></div>
+      </div>
       <label class="lbl-manual">填写关卡模式</label>
       <input id="inp-stage-manual" class="num-inp" style="width:110px" placeholder="如 39-23" onchange="onQueryChange()">
     </div>
@@ -252,6 +267,7 @@ async function loadData(force){
   }
 }
 
+let qState = { chapter: null, stage: null };
 function buildQuestSelects(){
   const set = new Set();
   for (const r of questData.rows){
@@ -259,23 +275,47 @@ function buildQuestSelects(){
     if (m) set.add(parseInt(m[1], 10));
   }
   const chapters = [...set].sort((a, b) => a - b);
-  const selC = document.getElementById("sel-chapter");
-  selC.innerHTML = chapters.map(c => '<option value="' + c + '">第 ' + c + ' 章</option>').join("");
-  selC.value = chapters.length ? String(chapters[0]) : "";
-  onChapterChange();
+  document.getElementById("ddg-chapter").innerHTML = chapters.map(c =>
+    '<button class="' + (c === qState.chapter ? "sel" : "") + '" onclick="selectChapter(' + c + ')">' + c + '</button>'
+  ).join("");
+  if (qState.chapter === null) qState.chapter = chapters.length ? chapters[0] : null;
+  document.getElementById("dd-chapter-label").textContent = qState.chapter !== null ? "第 " + qState.chapter + " 章" : "—";
+  buildStageGrid();
+  onQueryChange();
 }
-function onChapterChange(){
-  const ch = parseInt(document.getElementById("sel-chapter").value, 10);
-  if (isNaN(ch)) { onQueryChange(); return; }
+function buildStageGrid(){
+  const ch = qState.chapter;
+  if (ch === null){ document.getElementById("dd-stage-label").textContent = "—"; return; }
   const set = new Set();
   for (const r of questData.rows){
     const m = /^(\d+)-(\d+)$/.exec(String(r[0] || ""));
-    if (m && parseInt(m[1], 10) === ch) set.add(m[0]);
+    if (m && parseInt(m[1], 10) === ch) set.add(parseInt(m[2], 10));
   }
-  const stages = [...set].sort();
-  const selS = document.getElementById("sel-stage");
-  selS.innerHTML = stages.map(s => '<option value="' + s + '">' + s + '</option>').join("");
-  selS.value = stages.length ? stages[0] : "";
+  const stages = [...set].sort((a, b) => a - b);
+  document.getElementById("ddg-stage").innerHTML = stages.map(s =>
+    '<button class="' + (s === qState.stage ? "sel" : "") + '" onclick="selectStage(' + s + ')">' + s + '</button>'
+  ).join("");
+  if (qState.stage === null || !set.has(qState.stage)) qState.stage = stages.length ? stages[0] : null;
+  document.getElementById("dd-stage-label").textContent = qState.stage !== null ? String(qState.stage) : "—";
+}
+function toggleDD(type){
+  const map = { chapter: "ddp-chapter", stage: "ddp-stage" };
+  const cur = document.getElementById(map[type]);
+  const open = cur.style.display !== "none";
+  Object.keys(map).forEach(k => document.getElementById(map[k]).style.display = "none");
+  cur.style.display = open ? "none" : "block";
+}
+function selectChapter(c){
+  qState.chapter = c;
+  document.getElementById("dd-chapter-label").textContent = "第 " + c + " 章";
+  document.getElementById("ddp-chapter").style.display = "none";
+  buildStageGrid();
+  onQueryChange();
+}
+function selectStage(s){
+  qState.stage = s;
+  document.getElementById("dd-stage-label").textContent = String(s);
+  document.getElementById("ddp-stage").style.display = "none";
   onQueryChange();
 }
 function buildTowerSelects(){
@@ -309,7 +349,8 @@ function currentStageStr(){
   if (mode === "quest"){
     const m = document.getElementById("inp-stage-manual").value.trim();
     if (m) return m;
-    return document.getElementById("sel-stage").value;
+    if (qState.chapter === null || qState.stage === null) return "";
+    return qState.chapter + "-" + qState.stage;
   }
   const ti = parseInt(document.getElementById("sel-tower").value, 10);
   const prefix = TOWERS[ti].prefix;
@@ -440,7 +481,7 @@ function renderSearch(results, conds, all){
   let fulls = "";
   for (const rs of results){
     fulls += '<div class="sres-full" data-stage="' + esc(rs.stage) + '" style="display:none">'
-      + '<div class="sres-full-head"><button class="mini" onclick="backToList(this)">收起</button><span class="sres-stage">' + esc(rs.stage) + " · 全部敌人</span></div>"
+      + '<div class="sres-full-head"><span class="sres-stage">' + esc(rs.stage) + ' · 全部敌人</span><button class="mini" onclick="backToList(this)">收起</button></div>'
       + stageContentHtml(rs.rows)
       + "</div>";
   }
