@@ -319,6 +319,7 @@ function toggleDD(type){
   const cur = document.getElementById(map[type]);
   const open = cur.style.display !== "none";
   Object.keys(map).forEach(k => document.getElementById(map[k]).style.display = "none");
+  if (!open && type === "level") buildLevelGrid();
   cur.style.display = open ? "none" : "block";
 }
 function selectChapter(c){
@@ -375,8 +376,15 @@ function buildLevelGrid(){
   if (btns.length >= 2){ btns[0].disabled = levelPage <= 1; btns[1].disabled = levelPage >= total; }
   document.getElementById("dd-level-label").textContent = towerLevel !== null ? String(towerLevel) : "—";
 }
+function pageOfLevel(lv){
+  const levels = towerLevels();
+  const idx = levels.indexOf(lv);
+  return idx < 0 ? 1 : Math.floor(idx / LEVELS_PER_PAGE) + 1;
+}
 function selectLevel(n){
   towerLevel = n;
+  levelPage = pageOfLevel(n);
+  buildLevelGrid();
   document.getElementById("dd-level-label").textContent = String(n);
   document.getElementById("ddp-level").style.display = "none";
   onQueryChange();
@@ -391,6 +399,8 @@ function jumpLevel(){
   const levels = towerLevels();
   if (levels.indexOf(v) < 0) return;
   towerLevel = v;
+  levelPage = pageOfLevel(v);
+  buildLevelGrid();
   document.getElementById("dd-level-label").textContent = String(v);
   document.getElementById("inp-level-jump").value = "";
   document.getElementById("ddp-level").style.display = "none";
