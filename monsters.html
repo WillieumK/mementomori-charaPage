@@ -51,6 +51,7 @@ section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;backg
 .qrow select,.qrow input{background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:7px 10px;font-size:13px;outline:none}
 .qrow .num-inp{width:64px;padding:7px 8px}
 .qrow .chk{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:13px;cursor:pointer}
+.qrow .lbl-manual{color:var(--muted);font-size:13px}
 .sres{border:1px solid var(--panel-border);border-radius:10px;margin:10px 0;background:rgba(0,0,0,.18);overflow:hidden}
 .sres-head{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--panel-border);background:#1c1730}
 .sres-stage{font-weight:700;color:var(--gold)}
@@ -150,14 +151,14 @@ section[id]{scroll-margin-top:16px}
       <select id="sel-chapter" onchange="onChapterChange()"></select>
       <label>关卡</label>
       <select id="sel-stage" onchange="onQueryChange()"></select>
-      <label class="chk"><input type="checkbox" id="chk-manual" onchange="onQueryChange()"> 填写关卡模式</label>
+      <label class="lbl-manual">填写关卡模式</label>
       <input id="inp-stage-manual" class="num-inp" style="width:110px" placeholder="如 39-23" onchange="onQueryChange()">
     </div>
     <div class="qrow" id="q-tower" style="display:none;flex-wrap:wrap">
       <label>塔</label><select id="sel-tower" onchange="onTowerChange()"></select>
       <label>层数</label>
       <select id="sel-level" onchange="onQueryChange()"></select>
-      <label class="chk"><input type="checkbox" id="chk-manual-t" onchange="onQueryChange()"> 填写关卡模式</label>
+      <label class="lbl-manual">填写关卡模式</label>
       <input id="inp-level-manual" class="num-inp" style="width:90px" placeholder="如 500" onchange="onQueryChange()">
     </div>
     <div class="qrow" style="margin-top:12px;flex-wrap:wrap">
@@ -303,16 +304,14 @@ function setMode(m){
 }
 function currentStageStr(){
   if (mode === "quest"){
-    if (document.getElementById("chk-manual").checked && document.getElementById("inp-stage-manual").value.trim()){
-      return document.getElementById("inp-stage-manual").value.trim();
-    }
+    const m = document.getElementById("inp-stage-manual").value.trim();
+    if (m) return m;
     return document.getElementById("sel-stage").value;
   }
   const ti = parseInt(document.getElementById("sel-tower").value, 10);
   const prefix = TOWERS[ti].prefix;
-  if (document.getElementById("chk-manual-t").checked && document.getElementById("inp-level-manual").value.trim()){
-    return prefix + document.getElementById("inp-level-manual").value.trim();
-  }
+  const m = document.getElementById("inp-level-manual").value.trim();
+  if (m) return prefix + m;
   return prefix + document.getElementById("sel-level").value;
 }
 function onQueryChange(){
