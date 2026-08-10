@@ -186,6 +186,8 @@ section[id]{scroll-margin-top:16px}
             <button class="mini" onclick="ddLevelPage(-1)">‹ 上一页</button>
             <span id="dd-level-pageinfo">1 / 1</span>
             <button class="mini" onclick="ddLevelPage(1)">下一页 ›</button>
+            <input id="inp-level-jump" class="num-inp" style="width:70px" placeholder="填层数" onkeydown="if(event.key==='Enter')jumpLevel()">
+            <button class="mini" onclick="jumpLevel()">跳转</button>
           </div>
           <div class="dd-grid dd-grid-20" id="ddg-level"></div>
         </div>
@@ -207,7 +209,7 @@ section[id]{scroll-margin-top:16px}
   </section>
 
   <footer>
-    原始数据来自 <a href="https://mentemori.icu/" target="_blank" rel="noopener">mentemori.icu</a> · 网页数据存于 <a href="https://github.com/WillieumK/mementomori-charaPage" target="_blank" rel="noopener">GitHub</a> · 表格数据 Google Sheets（<a href="https://docs.google.com/spreadsheets/d/1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA" target="_blank" rel="noopener">quest</a> / <a href="https://docs.google.com/spreadsheets/d/1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA" target="_blank" rel="noopener">tower</a>）
+    原始数据来自 游戏文件 · 网页数据存于 <a href="https://github.com/WillieumK/mementomori-charaPage" target="_blank" rel="noopener">GitHub</a> · 表格数据 Google Sheets（<a href="https://docs.google.com/spreadsheets/d/1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA/edit?gid=1602712043#gid=1602712043" target="_blank" rel="noopener">quest</a> / <a href="https://docs.google.com/spreadsheets/d/1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA/edit?gid=698292977#gid=698292977" target="_blank" rel="noopener">tower</a>）
   </footer>
 </div>
 
@@ -382,6 +384,17 @@ function selectLevel(n){
 function ddLevelPage(d){
   levelPage += d;
   buildLevelGrid();
+}
+function jumpLevel(){
+  const v = parseInt(document.getElementById("inp-level-jump").value, 10);
+  if (isNaN(v)) return;
+  const levels = towerLevels();
+  if (levels.indexOf(v) < 0) return;
+  towerLevel = v;
+  document.getElementById("dd-level-label").textContent = String(v);
+  document.getElementById("inp-level-jump").value = "";
+  document.getElementById("ddp-level").style.display = "none";
+  onQueryChange();
 }
 function setMode(m){
   mode = m;
