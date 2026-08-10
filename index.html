@@ -238,25 +238,27 @@ footer a{color:#a99fd9}
 .side .side-link:hover{background:rgba(124,108,240,.18)}
 .side .side-link.active{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;font-weight:600}
 .side .side-link .sub{display:block;font-size:11px;color:var(--muted);margin-top:2px}
-.side-open{position:fixed;left:10px;top:10px;z-index:90;width:40px;height:40px;border-radius:10px;border:1px solid var(--panel-border);background:rgba(20,17,32,.9);color:var(--gold);font-size:18px;cursor:pointer;display:none}
-.side-close{position:absolute;right:10px;top:10px;width:30px;height:30px;border:none;background:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
+.side-open{position:fixed;left:10px;top:10px;z-index:90;width:40px;height:40px;border-radius:10px;border:1px solid var(--panel-border);background:rgba(20,17,32,.9);color:var(--gold);font-size:18px;cursor:pointer;display:block}
+body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
 .side-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:70;display:none}
 .side-mask.show{display:block}
-body.side-collapsed .side-open{display:block}
 @media (min-width:769px){body:not(.side-collapsed){padding-left:345px}}
 @media (max-width:768px){header.top{padding-top:52px}}
 
+html{scroll-behavior:smooth}
+section[id]{scroll-margin-top:16px}
 </style>
 </head>
 <body>
 <div class="side-mask" id="side-mask" onclick="toggleSide(false)"></div>
 <nav class="side" id="side">
-  <button class="side-close" onclick="toggleSide(false)">×</button>
   <div class="side-title">📊 MementoMori 数据</div>
-  <a class="side-link active" href="index.html">charaPage<span class="sub">巅峰使用率 · 卡池</span></a>
-  <a class="side-link" href="monsters.html">推图推关 · 怪物数值查询<span class="sub">主线 Quest / 塔 Tower</span></a>
+  <a class="side-link" href="index.html#sec-usage">巅峰使用率<span class="sub">18%+ / 13%+ / 3%+ 分组</span></a>
+  <a class="side-link" href="index.html#sec-overview">当期卡池记录<span class="sub">新角色 · 新复刻 · 新星辰</span></a>
+  <a class="side-link" href="index.html#sec-elements">属性轮档记录<span class="sub">天光 · 幽冥 · 忧蓝 · 业红 · 苍翠 · 流金</span></a>
+  <a class="side-link" href="monsters.html">怪物数值查询<span class="sub">主线 Quest / 塔 Tower</span></a>
 </nav>
-<button class="side-open" id="side-open" onclick="toggleSide(true)">☰</button>
+<button class="side-open" id="side-open" onclick="toggleSide()">☰</button>
 
 <div class="wrap">
   <header class="top">
@@ -274,7 +276,7 @@ body.side-collapsed .side-open{display:block}
     <button id="btn-refresh" onclick="load(true)">🔄 刷新数据</button>
   </div>
 
-  <section class="card">
+  <section class="card" id="sec-usage">
     <h2>巅峰使用率 · 使用率分组<span class="h2-note">
       <select id="usage-day" onchange="onDayChange()"></select>
       <button type="button" id="btn-pct" class="mini" onclick="togglePct()">展开百分率</button>
@@ -282,12 +284,12 @@ body.side-collapsed .side-open{display:block}
     <div class="table-wrap usage-wrap" id="tbl-usage"></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="sec-overview">
     <h2>MMT 卡池 · 最新总览</h2>
     <div class="table-wrap" id="tbl-overview"></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="sec-elements">
     <h2>MMT 卡池 · 属性限定记录</h2>
     <div class="table-wrap" id="tbl-elements"></div>
   </section>
@@ -619,6 +621,19 @@ function toggleSide(force){
   }
   document.body.classList.toggle("side-collapsed", !open);
 }
+function initScrollSpy(){
+  const targets = ["sec-usage", "sec-overview", "sec-elements"];
+  const links = document.querySelectorAll(".side .side-link");
+  const spy = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting){
+        const id = en.target.id;
+        links.forEach(a => a.classList.toggle("active", a.getAttribute("href").indexOf("#" + id) >= 0));
+      }
+    });
+  }, { rootMargin: "-40% 0px -55% 0px" });
+  targets.forEach(id => { const el = document.getElementById(id); if (el) spy.observe(el); });
+}
 function detectDevice(){
   const m = window.matchMedia("(max-width: 768px)");
   const el = document.getElementById("device");
@@ -803,6 +818,7 @@ async function load(force){
 document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
 detectDevice();
 toggleSide(window.matchMedia("(min-width: 769px)").matches);
+initScrollSpy();
 load(false);
 scheduleRefresh();
 </script>
