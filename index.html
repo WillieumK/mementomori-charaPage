@@ -173,9 +173,12 @@ tbody tr:last-child td{border-bottom:none}
 .usage-wrap{padding:8px 10px}
 .grp{display:flex;align-items:flex-start;border-bottom:1px solid rgba(255,255,255,.06)}
 .grp:last-child{border-bottom:none}
-.grp-label{flex:0 0 80px;padding:14px 10px;font-weight:700;color:var(--gold);font-size:20px;line-height:90px;white-space:nowrap}
-.grp .icons{display:flex;flex-wrap:wrap;flex:0 0 900px;width:900px;gap:0;padding:8px 0}
-.ic{width:90px;height:90px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+:root{--usz:90px;--per-row:10}
+.grp-label{flex:0 0 80px;padding:14px 10px;font-weight:700;color:var(--gold);font-size:20px;line-height:var(--usz);white-space:nowrap;background:none;border:none;cursor:pointer;text-align:left;font-family:inherit}
+.grp-label:hover{color:#ffe9a8}
+.thr-input{width:76px;background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.4);border-radius:6px;font-size:17px;padding:4px 6px;line-height:28px;outline:none}
+.grp .icons{display:flex;flex-wrap:wrap;flex:0 0 calc(var(--per-row) * var(--usz));width:calc(var(--per-row) * var(--usz));gap:0;padding:8px 0}
+.ic{width:var(--usz);height:var(--usz);position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
 .ic img{width:100%;height:100%;object-fit:cover;display:block}
 .ic .pct{display:none;position:absolute;left:0;right:0;bottom:0;background:rgba(10,8,20,.72);color:#ffe9a8;font-size:13px;line-height:20px;text-align:center}
 .usage-wrap.expanded .ic .pct{display:block}
@@ -201,6 +204,23 @@ footer{
   line-height:1.9;
 }
 footer a{color:#a99fd9}
+@media (max-width: 768px){
+  :root{--usz:56px;--per-row:5}
+  .wrap{padding:16px 10px 40px}
+  header.top{padding:20px 12px 18px}
+  header.top h1{font-size:20px;flex-wrap:wrap}
+  h1 .logo{width:32px;height:32px}
+  header.top .subtitle{font-size:13px}
+  .badge{font-size:12px;padding:5px 10px}
+  section.card{padding:14px 12px 18px;margin-bottom:16px}
+  section.card h2{font-size:15px}
+  .h2-note{flex-wrap:wrap}
+  thead th, tbody td{padding:7px 8px;font-size:12px}
+  .cell-ico .ico{width:40px;height:40px;border-radius:6px}
+  .grp-label{font-size:15px}
+  .ic .pct{font-size:10px;line-height:16px}
+  .toolbar{justify-content:center}
+}
 </style>
 </head>
 <body>
@@ -209,9 +229,10 @@ footer a{color:#a99fd9}
     <h1><img class="logo" src="icon.png" alt="icon"><span class="title-grad">MementoMori 巅峰使用率统计 &amp; 当期卡池表</span></h1>
     <p class="subtitle" id="page-title">《每日60秒，读懂Mmt》</p>
     <p>
-      <span class="badge"><span class="dot"></span>在线读取 Google Sheets</span>
+      <span class="badge"><span class="dot"></span>GitHub 缓存 · Google Sheets</span>
       <span class="badge" id="fetch-time">页面读取：—</span>
       <span class="badge" id="cache-time">缓存：—</span>
+      <span class="badge" id="device">💻 PC 端</span>
     </p>
   </header>
 
@@ -238,9 +259,7 @@ footer a{color:#a99fd9}
   </section>
 
   <footer>
-    数据实时读取自 <a href="https://docs.google.com/spreadsheets/d/1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA" target="_blank" rel="noopener">卡池表</a>
-    · <a href="https://docs.google.com/spreadsheets/d/1VrnhPswVqPPbbC-Gps_e9Um7tWulYg4BI66HMt_OBZw" target="_blank" rel="noopener">使用率表</a>
-    · 角色图标来自 <a href="https://mentemori.icu" target="_blank" rel="noopener">mentemori.icu</a> · 每天 4 / 10 / 16 / 22 点刷新
+    数据由 GitHub Actions 每天 4 / 10 / 16 / 22 点抓取并缓存于 GitHub · 原始数据 Google Sheets（<a href="https://docs.google.com/spreadsheets/d/1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA" target="_blank" rel="noopener">卡池表</a> / <a href="https://docs.google.com/spreadsheets/d/1VrnhPswVqPPbbC-Gps_e9Um7tWulYg4BI66HMt_OBZw" target="_blank" rel="noopener">使用率表</a>）· 角色图标来自 <a href="https://mentemori.icu" target="_blank" rel="noopener">mentemori.icu</a>
   </footer>
 </div>
 
@@ -253,6 +272,8 @@ const CARD0_URL = "https://docs.google.com/spreadsheets/d/" + CARD_SHEET_ID + "/
 const USAGE_SHEET_ID = "1VrnhPswVqPPbbC-Gps_e9Um7tWulYg4BI66HMt_OBZw";
 const USAGE_GID = "1850986413";
 const USAGE_URL = "https://docs.google.com/spreadsheets/d/" + USAGE_SHEET_ID + "/gviz/tq?gid=" + USAGE_GID + "&tqx=out:json";
+const DATA_CARD0 = "data/card0.json";
+const DATA_USAGE = "data/usage.json";
 const ICON_BASE = "https://mentemori.icu/assets/CHR_";
 const ICON_SUFFIX = "_00_s.png";
 
@@ -470,14 +491,20 @@ function renderElements(el){
     + "</tr></thead><tbody>" + body + "</tbody></table>";
 }
 let usageState = null;
+let thresholds = [0.18, 0.13, 0.03];
 let selectedDay = null;
 let pctOpen = false;
 
+function pctLabel(t){
+  const p = t * 100;
+  return (Number.isInteger(p) ? p.toFixed(0) : p.toFixed(2)) + "%+";
+}
 function groupsFor(list){
+  const ts = thresholds.slice().sort((a, b) => b - a);
   return [
-    { label: "18%+", min: 0.18,  max: Infinity, cap: Infinity },
-    { label: "13%+", min: 0.13,  max: 0.18,     cap: Infinity },
-    { label: "3%+",  min: 0.03,  max: 0.13,     cap: 30 }
+    { label: pctLabel(ts[0]), min: ts[0], max: Infinity, cap: Infinity },
+    { label: pctLabel(ts[1]), min: ts[1], max: ts[0],    cap: Infinity },
+    { label: pctLabel(ts[2]), min: ts[2], max: ts[1],    cap: 30 }
   ].map(g => ({ label: g.label, items: list.filter(x => x.v >= g.min && x.v < g.max).slice(0, g.cap) }));
 }
 function renderUsage(){
@@ -491,8 +518,9 @@ function renderUsage(){
   const names = usageState.names || {};
   const groups = groupsFor(usageState.perDay[selectedDay]);
   let html = "";
-  for (const g of groups){
-    html += '<div class="grp"><span class="grp-label">' + esc(g.label) + '</span><div class="icons">';
+  for (let i = 0; i < groups.length; i++){
+    const g = groups[i];
+    html += '<div class="grp"><button type="button" class="grp-label" data-idx="' + i + '" onclick="editThreshold(' + i + ', this)">' + esc(g.label) + '</button><div class="icons">';
     for (const x of g.items){
       const p = x.id.padStart(6, "0");
       const nm = names[x.id] || ("ID " + x.id);
@@ -510,6 +538,47 @@ function renderUsage(){
   sel.innerHTML = usageState.days.map(d =>
     '<option value="' + d.c + '"' + (d.c === selectedDay ? " selected" : "") + ">" + esc(d.display) + "</option>"
   ).join("");
+}
+function editThreshold(idx, el){
+  const input = document.createElement("input");
+  input.type = "number";
+  input.min = "0";
+  input.max = "100";
+  input.step = "0.1";
+  const cur = thresholds[idx] * 100;
+  input.value = Number.isInteger(cur) ? cur.toFixed(0) : cur.toFixed(2);
+  input.className = "thr-input";
+  el.replaceWith(input);
+  input.focus();
+  input.select();
+  let done = false;
+  const commit = () => {
+    if (done) return;
+    done = true;
+    let v = parseFloat(input.value);
+    if (isNaN(v) || v < 0) v = thresholds[idx] * 100;
+    if (v > 100) v = 100;
+    thresholds[idx] = v / 100;
+    thresholds.sort((a, b) => b - a);
+    renderUsage();
+  };
+  input.addEventListener("blur", commit);
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter"){ e.preventDefault(); input.blur(); }
+    else if (e.key === "Escape"){ if (!done){ done = true; renderUsage(); } }
+  });
+}
+function detectDevice(){
+  const m = window.matchMedia("(max-width: 768px)");
+  const el = document.getElementById("device");
+  const apply = () => {
+    const isM = m.matches;
+    document.documentElement.classList.toggle("mobile", isM);
+    if (el) el.textContent = isM ? "📱 移动端" : "💻 PC 端";
+  };
+  apply();
+  if (m.addEventListener) m.addEventListener("change", apply);
+  else if (m.addListener) m.addListener(apply);
 }
 function onDayChange(){
   selectedDay = parseInt(document.getElementById("usage-day").value, 10);
@@ -634,16 +703,23 @@ async function load(force){
     }
   }
 
-  // 2) 在线读取
+  // 2) 在线读取：优先 GitHub 服务器缓存(data/)，没有则直接读 Google
   showLoading();
   let lastErr = null;
   for (let attempt = 1; attempt <= 4; attempt++){
     try{
-      const card0Text = await fetchJson(CARD0_URL);
-      const usageText = await fetchJson(USAGE_URL);
+      let card0Text, usageText, fromGithub = true;
+      try{
+        card0Text = await fetchJson(DATA_CARD0);
+        usageText = await fetchJson(DATA_USAGE);
+      }catch(e){
+        fromGithub = false;
+        card0Text = await fetchJson(CARD0_URL);
+        usageText = await fetchJson(USAGE_URL);
+      }
       applyAll(card0Text, usageText);
       writeCache(card0Text, usageText);
-      setCacheBadge("缓存：刚刚在线读取", "cache-ok");
+      setCacheBadge(fromGithub ? "缓存：GitHub 服务器（刚刚更新）" : "缓存：直接读取 Google（GitHub 缓存未就绪）", "cache-ok");
       document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
       return;
     }catch(err){
@@ -674,6 +750,7 @@ async function load(force){
 }
 
 document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
+detectDevice();
 load(false);
 scheduleRefresh();
 </script>
