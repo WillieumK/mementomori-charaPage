@@ -475,10 +475,10 @@ let pctOpen = false;
 
 function groupsFor(list){
   return [
-    { label: "18%+", th: 0.18, cap: Infinity },
-    { label: "13%+", th: 0.13, cap: Infinity },
-    { label: "3%+",  th: 0.03, cap: 30 }
-  ].map(g => ({ label: g.label, items: list.filter(x => x.v >= g.th).slice(0, g.cap) }));
+    { label: "18%+", min: 0.18,  max: Infinity, cap: Infinity },
+    { label: "13%+", min: 0.13,  max: 0.18,     cap: Infinity },
+    { label: "3%+",  min: 0.03,  max: 0.13,     cap: 30 }
+  ].map(g => ({ label: g.label, items: list.filter(x => x.v >= g.min && x.v < g.max).slice(0, g.cap) }));
 }
 function renderUsage(){
   const wrap = document.getElementById("tbl-usage");
