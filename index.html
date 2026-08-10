@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>📊 MementoMori 卡池监测（在线）</title>
-<link rel="icon" href="data:,">
+<title>📊 MementoMori 巅峰使用率统计 &amp; 卡池轮转表</title>
+<link rel="icon" href="icon.png">
 <style>
 :root{
   --bg:#0d0b14;
@@ -14,6 +14,8 @@
   --accent:#7c6cf0;
   --text:#e8e6f0;
   --muted:#9a94ad;
+  --up:#4ade80;
+  --down:#ff7b7b;
 }
 *{box-sizing:border-box}
 body{
@@ -35,9 +37,23 @@ header.top{
   margin-bottom:30px;
 }
 header.top h1{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
   margin:0 0 12px;
-  font-size:34px;
-  letter-spacing:2px;
+  font-size:32px;
+  letter-spacing:1px;
+}
+h1 .logo{
+  width:44px;
+  height:44px;
+  border-radius:10px;
+  display:inline-block;
+  vertical-align:middle;
+  box-shadow:0 0 18px rgba(217,178,106,.35);
+}
+h1 .title-grad{
   background:linear-gradient(90deg,#f5e6c4,#d9b26a 45%,#a78bfa);
   -webkit-background-clip:text;
   background-clip:text;
@@ -89,6 +105,7 @@ section.card h2::before{
   border-radius:3px;
   background:linear-gradient(180deg,var(--gold),var(--accent));
 }
+.h2-note{color:var(--muted);font-size:12px;font-weight:400;margin-left:auto}
 .table-wrap{
   overflow-x:auto;
   border:1px solid var(--panel-border);
@@ -132,6 +149,7 @@ tbody tr:last-child td{border-bottom:none}
   vertical-align:middle;
 }
 .cell-ico img{width:100%;height:100%;object-fit:cover;display:block}
+.cell-name .ico.sm{width:38px;height:38px;border-radius:8px;vertical-align:middle;margin-right:8px}
 .cell-ico .empty{color:var(--muted);opacity:.5}
 .cell-ico .icofallback{display:inline-block;width:52px;height:52px;line-height:52px;text-align:center;border-radius:10px;border:1px dashed var(--panel-border);color:var(--muted);font-size:12px}
 .tag{
@@ -144,6 +162,15 @@ tbody tr:last-child td{border-bottom:none}
 .tag.red{color:#ffb4a8;border-color:rgba(255,180,168,.45);background:rgba(255,180,168,.08)}
 .tag.green{color:#b5f0c3;border-color:rgba(181,240,195,.45);background:rgba(181,240,195,.08)}
 .tag.gold{color:#ffe9a8;border-color:rgba(255,233,168,.45);background:rgba(255,233,168,.08)}
+.rank{font-weight:700;color:var(--muted)}
+.rank.top1{color:#ffd76a}
+.rank.top2{color:#d7dbe8}
+.rank.top3{color:#d9a066}
+.up{color:var(--up)}
+.down{color:var(--down)}
+.flat{color:var(--muted)}
+.usage-pct{font-weight:600;color:#f1eef8}
+.usage-prev{color:var(--muted);font-size:13px}
 .loading,.error{color:var(--muted);padding:30px;text-align:center}
 .error{color:#ff9d9d}
 .error a{color:#ffd0d0}
@@ -166,11 +193,11 @@ footer a{color:#a99fd9}
 <body>
 <div class="wrap">
   <header class="top">
-    <h1>📊 MementoMori 卡池监测</h1>
+    <h1><img class="logo" src="icon.png" alt="icon"><span class="title-grad">MementoMori 巅峰使用率统计 &amp; 卡池轮转表</span></h1>
     <p class="subtitle" id="page-title">《每日60秒，读懂Mmt》</p>
     <p>
       <span class="badge"><span class="dot"></span>在线读取 Google Sheets</span>
-            <span class="badge" id="fetch-time">页面读取：—</span>
+      <span class="badge" id="fetch-time">页面读取：—</span>
       <span class="badge" id="cache-time">缓存：—</span>
     </p>
   </header>
@@ -178,6 +205,11 @@ footer a{color:#a99fd9}
   <div class="toolbar">
     <button id="btn-refresh" onclick="load(true)">🔄 刷新数据</button>
   </div>
+
+  <section class="card">
+    <h2>巅峰使用率 · 今日排行<span class="h2-note" id="usage-note"></span></h2>
+    <div class="table-wrap" id="tbl-usage"></div>
+  </section>
 
   <section class="card">
     <h2>MMT 卡池 · 最新总览</h2>
@@ -190,23 +222,27 @@ footer a{color:#a99fd9}
   </section>
 
   <footer>
-    数据实时读取自 <a href="https://docs.google.com/spreadsheets/d/1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA" target="_blank" rel="noopener">Google Sheets 卡池表</a>
-    · 角色图标来自 <a href="https://mentemori.icu" target="_blank" rel="noopener">mentemori.icu</a>
-    · 页面每小时自动刷新
+    数据实时读取自 <a href="https://docs.google.com/spreadsheets/d/1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA" target="_blank" rel="noopener">卡池表</a>
+    · <a href="https://docs.google.com/spreadsheets/d/1VrnhPswVqPPbbC-Gps_e9Um7tWulYg4BI66HMt_OBZw" target="_blank" rel="noopener">使用率表</a>
+    · 角色图标来自 <a href="https://mentemori.icu" target="_blank" rel="noopener">mentemori.icu</a> · 页面每小时自动刷新
   </footer>
 </div>
 
 <script>
 "use strict";
 
-const SHEET_ID = "1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA";
+const CARD_SHEET_ID = "1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA";
 const CARD0_GID = "157463114";
-const CARD0_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?gid=" + CARD0_GID + "&tqx=out:json";
+const CARD0_URL = "https://docs.google.com/spreadsheets/d/" + CARD_SHEET_ID + "/gviz/tq?gid=" + CARD0_GID + "&tqx=out:json";
+const USAGE_SHEET_ID = "1VrnhPswVqPPbbC-Gps_e9Um7tWulYg4BI66HMt_OBZw";
+const USAGE_GID = "1850986413";
+const USAGE_URL = "https://docs.google.com/spreadsheets/d/" + USAGE_SHEET_ID + "/gviz/tq?gid=" + USAGE_GID + "&tqx=out:json";
 const ICON_BASE = "https://mentemori.icu/assets/CHR_";
 const ICON_SUFFIX = "_00_s.png";
 
-const CACHE_KEY = "mmt_card_cache_v3";
+const CACHE_KEY = "mmt_page_cache_v4";
 const CACHE_TTL = 60 * 60 * 1000; // 缓存 1 小时
+const USAGE_TOP = 20;
 
 const ELEMENT_TAG = { "光":"light", "暗":"dark", "蓝":"blue", "红":"red", "绿":"green", "金":"gold" };
 const ELEMENTS = [
@@ -225,7 +261,7 @@ function parseGvizJson(text){
   return JSON.parse(text.slice(start, end + 1));
 }
 
-// ---------- 日期工具 ----------
+// ---------- 日期 / 取值工具 ----------
 function dateOrd(v){
   const m = /^Date\((\d+),(\d+),(\d+)\)$/.exec(String(v || ""));
   if (!m) return null;
@@ -239,6 +275,10 @@ function getV(row, c){
   const cell = row && row.c ? row.c[c] : null;
   return cell ? cell.v : null;
 }
+function getF(row, c){
+  const cell = row && row.c ? row.c[c] : null;
+  return cell && cell.f ? cell.f : null;
+}
 function rowMaxOrd(r, cols){
   let best = null;
   for (const c of cols){
@@ -248,20 +288,18 @@ function rowMaxOrd(r, cols){
   return best;
 }
 
-// ---------- 核心：从 卡-0 原始数据直接计算两张表 ----------
-function computeTables(rows){
+// ---------- 卡池两张表：从 卡-0 原始数据直接计算 ----------
+function computeCardTables(rows){
   const R = rows.slice(3, 153);          // 卡-0 第4~153行
   const ids = r => String(getV(r, 0) == null ? "" : getV(r, 0)).trim();
   const name = r => String(getV(r, 6) || "").trim();
 
-  // --- 新角色：H 最大 ---
   let maxH = null;
   for (const r of R){ const o = dateOrd(getV(r, 7)); if (o !== null && (maxH === null || o > maxH)) maxH = o; }
   const newRows = R.filter(r => dateOrd(getV(r, 7)) === maxH);
   const newIds = newRows.map(ids);
   const newName = newRows.length ? name(newRows[0]) : "";
 
-  // --- 新复刻：I/J 行最大值 = 全局最大；以及复刻队列 top3 ---
   let maxIJ = null;
   for (const r of R){ const o = rowMaxOrd(r, [8, 9]); if (o !== null && (maxIJ === null || o > maxIJ)) maxIJ = o; }
   const rerunMaxRows = R.filter(r => rowMaxOrd(r, [8, 9]) === maxIJ);
@@ -277,7 +315,6 @@ function computeTables(rows){
   const rerunTop3 = rerunList.slice(0, 3);
   const rerunIds = rerunTop3.map(x => x.id);
 
-  // --- 新星辰：K~Q 行最大值 = 全局最大 ---
   let maxKQ = null;
   for (const r of R){ const o = rowMaxOrd(r, [10, 11, 12, 13, 14]); if (o !== null && (maxKQ === null || o > maxKQ)) maxKQ = o; }
   const starRows = R.filter(r => rowMaxOrd(r, [10, 11, 12, 13, 14]) === maxKQ);
@@ -291,17 +328,16 @@ function computeTables(rows){
   };
 
   const overview = [
-    { name: "新角色", latest: newName,          prev: "",                       upcoming: "",                ids: pad6(newIds) },
+    { name: "新角色", latest: newName,          prev: "",                        upcoming: "",                ids: pad6(newIds) },
     { name: "新复刻", latest: rerunNames.join("、"), prev: rerunTop3[1] ? rerunTop3[1].n : "", upcoming: rerunTop3[2] ? rerunTop3[2].n : "", ids: pad6(rerunIds) },
-    { name: "新星辰", latest: starNames,         prev: "",                       upcoming: "",                ids: pad6(starIds) },
-    { name: "#1",     latest: newIds.join(" "),  prev: "",                       upcoming: "新池-" + (maxH !== null ? fmtMd(maxH) : ""),     ids: pad6(newIds) },
-    { name: "#2",     latest: rerunIds.join(" "), prev: "",                      upcoming: "新池-" + (maxIJ !== null ? fmtMd(maxIJ) : ""),    ids: pad6(rerunIds) },
-    { name: "#3",     latest: starIds.join(" "), prev: "",                       upcoming: "新池-" + (maxKQ !== null ? fmtMd(maxKQ) : ""),    ids: pad6(starIds) }
+    { name: "新星辰", latest: starNames,         prev: "",                        upcoming: "",                ids: pad6(starIds) },
+    { name: "#1",     latest: newIds.join(" "),  prev: "",                        upcoming: "新池-" + (maxH !== null ? fmtMd(maxH) : ""),     ids: pad6(newIds) },
+    { name: "#2",     latest: rerunIds.join(" "), prev: "",                       upcoming: "新池-" + (maxIJ !== null ? fmtMd(maxIJ) : ""),    ids: pad6(rerunIds) },
+    { name: "#3",     latest: starIds.join(" "), prev: "",                        upcoming: "新池-" + (maxKQ !== null ? fmtMd(maxKQ) : ""),    ids: pad6(starIds) }
   ];
 
-  // --- 表二：六属性 ---
   const elements = ELEMENTS.map((el, i) => {
-    const anchor = R[i];                        // 卡-0 第4~9行：B=限定数 C=等待天数
+    const anchor = R[i];
     const B = getV(anchor, 1);
     const C = getV(anchor, 2);
     const wait = (C !== null && C !== undefined)
@@ -323,12 +359,49 @@ function computeTables(rows){
   return { overview: overview, elements: elements };
 }
 
+// ---------- 巅峰使用率：动态率表（gid 1850986413）----------
+function computeUsage(data){
+  const cols = data.table ? data.table.cols : [];
+  const rows = data.table ? data.table.rows : [];
+  const todayLabel = cols[2] ? String(cols[2].label || "") : "";
+  const prevLabel = cols[3] ? String(cols[3].label || "") : "";
+  const list = [];
+  for (const r of rows){
+    const id = getV(r, 0);
+    if (id === null || id === undefined) continue;
+    const tv = getV(r, 2);
+    const pv = getV(r, 3);
+    list.push({
+      id: String(id).trim(),
+      tv: typeof tv === "number" ? tv : NaN,
+      pv: typeof pv === "number" ? pv : NaN,
+      tf: getF(r, 2) || (typeof tv === "number" ? (tv * 100).toFixed(2) + "%" : "—"),
+      pf: getF(r, 3) || (typeof pv === "number" ? (pv * 100).toFixed(2) + "%" : "—")
+    });
+  }
+  list.sort((a, b) => b.tv - a.tv);
+  return { todayLabel: todayLabel, prevLabel: prevLabel, list: list.slice(0, USAGE_TOP) };
+}
+
+// ---------- 角色名映射（卡-0 A -> G/F）----------
+function nameMapOf(cardRows){
+  const map = {};
+  for (let i = 3; i < 153; i++){
+    const r = cardRows[i];
+    const id = String(getV(r, 0) == null ? "" : getV(r, 0)).trim();
+    const nm = String(getV(r, 6) || "").trim();
+    if (id && nm) map[id] = nm;
+  }
+  return map;
+}
+
 // ---------- 渲染 ----------
-function iconHtml(id){
+function iconHtml(id, size){
   id = String(id || "").trim();
   const p = id ? id.padStart(6, "0") : "";
   if (!p) return '<span class="empty">—</span>';
-  return '<span class="ico"><img src="' + ICON_BASE + p + ICON_SUFFIX
+  const cls = size === "sm" ? "ico sm" : "ico";
+  return '<span class="' + cls + '"><img src="' + ICON_BASE + p + ICON_SUFFIX
        + '" alt="ID ' + id + '" loading="lazy" title="角色ID ' + id + '"'
        + ' onerror="imgFail(this)" data-id="' + id + '"></span>';
 }
@@ -374,12 +447,37 @@ function renderElements(el){
     + '<th>-1</th><th>-2</th><th>-3</th><th>-4</th><th>-5</th><th>-6</th>'
     + "</tr></thead><tbody>" + body + "</tbody></table>";
 }
-function applyTables(text){
-  const data = parseGvizJson(text);
-  const trows = data && data.table ? data.table.rows : [];
-  const t = computeTables(trows);
-  renderOverview(t.overview);
-  renderElements(t.elements);
+function renderUsage(usage, names){
+  const fmtLabel = l => {
+    const m = /^(\d{2})(\d{2})(\d{2})/.exec(String(l || ""));
+    return m ? "20" + m[1] + "-" + m[2] + "-" + m[3] : l;
+  };
+  document.getElementById("usage-note").textContent = "数据日期：" + fmtLabel(usage.todayLabel);
+  let body = "";
+  usage.list.forEach((u, i) => {
+    const rank = i + 1;
+    const rankCls = rank === 1 ? "top1" : rank === 2 ? "top2" : rank === 3 ? "top3" : "";
+    const nm = names[u.id] || "";
+    const diff = u.tv - u.pv;
+    let trend;
+    if (!isNaN(diff)){
+      if (diff > 0.00005) trend = '<span class="up">▲ +' + (diff * 100).toFixed(2) + "%</span>";
+      else if (diff < -0.00005) trend = '<span class="down">▼ ' + (diff * 100).toFixed(2) + "%</span>";
+      else trend = '<span class="flat">— 0.00%</span>';
+    } else {
+      trend = '<span class="flat">—</span>';
+    }
+    body += "<tr>"
+      + '<td class="rank ' + rankCls + '">' + rank + "</td>"
+      + '<td class="cell-name">' + iconHtml(u.id, "sm") + " " + esc(nm || ("ID " + u.id)) + "</td>"
+      + '<td class="usage-pct">' + esc(u.tf) + "</td>"
+      + '<td class="usage-prev">' + esc(u.pf) + "</td>"
+      + "<td>" + trend + "</td>"
+      + "</tr>";
+  });
+  document.getElementById("tbl-usage").innerHTML =
+    '<table><thead><tr><th>排名</th><th>角色</th><th>今日使用率</th><th>昨日使用率</th><th>变化</th>'
+    + "</tr></thead><tbody>" + body + "</tbody></table>";
 }
 
 // ---------- 时间 ----------
@@ -401,13 +499,13 @@ function readCache(){
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const obj = JSON.parse(raw);
-    if (!obj || typeof obj.ts !== "number" || typeof obj.text !== "string") return null;
+    if (!obj || typeof obj.ts !== "number" || typeof obj.card0 !== "string" || typeof obj.usage !== "string") return null;
     return obj;
   }catch(e){ return null; }
 }
-function writeCache(text){
+function writeCache(card0, usage){
   try{
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), text: text }));
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), card0: card0, usage: usage }));
   }catch(e){ /* 隐私模式等场景忽略 */ }
 }
 function setCacheBadge(text, cls){
@@ -417,29 +515,43 @@ function setCacheBadge(text, cls){
 }
 
 // ---------- 数据读取 ----------
-async function fetchCard0(){
-  const resp = await fetch(CARD0_URL);
+async function fetchJson(url){
+  const resp = await fetch(url);
   if (!resp.ok) throw new Error("HTTP " + resp.status);
-  const text = await resp.text();
+  return await resp.text();
+}
+function validateCard0(text){
   const data = parseGvizJson(text);
-  if (!data || !data.table || !Array.isArray(data.table.rows) || data.table.rows.length < 153){
-    throw new Error("表格结构不符合预期");
-  }
-  return text;
+  if (!data || !data.table || !Array.isArray(data.table.rows) || data.table.rows.length < 153) throw new Error("卡池表结构不符合预期");
+  return data;
+}
+function validateUsage(text){
+  const data = parseGvizJson(text);
+  if (!data || !data.table || !Array.isArray(data.table.rows)) throw new Error("使用率表结构不符合预期");
+  return data;
+}
+function applyAll(card0Text, usageText){
+  const card0 = validateCard0(card0Text);
+  const usage = validateUsage(usageText);
+  const t = computeCardTables(card0.table.rows);
+  renderOverview(t.overview);
+  renderElements(t.elements);
+  renderUsage(computeUsage(usage), nameMapOf(card0.table.rows));
 }
 function showLoading(){
-  const html = '<div class="loading"><span class="spinner"></span><br>正在在线读取 卡-0 并计算…</div>';
+  const html = '<div class="loading"><span class="spinner"></span><br>正在在线读取并计算…</div>';
   document.getElementById("tbl-overview").innerHTML = html;
   document.getElementById("tbl-elements").innerHTML = html;
+  document.getElementById("tbl-usage").innerHTML = html;
 }
 
 async function load(force){
-  // 1) 缓存命中：1 小时内不再请求，直接秒开
+  // 1) 缓存命中
   if (!force){
     const cache = readCache();
     if (cache && (Date.now() - cache.ts) < CACHE_TTL){
       try{
-        applyTables(cache.text);
+        applyAll(cache.card0, cache.usage);
         const mins = Math.max(1, Math.round((Date.now() - cache.ts) / 60000));
         setCacheBadge("缓存：" + fmtClock(cache.ts) + " 读取，已用 " + mins + " 分钟", "cache-ok");
         document.getElementById("fetch-time").textContent = "页面读取：缓存（" + fmtClock(cache.ts) + "）";
@@ -448,14 +560,15 @@ async function load(force){
     }
   }
 
-  // 2) 需要在线读取
+  // 2) 在线读取
   showLoading();
   let lastErr = null;
   for (let attempt = 1; attempt <= 4; attempt++){
     try{
-      const text = await fetchCard0();
-      applyTables(text);
-      writeCache(text);
+      const card0Text = await fetchJson(CARD0_URL);
+      const usageText = await fetchJson(USAGE_URL);
+      applyAll(card0Text, usageText);
+      writeCache(card0Text, usageText);
       setCacheBadge("缓存：刚刚在线读取", "cache-ok");
       document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
       return;
@@ -467,19 +580,20 @@ async function load(force){
     }
   }
 
-  // 3) 在线读取失败：有旧缓存就先用旧缓存
+  // 3) 失败回退缓存
   const cache = readCache();
   if (cache){
     try{
-      applyTables(cache.text);
+      applyAll(cache.card0, cache.usage);
       setCacheBadge("在线读取失败，显示缓存（" + fmtClock(cache.ts) + "）", "cache-warn");
       document.getElementById("fetch-time").textContent = "页面读取：失败，用缓存（" + fmtNow() + "）";
       return;
     }catch(e){ /* 缓存也无法用，走报错 */ }
   }
-  document.getElementById("tbl-overview").innerHTML =
+  document.getElementById("tbl-usage").innerHTML =
     '<div class="error">❌ 在线读取失败：' + esc(lastErr ? lastErr.message : "未知错误")
     + '<br>已自动重试 4 次仍未成功。请确认：① 表格已开启“知道链接的任何人可查看”；② 页面需通过 http(s) 访问（如 GitHub Pages 或本地服务器），不能直接用 file:// 打开；③ 稍后再点“刷新数据”。</div>';
+  document.getElementById("tbl-overview").innerHTML = "";
   document.getElementById("tbl-elements").innerHTML = "";
   setCacheBadge("缓存：无", "");
   document.getElementById("fetch-time").textContent = "页面读取：失败（" + fmtNow() + "）";
@@ -488,6 +602,6 @@ async function load(force){
 document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
 load(false);
 setInterval(load, 60 * 60 * 1000);
-</script></script>
+</script>
 </body>
 </html>
