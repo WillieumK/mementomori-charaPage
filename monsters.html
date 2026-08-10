@@ -58,6 +58,9 @@ section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;backg
 .sres-n{color:var(--muted);font-size:12px}
 .sres-head .mini{margin-left:auto}
 .sres-full{display:none}
+.sres tbody td{padding:5px 8px}
+.sres .mini{padding:5px 10px;font-size:11px}
+.sres-full-head{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--panel-border);background:#1c1730}
 .qrow input[type=text]{width:180px}
 .table-wrap{overflow-x:auto;border:1px solid var(--panel-border);border-radius:10px;background:rgba(0,0,0,.18)}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -396,36 +399,66 @@ function doSearch(){
 function renderSearch(results, conds, all){
   const el = document.getElementById("tbl-res");
   document.getElementById("res-note").textContent = "搜索：“" + conds.join("、") + "” · " + (all ? "全部章节" : "当前关卡") + " · 命中 " + results.length + " 个关卡";
-  let html = "";
+  if (!results.length){ el.innerHTML = '<div class="error">未找到满足条件的关卡</div>'; return; }
+  const one = conds.length === 1;
+  const c = one ? conds[0].toLowerCase() : null;
+  let rowsHtml = "";
   for (const rs of results){
-    const full = '<div class="sres-full">' + stageContentHtml(rs.rows) + '</div>';
-    if (conds.length === 1){
-      const c = conds[0].toLowerCase();
+    const st = mode === "tower" ? String(rs.stage).replace(/^.+?(\d+)$/, "$1") : String(rs.stage);
+    const escStage = esc(rs.stage);
+    if (one){
       const matched = rs.rows.filter(r => String(r[1]).toLowerCase().indexOf(c) >= 0);
-      html += '<div class="sres">'
-        + '<div class="sres-head"><span class="sres-stage">' + esc(rs.stage) + '</span>'
-        + '<span class="sres-n">命中 ' + matched.length + ' 只</span>'
-        + '<button class="mini" onclick="toggleSres(this)">展开本关全部敌人</button></div>'
-        + rowTableHtml(matched)
-        + full
-        + '</div>';
+      for (const r of matched){
+        rowsHtml += "<tr>"
+          + "<td>" + esc(st) + "</td>"
+          + '<td class="mname">' + esc(r[1]) + "</td>"
+          + "<td>" + esc(r[5]) + "</td>"
+          + "<td>" + esc(r[6]) + "</td>"
+          + "<td>" + esc(r[7]) + "</td>"
+          + "<td>" + esc(r[8]) + "</td>"
+          + "<td>" + esc(r[9]) + "</td>"
+          + "<td>" + esc(r[10]) + "</td>"
+          + "<td>" + esc(r[11]) + "</td>"
+          + "<td>" + esc(r[12]) + "</td>"
+          + "<td>" + esc(r[13]) + "</td>"
+          + "<td>" + esc(r[14]) + "</td>"
+          + "<td>" + esc(r[15]) + "</td>"
+          + '<td><button class="mini" onclick="expandStage(this, \'' + escStage + '\')">展开本关敌人</button></td>'
+          + "</tr>";
+      }
     } else {
-      html += '<div class="sres">'
-        + '<div class="sres-head"><span class="sres-stage">' + esc(rs.stage) + '</span>'
-        + '<span class="sres-n">含 ' + conds.length + ' 个条件</span>'
-        + '<button class="mini" onclick="toggleSres(this)">展开本关敌人</button></div>'
-        + full
-        + '</div>';
+      rowsHtml += "<tr>"
+        + "<td>" + esc(st) + "</td>"
+        + "<td>" + esc(rs.stage) + " · 含 " + conds.length + " 个条件</td>"
+        + '<td><button class="mini" onclick="expandStage(this, \'' + escStage + '\')">展开本关敌人</button></td>'
+        + "</tr>";
     }
   }
-  el.innerHTML = html || '<div class="error">未找到满足条件的关卡</div>';
+  const headers = one
+    ? "<th>关卡</th><th>怪物名</th><th>速度</th><th>共鸣</th><th>攻击</th><th>防御</th><th>血量</th><th>魔防</th><th>物防</th><th>战技</th><th>耐力</th><th>魔力</th><th>力量</th><th>操作</th>"
+    : "<th>关卡</th><th>说明</th><th>操作</th>";
+  let fulls = "";
+  for (const rs of results){
+    fulls += '<div class="sres-full" data-stage="' + esc(rs.stage) + '" style="display:none">'
+      + '<div class="sres-full-head"><button class="mini" onclick="backToList(this)">收起</button><span class="sres-stage">' + esc(rs.stage) + " · 全部敌人</span></div>"
+      + stageContentHtml(rs.rows)
+      + "</div>";
+  }
+  el.innerHTML = '<div class="sres">'
+    + '<div class="sres-list"><table><thead><tr>' + headers + "</tr></thead><tbody>" + rowsHtml + "</tbody></table></div>"
+    + fulls
+    + "</div>";
 }
-function toggleSres(btn){
+function expandStage(btn, stage){
   const wrap = btn.closest(".sres");
-  const full = wrap.querySelector(".sres-full");
-  const open = full.style.display !== "none";
-  full.style.display = open ? "none" : "block";
-  btn.textContent = open ? "展开本关敌人" : "收起";
+  wrap.querySelector(".sres-list").style.display = "none";
+  const full = wrap.querySelector('.sres-full[data-stage="' + stage + '"]');
+  if (full) full.style.display = "block";
+}
+function backToList(btn){
+  const wrap = btn.closest(".sres");
+  wrap.querySelector(".sres-list").style.display = "";
+  wrap.querySelectorAll(".sres-full").forEach(f => f.style.display = "none");
 }
 function toggleSide(force){
   const s = document.getElementById("side");
