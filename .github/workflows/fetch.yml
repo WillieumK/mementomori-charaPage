@@ -27,7 +27,7 @@ jobs:
           BOSS = "https://raw.githubusercontent.com/nnsh774/mememori-masterbook/refs/heads/master/BossBattleEnemyMB.json"
           TOWER = "https://raw.githubusercontent.com/nnsh774/mememori-masterbook/refs/heads/master/TowerBattleEnemyMB.json"
           TEXT = "https://raw.githubusercontent.com/nnsh774/mememori-masterbook/refs/heads/master/TextResourceZhCnMB.json"
-          COLS = ["stage","name","attr","rarity","rank","speed","reson","atk","def","hp","mdef","pdef","skill","stamina","magic","strength","icon"]
+          COLS = ["stage","name","attr","rarity","rank","speed","reson","atk","def","hp","mdef","pdef","skill","stamina","magic","strength","icon","type"]
           ELEM = {1:"\u84dd",2:"\u7ea2",3:"\u7eff",4:"\u9ec4",5:"\u5149",6:"\u6697"}
           RAR = {0:"\u65e0",1:"N",2:"R",4:"R+",8:"SR",16:"SR+",32:"SSR",64:"SSR+",128:"UR",256:"UR+",512:"LR",1024:"LR+",2048:"LR+2",4096:"LR+3",8192:"LR+4",16384:"LR+5",32768:"LR+6",65536:"LR+7",131072:"LR+8",262144:"LR+9",524288:"LR+10"}
           WAN="\u4e07"; YI="\u4ebf"; GAO="\u9ad8"; DI="\u4f4e"
@@ -55,7 +55,7 @@ jobs:
                           m2 = re.match(r"(\d+-\d+)_", memo)
                           stage = m2.group(1) if m2 else ""
                   et = it.get("ElementType")
-                  rows.append({"stage":stage,"name":it.get("_name",""),"attr":ELEM.get(et,("\u65e0" if et in (0,None) else str(et))),"rarity":RAR.get(it.get("CharacterRarityFlags"),str(it.get("CharacterRarityFlags"))),"rank":it.get("EnemyRank"),"speed":b.get("Speed"),"reson":"","atk":b.get("AttackPower"),"def":b.get("Defense"),"hp":b.get("HP"),"mdef":b.get("MagicDamageRelax"),"pdef":b.get("PhysicalDamageRelax"),"skill":base.get("Energy"),"stamina":base.get("Health"),"magic":base.get("Intelligence"),"strength":base.get("Muscle"),"icon":it.get("UnitIconId")})
+                  rows.append({"stage":stage,"name":it.get("_name",""),"attr":ELEM.get(et,("\u65e0" if et in (0,None) else str(et))),"rarity":RAR.get(it.get("CharacterRarityFlags"),str(it.get("CharacterRarityFlags"))),"rank":it.get("EnemyRank"),"speed":b.get("Speed"),"reson":"","atk":b.get("AttackPower"),"def":b.get("Defense"),"hp":b.get("HP"),"mdef":b.get("MagicDamageRelax"),"pdef":b.get("PhysicalDamageRelax"),"skill":base.get("Energy"),"stamina":base.get("Health"),"magic":base.get("Intelligence"),"strength":base.get("Muscle"),"icon":it.get("UnitIconId"),"type":(1 if "EnemyCharacterName" in str(it.get("NameKey","")) else 0)})
               groups = collections.defaultdict(list)
               for i,r in enumerate(rows):
                   if r["stage"]: groups[r["stage"]].append(i)

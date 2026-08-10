@@ -357,7 +357,7 @@ function stageIconsHtml(rows){
     if (!icon) continue;
     const rarity = iconRarity(r[3]);
     const level = String(r[4] || "");
-    const type = (parseInt(icon, 10) || 0) < 10000 ? 0 : 1;
+    const type = (r[17] !== undefined && r[17] !== null) ? Number(r[17]) : ((parseInt(icon, 10) || 0) < 10000 ? 0 : 1);
     const src = "https://api.tamamo.dev/Generate/Character?icon=" + encodeURIComponent(icon)
       + "&rarity=" + encodeURIComponent(rarity) + "&level=" + encodeURIComponent(level)
       + "&link=0&type=" + type;
