@@ -49,6 +49,7 @@ section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;backg
 .qrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .qrow label{color:var(--muted);font-size:13px}
 .qrow select,.qrow input{background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:7px 10px;font-size:13px;outline:none}
+.qrow .num-inp{width:64px;padding:7px 8px}
 .qrow input[type=text]{width:180px}
 .table-wrap{overflow-x:auto;border:1px solid var(--panel-border);border-radius:10px;background:rgba(0,0,0,.18)}
 table{width:100%;border-collapse:collapse;font-size:13px}
@@ -136,15 +137,18 @@ section[id]{scroll-margin-top:16px}
       <button id="tab-tower" onclick="setMode('tower')">塔 Tower</button>
     </div>
     <div class="qrow" id="q-quest" style="display:flex">
-      <label>章节</label><input id="sel-chapter" list="dl-chapter" placeholder="输入或选择" onchange="onChapterChange()">
-      <datalist id="dl-chapter"></datalist>
-      <label>关卡</label><input id="sel-stage" list="dl-stage" placeholder="输入或选择" onchange="onQueryChange()">
-      <datalist id="dl-stage"></datalist>
+      <label>章节</label>
+      <select id="sel-chapter" onchange="syncChapter()"></select>
+      <input id="inp-chapter" class="num-inp" placeholder="或输入" onchange="onChapterChange()">
+      <label>关卡</label>
+      <select id="sel-stage" onchange="syncStage()"></select>
+      <input id="inp-stage" class="num-inp" placeholder="或输入" onchange="onQueryChange()">
     </div>
     <div class="qrow" id="q-tower" style="display:none">
       <label>塔</label><select id="sel-tower" onchange="onTowerChange()"></select>
-      <label>层数</label><input id="sel-level" list="dl-level" placeholder="输入或选择" onchange="onQueryChange()">
-      <datalist id="dl-level"></datalist>
+      <label>层数</label>
+      <select id="sel-level" onchange="syncLevel()"></select>
+      <input id="inp-level" class="num-inp" placeholder="或输入" onchange="onQueryChange()">
     </div>
     <div class="qrow" style="margin-top:12px">
       <label>怪物名搜索（可选）</label><input type="text" id="inp-name" placeholder="输入怪物名过滤" oninput="onQueryChange()">
@@ -192,6 +196,12 @@ function cellVal(r, i){
     return cell ? (cell.f !== undefined ? cell.f : cell.v) : null;
   }catch(e){ return null; }
 }
+function iconRarity(r){
+  const s = String(r || "").toLowerCase();
+  const m = /^lr\+(\d+)$/.exec(s);
+  if (m) return "lr" + m[1];
+  return s.replace(/\+/g, "plus");
+}
 function esc(v){
   return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
@@ -232,13 +242,19 @@ function buildQuestSelects(){
     if (m) set.add(parseInt(m[1], 10));
   }
   const chapters = [...set].sort((a, b) => a - b);
-  document.getElementById("dl-chapter").innerHTML = chapters.map(c => '<option value="' + c + '">第 ' + c + ' 章</option>').join("");
-  const inpC = document.getElementById("sel-chapter");
+  const selC = document.getElementById("sel-chapter");
+  selC.innerHTML = chapters.map(c => '<option value="' + c + '">' + c + '</option>').join("");
+  const inpC = document.getElementById("inp-chapter");
   inpC.value = chapters.length ? String(chapters[0]) : "";
+  selC.value = inpC.value;
+  onChapterChange();
+}
+function syncChapter(){
+  document.getElementById("inp-chapter").value = document.getElementById("sel-chapter").value;
   onChapterChange();
 }
 function onChapterChange(){
-  const ch = parseInt(document.getElementById("sel-chapter").value, 10);
+  const ch = parseInt(document.getElementById("inp-chapter").value, 10);
   if (isNaN(ch)) { onQueryChange(); return; }
   const set = new Set();
   for (const r of questData.rows){
@@ -246,9 +262,15 @@ function onChapterChange(){
     if (m && parseInt(m[1], 10) === ch) set.add(m[0]);
   }
   const stages = [...set].sort();
-  document.getElementById("dl-stage").innerHTML = stages.map(s => '<option value="' + s + '">' + s + '</option>').join("");
-  const inpS = document.getElementById("sel-stage");
+  const selS = document.getElementById("sel-stage");
+  selS.innerHTML = stages.map(s => '<option value="' + s + '">' + s + '</option>').join("");
+  const inpS = document.getElementById("inp-stage");
   inpS.value = stages.length ? stages[0] : "";
+  selS.value = inpS.value;
+  onQueryChange();
+}
+function syncStage(){
+  document.getElementById("inp-stage").value = document.getElementById("sel-stage").value;
   onQueryChange();
 }
 function buildTowerSelects(){
@@ -265,9 +287,15 @@ function onTowerChange(){
     if (m && m[1] === t.prefix) set.add(parseInt(m[2], 10));
   }
   const levels = [...set].sort((a, b) => a - b);
-  document.getElementById("dl-level").innerHTML = levels.map(l => '<option value="' + l + '">' + l + '</option>').join("");
-  const inpL = document.getElementById("sel-level");
+  const selL = document.getElementById("sel-level");
+  selL.innerHTML = levels.map(l => '<option value="' + l + '">' + l + '</option>').join("");
+  const inpL = document.getElementById("inp-level");
   inpL.value = levels.length ? String(levels[0]) : "";
+  selL.value = inpL.value;
+  onQueryChange();
+}
+function syncLevel(){
+  document.getElementById("inp-level").value = document.getElementById("sel-level").value;
   onQueryChange();
 }
 function setMode(m){
@@ -281,11 +309,11 @@ function setMode(m){
 function onQueryChange(){
   const el = document.getElementById("tbl-res");
   if (mode === "quest" && questData){
-    const stage = document.getElementById("sel-stage").value;
+    const stage = document.getElementById("inp-stage").value;
     renderRows(questData, r => String(r[0]) === stage, "关卡 " + stage);
   } else if (mode === "tower" && towerData){
     const ti = parseInt(document.getElementById("sel-tower").value, 10);
-    const lv = document.getElementById("sel-level").value;
+    const lv = document.getElementById("inp-level").value;
     const prefix = TOWERS[ti].prefix;
     renderRows(towerData, r => String(r[0]) === prefix + lv, lv + " 层");
   }
@@ -302,7 +330,7 @@ function renderRows(data, filter, note){
   for (const r of rows){
     const icon = String(r[16] || "").trim();
     if (!icon) continue;
-    const rarity = String(r[3] || "").toLowerCase().replace("lr+", "lr");
+    const rarity = iconRarity(r[3]);
     const level = String(r[4] || "");
     const type = (parseInt(icon, 10) || 0) < 10000 ? 0 : 1;
     const src = "https://api.tamamo.dev/Generate/Character?icon=" + encodeURIComponent(icon)
