@@ -148,7 +148,6 @@ section[id]{scroll-margin-top:16px}
     <p>
       <span class="badge"><span class="dot"></span>数据访问：GitHub（需配置网络环境）</span>
       <span class="badge" id="data-date">数据日期：—</span>
-      <span class="badge" id="visits">访问次数：…</span>
       <span class="badge" id="device">💻 desktop 端</span>
     </p>
   </header>
@@ -587,36 +586,6 @@ document.addEventListener("click", function(e){
     document.querySelectorAll(".dd-panel").forEach(p => p.style.display = "none");
   }
 });
-function loadVisits(){
-  const el = document.getElementById("visits");
-  if (!el) return;
-  const today = new Date().toISOString().slice(0, 10);
-  let last = null, cached = null;
-  try{
-    last = localStorage.getItem("mmt_last_visit_date");
-    cached = localStorage.getItem("mmt_last_visits");
-  }catch(e){ /* 隐私模式忽略 */ }
-  // 同一天已计过：直接显示缓存，不再请求
-  if (last === today){
-    el.textContent = cached ? "访问次数：" + cached : "访问次数：—";
-    return;
-  }
-  fetch("https://api.visitorbadge.io/api/visitors?path=mementomori-charaPage", { signal: AbortSignal.timeout(8000) })
-    .then(r => r.text())
-    .then(svg => {
-      const m = /VISITORS[\s:]+([\d,]+)/i.exec(svg);
-      if (m){
-        el.textContent = "访问次数：" + m[1];
-        try{
-          localStorage.setItem("mmt_last_visit_date", today);
-          localStorage.setItem("mmt_last_visits", m[1]);
-        }catch(e){ /* 忽略 */ }
-      } else {
-        el.textContent = "访问次数：—";
-      }
-    })
-    .catch(() => { el.textContent = "访问次数：—"; });
-}
 function detectDevice(){
   const mq = window.matchMedia("(max-width: 768px)");
   const el = document.getElementById("device");
@@ -631,7 +600,6 @@ function detectDevice(){
 }
 
 detectDevice();
-loadVisits();
 toggleSide(window.matchMedia("(min-width: 769px)").matches);
 loadData(false);
 </script>
