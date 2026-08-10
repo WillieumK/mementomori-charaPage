@@ -266,7 +266,7 @@ body.side-collapsed .side-open{display:block}
       <span class="badge"><span class="dot"></span>GitHub 缓存 · Google Sheets</span>
       <span class="badge" id="fetch-time">页面读取：—</span>
       <span class="badge" id="cache-time">缓存：—</span>
-      <span class="badge" id="device">💻 PC 端</span>
+      <span class="badge" id="device">💻 desktop 端</span>
     </p>
   </header>
 
@@ -625,7 +625,7 @@ function detectDevice(){
   const apply = () => {
     const isM = m.matches;
     document.documentElement.classList.toggle("mobile", isM);
-    if (el) el.textContent = isM ? "📱 移动端" : "💻 PC 端";
+    if (el) el.textContent = isM ? "📱 移动端" : "💻 desktop 端";
   };
   apply();
   if (m.addEventListener) m.addEventListener("change", apply);
