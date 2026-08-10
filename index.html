@@ -265,9 +265,8 @@ section[id]{scroll-margin-top:16px}
     <h1><img class="logo" src="icon.png" alt="icon"><span class="title-grad">MementoMori 巅峰使用率统计 &amp; 当期卡池表</span></h1>
     <p class="subtitle" id="page-title">《每日60秒，读懂Mmt》</p>
     <p>
-      <span class="badge"><span class="dot"></span>GitHub 缓存 · Google Sheets</span>
+      <span class="badge"><span class="dot"></span>数据访问：GitHub（需配置网络环境）</span>
       <span class="badge" id="fetch-time">页面读取：—</span>
-      <span class="badge" id="cache-time">缓存：—</span>
       <span class="badge" id="device">💻 desktop 端</span>
     </p>
   </header>
@@ -714,6 +713,7 @@ function scheduleRefresh(){
 }
 function setCacheBadge(text, cls){
   const el = document.getElementById("cache-time");
+  if (!el) return;
   el.textContent = text;
   el.className = "badge" + (cls ? " " + cls : "");
 }
