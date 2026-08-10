@@ -590,11 +590,30 @@ document.addEventListener("click", function(e){
 function loadVisits(){
   const el = document.getElementById("visits");
   if (!el) return;
+  const today = new Date().toISOString().slice(0, 10);
+  let last = null, cached = null;
+  try{
+    last = localStorage.getItem("mmt_last_visit_date");
+    cached = localStorage.getItem("mmt_last_visits");
+  }catch(e){ /* 隐私模式忽略 */ }
+  // 同一天已计过：直接显示缓存，不再请求
+  if (last === today){
+    el.textContent = cached ? "访问次数：" + cached : "访问次数：—";
+    return;
+  }
   fetch("https://api.visitorbadge.io/api/visitors?path=mementomori-charaPage", { signal: AbortSignal.timeout(8000) })
     .then(r => r.text())
     .then(svg => {
       const m = /VISITORS[\s:]+([\d,]+)/i.exec(svg);
-      el.textContent = m ? "访问次数：" + m[1] : "访问次数：—";
+      if (m){
+        el.textContent = "访问次数：" + m[1];
+        try{
+          localStorage.setItem("mmt_last_visit_date", today);
+          localStorage.setItem("mmt_last_visits", m[1]);
+        }catch(e){ /* 忽略 */ }
+      } else {
+        el.textContent = "访问次数：—";
+      }
     })
     .catch(() => { el.textContent = "访问次数：—"; });
 }
