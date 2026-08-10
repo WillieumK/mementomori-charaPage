@@ -205,7 +205,7 @@ footer{
 }
 footer a{color:#a99fd9}
 @media (max-width: 768px){
-  :root{--usz:56px;--per-row:5}
+  :root{--usz:56px;--per-row:10}
   .wrap{padding:16px 10px 40px}
   header.top{padding:20px 12px 18px}
   header.top h1{font-size:20px;flex-wrap:wrap}
@@ -217,9 +217,12 @@ footer a{color:#a99fd9}
   .h2-note{flex-wrap:wrap}
   thead th, tbody td{padding:7px 8px;font-size:12px}
   .cell-ico .ico{width:40px;height:40px;border-radius:6px}
-  .grp-label{font-size:15px}
-  .ic .pct{font-size:10px;line-height:16px}
   .toolbar{justify-content:center}
+  .grp{display:block}
+  .grp-label{line-height:normal;padding:8px 4px;font-size:15px}
+  .grp .icons{width:100%;flex:1 1 auto;padding:4px 0}
+  .ic{width:10%;height:auto;aspect-ratio:1/1}
+  .ic .pct{font-size:10px;line-height:16px}
 }
 </style>
 </head>
