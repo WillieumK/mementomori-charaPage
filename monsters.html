@@ -60,6 +60,10 @@ section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;backg
 .dd-grid button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:5px 2px;font-size:12px;cursor:pointer}
 .dd-grid button:hover{background:rgba(124,108,240,.25)}
 .dd-grid button.sel{background:#ffb400;color:#111;border-color:#ffb400;font-weight:700}
+.dd-grid-20{grid-template-columns:repeat(20,1fr);min-width:560px}
+.dd-pager{display:flex;align-items:center;gap:8px;padding:6px 2px 8px;color:var(--muted);font-size:12px}
+.dd-pager .mini{padding:4px 10px;font-size:11px}
+.dd-pager .mini:disabled{opacity:.4;cursor:default}
 .sres{border:1px solid var(--panel-border);border-radius:10px;margin:10px 0;background:rgba(0,0,0,.18);overflow:hidden}
 .sres-head{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--panel-border);background:#1c1730}
 .sres-stage{font-weight:700;color:var(--gold)}
@@ -175,7 +179,17 @@ section[id]{scroll-margin-top:16px}
     <div class="qrow" id="q-tower" style="display:none;flex-wrap:wrap">
       <label>塔</label><select id="sel-tower" onchange="onTowerChange()"></select>
       <label>层数</label>
-      <select id="sel-level" onchange="onQueryChange()"></select>
+      <div class="dd" id="dd-level">
+        <button class="dd-btn" onclick="toggleDD('level')"><span id="dd-level-label">—</span><span class="dd-arrow">▾</span></button>
+        <div class="dd-panel" id="ddp-level" style="display:none">
+          <div class="dd-pager">
+            <button class="mini" onclick="ddLevelPage(-1)">‹ 上一页</button>
+            <span id="dd-level-pageinfo">1 / 1</span>
+            <button class="mini" onclick="ddLevelPage(1)">下一页 ›</button>
+          </div>
+          <div class="dd-grid dd-grid-20" id="ddg-level"></div>
+        </div>
+      </div>
       <label class="lbl-manual">填写关卡模式</label>
       <input id="inp-level-manual" class="num-inp" style="width:90px" placeholder="如 500" onchange="onQueryChange()">
     </div>
@@ -299,7 +313,7 @@ function buildStageGrid(){
   document.getElementById("dd-stage-label").textContent = qState.stage !== null ? String(qState.stage) : "—";
 }
 function toggleDD(type){
-  const map = { chapter: "ddp-chapter", stage: "ddp-stage" };
+  const map = { chapter: "ddp-chapter", stage: "ddp-stage", level: "ddp-level" };
   const cur = document.getElementById(map[type]);
   const open = cur.style.display !== "none";
   Object.keys(map).forEach(k => document.getElementById(map[k]).style.display = "none");
@@ -323,7 +337,11 @@ function buildTowerSelects(){
   sel.innerHTML = TOWERS.map((t, i) => '<option value="' + i + '">' + t.label + '</option>').join("");
   onTowerChange();
 }
-function onTowerChange(){
+let towerLevel = null;
+let levelPage = 1;
+const LEVELS_PER_PAGE = 100;
+const LEVELS_PER_ROW = 20;
+function towerLevels(){
   const ti = parseInt(document.getElementById("sel-tower").value, 10);
   const t = TOWERS[ti];
   const set = new Set();
@@ -331,11 +349,39 @@ function onTowerChange(){
     const m = /^(.+?)(\d+)$/.exec(String(r[0] || ""));
     if (m && m[1] === t.prefix) set.add(parseInt(m[2], 10));
   }
-  const levels = [...set].sort((a, b) => a - b);
-  const selL = document.getElementById("sel-level");
-  selL.innerHTML = levels.map(l => '<option value="' + l + '">' + l + '</option>').join("");
-  selL.value = levels.length ? String(levels[0]) : "";
+  return [...set].sort((a, b) => a - b);
+}
+function onTowerChange(){
+  const levels = towerLevels();
+  if (towerLevel === null || levels.indexOf(towerLevel) < 0) towerLevel = levels.length ? levels[0] : null;
+  levelPage = 1;
+  buildLevelGrid();
   onQueryChange();
+}
+function buildLevelGrid(){
+  const levels = towerLevels();
+  const total = Math.max(1, Math.ceil(levels.length / LEVELS_PER_PAGE));
+  if (levelPage > total) levelPage = total;
+  if (levelPage < 1) levelPage = 1;
+  const start = (levelPage - 1) * LEVELS_PER_PAGE;
+  const pageLevels = levels.slice(start, start + LEVELS_PER_PAGE);
+  document.getElementById("ddg-level").innerHTML = pageLevels.map(s =>
+    '<button class="' + (s === towerLevel ? "sel" : "") + '" onclick="selectLevel(' + s + ')">' + s + '</button>'
+  ).join("");
+  document.getElementById("dd-level-pageinfo").textContent = levelPage + " / " + total;
+  const btns = document.querySelectorAll("#ddp-level .dd-pager .mini");
+  if (btns.length >= 2){ btns[0].disabled = levelPage <= 1; btns[1].disabled = levelPage >= total; }
+  document.getElementById("dd-level-label").textContent = towerLevel !== null ? String(towerLevel) : "—";
+}
+function selectLevel(n){
+  towerLevel = n;
+  document.getElementById("dd-level-label").textContent = String(n);
+  document.getElementById("ddp-level").style.display = "none";
+  onQueryChange();
+}
+function ddLevelPage(d){
+  levelPage += d;
+  buildLevelGrid();
 }
 function setMode(m){
   mode = m;
@@ -356,7 +402,7 @@ function currentStageStr(){
   const prefix = TOWERS[ti].prefix;
   const m = document.getElementById("inp-level-manual").value.trim();
   if (m) return prefix + m;
-  return prefix + document.getElementById("sel-level").value;
+  return prefix + (towerLevel !== null ? towerLevel : "");
 }
 function onQueryChange(){
   const el = document.getElementById("tbl-res");
@@ -512,6 +558,11 @@ function toggleSide(force){
   }
   document.body.classList.toggle("side-collapsed", !open);
 }
+document.addEventListener("click", function(e){
+  if (!e.target.closest(".dd")){
+    document.querySelectorAll(".dd-panel").forEach(p => p.style.display = "none");
+  }
+});
 function detectDevice(){
   const mq = window.matchMedia("(max-width: 768px)");
   const el = document.getElementById("device");
