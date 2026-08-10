@@ -65,6 +65,8 @@ tbody tr:last-child td{border-bottom:none}
 .tag.red{color:#ffb4a8;border-color:rgba(255,180,168,.45);background:rgba(255,180,168,.08)}
 .tag.green{color:#b5f0c3;border-color:rgba(181,240,195,.45);background:rgba(181,240,195,.08)}
 .tag.yellow{color:#ffe9a8;border-color:rgba(255,233,168,.45);background:rgba(255,233,168,.08)}
+.eicons{display:flex;flex-wrap:wrap;gap:10px;padding:10px 12px;border-bottom:1px solid var(--panel-border)}
+.eicon img{width:72px;height:72px;border-radius:10px;background:rgba(0,0,0,.3);border:1px solid var(--panel-border);object-fit:cover}
 .loading,.error{color:var(--muted);padding:30px;text-align:center}
 .error{color:#ff9d9d}
 .spinner{display:inline-block;width:26px;height:26px;margin-bottom:10px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
@@ -95,6 +97,7 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
   section.card h2{font-size:15px}
   thead th,tbody td{padding:7px 8px;font-size:12px}
   .qrow input[type=text]{width:120px}
+  .eicon img{width:56px;height:56px}
 }
 html{scroll-behavior:smooth}
 section[id]{scroll-margin-top:16px}
@@ -116,7 +119,7 @@ section[id]{scroll-margin-top:16px}
     <h1><img class="logo" src="icon.png" alt="icon"><span class="title-grad">推图推关 · 怪物数值查询</span></h1>
     <p class="subtitle">主线 Quest / 塔 Tower · 怪物数值查询</p>
     <p>
-      <span class="badge"><span class="dot"></span>GitHub 缓存 · Google Sheets</span>
+      <span class="badge"><span class="dot"></span>数据访问：GitHub（需配置网络环境）</span>
       <span class="badge" id="data-date">数据日期：—</span>
       <span class="badge" id="device">💻 desktop 端</span>
     </p>
@@ -133,12 +136,15 @@ section[id]{scroll-margin-top:16px}
       <button id="tab-tower" onclick="setMode('tower')">塔 Tower</button>
     </div>
     <div class="qrow" id="q-quest" style="display:flex">
-      <label>章节</label><select id="sel-chapter" onchange="onChapterChange()"></select>
-      <label>关卡</label><select id="sel-stage" onchange="onQueryChange()"></select>
+      <label>章节</label><input id="sel-chapter" list="dl-chapter" placeholder="输入或选择" onchange="onChapterChange()">
+      <datalist id="dl-chapter"></datalist>
+      <label>关卡</label><input id="sel-stage" list="dl-stage" placeholder="输入或选择" onchange="onQueryChange()">
+      <datalist id="dl-stage"></datalist>
     </div>
     <div class="qrow" id="q-tower" style="display:none">
       <label>塔</label><select id="sel-tower" onchange="onTowerChange()"></select>
-      <label>层数</label><select id="sel-level" onchange="onQueryChange()"></select>
+      <label>层数</label><input id="sel-level" list="dl-level" placeholder="输入或选择" onchange="onQueryChange()">
+      <datalist id="dl-level"></datalist>
     </div>
     <div class="qrow" style="margin-top:12px">
       <label>怪物名搜索（可选）</label><input type="text" id="inp-name" placeholder="输入怪物名过滤" oninput="onQueryChange()">
@@ -226,20 +232,23 @@ function buildQuestSelects(){
     if (m) set.add(parseInt(m[1], 10));
   }
   const chapters = [...set].sort((a, b) => a - b);
-  const sel = document.getElementById("sel-chapter");
-  sel.innerHTML = chapters.map(c => '<option value="' + c + '">第 ' + c + ' 章</option>').join("");
+  document.getElementById("dl-chapter").innerHTML = chapters.map(c => '<option value="' + c + '">第 ' + c + ' 章</option>').join("");
+  const inpC = document.getElementById("sel-chapter");
+  inpC.value = chapters.length ? String(chapters[0]) : "";
   onChapterChange();
 }
 function onChapterChange(){
   const ch = parseInt(document.getElementById("sel-chapter").value, 10);
+  if (isNaN(ch)) { onQueryChange(); return; }
   const set = new Set();
   for (const r of questData.rows){
     const m = /^(\d+)-(\d+)$/.exec(String(r[0] || ""));
-    if (m && parseInt(m[1], 10) === ch) set.add(parseInt(m[2], 10));
+    if (m && parseInt(m[1], 10) === ch) set.add(m[0]);
   }
-  const stages = [...set].sort((a, b) => a - b);
-  const sel = document.getElementById("sel-stage");
-  sel.innerHTML = stages.map(s => '<option value="' + ch + "-" + s + '">' + ch + "-" + s + '</option>').join("");
+  const stages = [...set].sort();
+  document.getElementById("dl-stage").innerHTML = stages.map(s => '<option value="' + s + '">' + s + '</option>').join("");
+  const inpS = document.getElementById("sel-stage");
+  inpS.value = stages.length ? stages[0] : "";
   onQueryChange();
 }
 function buildTowerSelects(){
@@ -256,8 +265,9 @@ function onTowerChange(){
     if (m && m[1] === t.prefix) set.add(parseInt(m[2], 10));
   }
   const levels = [...set].sort((a, b) => a - b);
-  const sel = document.getElementById("sel-level");
-  sel.innerHTML = levels.map(l => '<option value="' + l + '">' + t.prefix + l + '</option>').join("");
+  document.getElementById("dl-level").innerHTML = levels.map(l => '<option value="' + l + '">' + l + '</option>').join("");
+  const inpL = document.getElementById("sel-level");
+  inpL.value = levels.length ? String(levels[0]) : "";
   onQueryChange();
 }
 function setMode(m){
@@ -277,7 +287,7 @@ function onQueryChange(){
     const ti = parseInt(document.getElementById("sel-tower").value, 10);
     const lv = document.getElementById("sel-level").value;
     const prefix = TOWERS[ti].prefix;
-    renderRows(towerData, r => String(r[0]) === prefix + lv, prefix + lv + " 层");
+    renderRows(towerData, r => String(r[0]) === prefix + lv, lv + " 层");
   }
 }
 function renderRows(data, filter, note){
@@ -288,16 +298,24 @@ function renderRows(data, filter, note){
     rows = rows.filter(r => String(r[1] || "").toLowerCase().indexOf(nameFilter.toLowerCase()) >= 0);
   }
   document.getElementById("res-note").textContent = note + " · 共 " + rows.length + " 只怪物";
+  let icons = "";
+  for (const r of rows){
+    const icon = String(r[16] || "").trim();
+    if (!icon) continue;
+    const rarity = String(r[3] || "").toLowerCase().replace("lr+", "lr");
+    const level = String(r[4] || "");
+    const type = (parseInt(icon, 10) || 0) < 10000 ? 0 : 1;
+    const src = "https://api.tamamo.dev/Generate/Character?icon=" + encodeURIComponent(icon)
+      + "&rarity=" + encodeURIComponent(rarity) + "&level=" + encodeURIComponent(level)
+      + "&link=0&type=" + type;
+    icons += '<span class="eicon" title="' + esc(r[1]) + " (" + esc(r[3]) + " Lv" + esc(level) + ')"><img src="' + src + '" loading="lazy" alt="' + esc(r[1]) + '"></span>';
+  }
   let body = "";
   for (const r of rows){
-    const attr = String(r[2] || "").trim();
-    const tagCls = ELEMENT_TAG[attr] || "";
+    const stageShow = mode === "tower" ? String(r[0]).replace(/^.+?(\d+)$/, "$1") : String(r[0]);
     body += "<tr>"
-      + "<td>" + esc(r[0]) + "</td>"
+      + "<td>" + esc(stageShow) + "</td>"
       + '<td class="mname">' + esc(r[1]) + "</td>"
-      + "<td>" + (attr ? '<span class="tag ' + tagCls + '">' + esc(attr) + "</span>" : "—") + "</td>"
-      + "<td>" + esc(r[3]) + "</td>"
-      + "<td>" + esc(r[4]) + "</td>"
       + "<td>" + esc(r[5]) + "</td>"
       + "<td>" + esc(r[6]) + "</td>"
       + "<td>" + esc(r[7]) + "</td>"
@@ -311,9 +329,10 @@ function renderRows(data, filter, note){
       + "<td>" + esc(r[15]) + "</td>"
       + "</tr>";
   }
-  el.innerHTML = '<table><thead><tr><th>关卡</th><th>怪物名</th><th>属性</th><th>稀有度</th><th>等级</th><th>速度</th><th>共鸣</th><th>攻击</th><th>防御</th><th>血量</th><th>魔防</th><th>物防</th><th>战技</th><th>耐力</th><th>魔力</th><th>力量</th></tr></thead><tbody>'
-    + (body || '<tr><td colspan="16" style="color:var(--muted)">无匹配怪物</td></tr>')
+  const table = '<table><thead><tr><th>关卡</th><th>怪物名</th><th>速度</th><th>共鸣</th><th>攻击</th><th>防御</th><th>血量</th><th>魔防</th><th>物防</th><th>战技</th><th>耐力</th><th>魔力</th><th>力量</th></tr></thead><tbody>'
+    + (body || '<tr><td colspan="13" style="color:var(--muted)">无匹配怪物</td></tr>')
     + "</tbody></table>";
+  el.innerHTML = (icons ? '<div class="eicons">' + icons + "</div>" : "") + table;
 }
 
 function toggleSide(force){
