@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>推图推关 · 怪物数值查询</title>
+<link rel="icon" href="icon.png">
+<style>
+:root{
+  --bg:#0d0b14;
+  --panel:rgba(255,255,255,.045);
+  --panel-border:rgba(255,255,255,.09);
+  --gold:#d9b26a;
+  --accent:#7c6cf0;
+  --text:#e8e6f0;
+  --muted:#9a94ad;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--text);
+  font-family:"Segoe UI","Microsoft YaHei","PingFang SC",Arial,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(124,108,240,.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(217,178,106,.10), transparent 60%),
+    linear-gradient(180deg,#0d0b14 0%,#12101c 55%,#0a0910 100%);
+  background-attachment:fixed;
+}
+.wrap{max-width:1200px;margin:0 auto;padding:36px 20px 60px}
+header.top{text-align:center;padding:34px 20px 24px;border-bottom:1px solid var(--panel-border);margin-bottom:26px}
+header.top h1{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 10px;font-size:30px;letter-spacing:1px}
+h1 .logo{width:42px;height:42px;border-radius:10px;box-shadow:0 0 18px rgba(217,178,106,.35)}
+h1 .title-grad{background:linear-gradient(90deg,#f5e6c4,#d9b26a 45%,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+header.top .subtitle{margin:0 0 12px;color:var(--muted);font-size:14px}
+.badge{display:inline-block;padding:5px 12px;border:1px solid rgba(217,178,106,.4);border-radius:999px;color:var(--gold);font-size:12px;background:rgba(217,178,106,.08);margin:3px}
+.badge.cache-ok{color:#9be8b2;border-color:rgba(155,232,178,.4);background:rgba(155,232,178,.08)}
+.toolbar{display:flex;justify-content:flex-end;gap:10px;margin:0 0 14px}
+.toolbar button,button.mini{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;border:none;border-radius:999px;padding:8px 18px;font-size:13px;cursor:pointer;transition:filter .2s,transform .1s}
+.toolbar button:hover,button.mini:hover{filter:brightness(1.12)}
+button.mini{padding:6px 14px;font-size:12px}
+section.card{background:var(--panel);border:1px solid var(--panel-border);border-radius:16px;padding:20px 22px 24px;margin:0 0 24px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+section.card h2{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-size:18px;color:#f1eef8}
+section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;background:linear-gradient(180deg,var(--gold),var(--accent))}
+.h2-note{color:var(--muted);font-size:12px;font-weight:400;margin-left:auto}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tabs button{background:rgba(255,255,255,.05);border:1px solid var(--panel-border);color:var(--text);border-radius:999px;padding:8px 18px;font-size:13px;cursor:pointer}
+.tabs button.active{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;border-color:transparent;font-weight:600}
+.qrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.qrow label{color:var(--muted);font-size:13px}
+.qrow select,.qrow input{background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:7px 10px;font-size:13px;outline:none}
+.qrow input[type=text]{width:180px}
+.table-wrap{overflow-x:auto;border:1px solid var(--panel-border);border-radius:10px;background:rgba(0,0,0,.18)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{position:sticky;top:0;background:#1c1730;color:var(--gold);font-weight:600;text-align:left;white-space:nowrap;padding:9px 12px;border-bottom:1px solid rgba(217,178,106,.25)}
+tbody td{padding:8px 12px;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
+tbody tr:nth-child(even){background:rgba(255,255,255,.03)}
+tbody tr:hover{background:rgba(124,108,240,.14)}
+tbody tr:last-child td{border-bottom:none}
+.mname{font-weight:600;color:#f1eef8}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;border:1px solid var(--panel-border)}
+.tag.light{color:#ffe9a8;border-color:rgba(255,233,168,.45);background:rgba(255,233,168,.08)}
+.tag.dark{color:#c9b8ff;border-color:rgba(201,184,255,.45);background:rgba(201,184,255,.08)}
+.tag.blue{color:#9ecfff;border-color:rgba(158,207,255,.45);background:rgba(158,207,255,.08)}
+.tag.red{color:#ffb4a8;border-color:rgba(255,180,168,.45);background:rgba(255,180,168,.08)}
+.tag.green{color:#b5f0c3;border-color:rgba(181,240,195,.45);background:rgba(181,240,195,.08)}
+.tag.yellow{color:#ffe9a8;border-color:rgba(255,233,168,.45);background:rgba(255,233,168,.08)}
+.loading,.error{color:var(--muted);padding:30px;text-align:center}
+.error{color:#ff9d9d}
+.spinner{display:inline-block;width:26px;height:26px;margin-bottom:10px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:10px;line-height:1.9}
+footer a{color:#a99fd9}
+/* ===== 左侧悬浮标题列 ===== */
+.side{position:fixed;left:0;top:0;bottom:0;width:230px;background:rgba(16,13,26,.97);border-right:1px solid var(--panel-border);padding:22px 14px;z-index:80;transform:translateX(-100%);transition:transform .25s ease;overflow-y:auto}
+.side.open{transform:translateX(0)}
+.side .side-title{color:var(--gold);font-weight:700;font-size:15px;margin:0 0 16px;padding:0 6px;letter-spacing:1px}
+.side .side-link{display:block;color:var(--text);text-decoration:none;padding:11px 12px;border-radius:9px;margin-bottom:6px;font-size:14px;line-height:1.35}
+.side .side-link:hover{background:rgba(124,108,240,.18)}
+.side .side-link.active{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;font-weight:600}
+.side .side-link .sub{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.side-open{position:fixed;left:10px;top:10px;z-index:90;width:40px;height:40px;border-radius:10px;border:1px solid var(--panel-border);background:rgba(20,17,32,.9);color:var(--gold);font-size:18px;cursor:pointer;display:none}
+.side-close{position:absolute;right:10px;top:10px;width:30px;height:30px;border:none;background:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
+.side-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:70;display:none}
+.side-mask.show{display:block}
+@media (min-width:769px){
+  .side{transform:none}
+  .side-close{display:none}
+  body{padding-left:230px}
+}
+@media (max-width:768px){
+  .side-open{display:block}
+  header.top{padding-top:52px}
+  .wrap{padding:16px 10px 40px}
+  header.top h1{font-size:22px;flex-wrap:wrap}
+  h1 .logo{width:32px;height:32px}
+  section.card{padding:14px 12px 18px;margin-bottom:16px}
+  section.card h2{font-size:15px}
+  thead th,tbody td{padding:7px 8px;font-size:12px}
+  .qrow input[type=text]{width:120px}
+}
+</style>
+</head>
+<body>
+<div class="side-mask" id="side-mask" onclick="toggleSide(false)"></div>
+<nav class="side" id="side">
+  <button class="side-close" onclick="toggleSide(false)">×</button>
+  <div class="side-title">📊 MementoMori 数据</div>
+  <a class="side-link" href="index.html">charaPage<span class="sub">巅峰使用率 · 卡池</span></a>
+  <a class="side-link active" href="monsters.html">推图推关 · 怪物数值查询<span class="sub">主线 Quest / 塔 Tower</span></a>
+</nav>
+<button class="side-open" id="side-open" onclick="toggleSide(true)">☰</button>
+
+<div class="wrap">
+  <header class="top">
+    <h1><img class="logo" src="icon.png" alt="icon"><span class="title-grad">推图推关 · 怪物数值查询</span></h1>
+    <p class="subtitle">主线 Quest / 塔 Tower · 怪物数值查询</p>
+    <p>
+      <span class="badge"><span class="dot"></span>GitHub 缓存 · Google Sheets</span>
+      <span class="badge" id="data-date">数据日期：—</span>
+      <span class="badge" id="device">💻 PC 端</span>
+    </p>
+  </header>
+
+  <div class="toolbar">
+    <button id="btn-refresh" onclick="loadData(true)">🔄 刷新数据</button>
+  </div>
+
+  <section class="card">
+    <h2>查询条件</h2>
+    <div class="tabs">
+      <button id="tab-quest" class="active" onclick="setMode('quest')">主线 Quest</button>
+      <button id="tab-tower" onclick="setMode('tower')">塔 Tower</button>
+    </div>
+    <div class="qrow" id="q-quest" style="display:flex">
+      <label>章节</label><select id="sel-chapter" onchange="onChapterChange()"></select>
+      <label>关卡</label><select id="sel-stage" onchange="onQueryChange()"></select>
+    </div>
+    <div class="qrow" id="q-tower" style="display:none">
+      <label>塔</label><select id="sel-tower" onchange="onTowerChange()"></select>
+      <label>层数</label><select id="sel-level" onchange="onQueryChange()"></select>
+    </div>
+    <div class="qrow" style="margin-top:12px">
+      <label>怪物名搜索（可选）</label><input type="text" id="inp-name" placeholder="输入怪物名过滤" oninput="onQueryChange()">
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>怪物数值<span class="h2-note" id="res-note"></span></h2>
+    <div class="table-wrap" id="tbl-res"></div>
+  </section>
+
+  <footer>
+    原始数据来自 <a href="https://mentemori.icu/" target="_blank" rel="noopener">mentemori.icu</a> · 网页数据存于 <a href="https://github.com/WillieumK/mementomori-charaPage" target="_blank" rel="noopener">GitHub</a> · 表格数据 Google Sheets（<a href="https://docs.google.com/spreadsheets/d/1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA" target="_blank" rel="noopener">quest</a> / <a href="https://docs.google.com/spreadsheets/d/1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA" target="_blank" rel="noopener">tower</a>）
+  </footer>
+</div>
+
+<script>
+"use strict";
+const CARD_SHEET_ID = "1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA";
+const DATA_QUEST = "data/quest.json";
+const DATA_TOWER = "data/tower.json";
+const GOOGLE_QUEST = "https://docs.google.com/spreadsheets/d/" + CARD_SHEET_ID + "/gviz/tq?gid=1602712043&tqx=out:json";
+const GOOGLE_TOWER = "https://docs.google.com/spreadsheets/d/" + CARD_SHEET_ID + "/gviz/tq?gid=698292977&tqx=out:json";
+const IDX = [3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
+const COLS = ["name", "attr", "stage", "reson", "note", "atk", "def", "hp", "mdef", "pdef"];
+const ELEMENT_TAG = { "光":"light", "暗":"dark", "蓝":"blue", "红":"red", "绿":"green", "黄":"yellow", "翠":"green" };
+const TOWERS = [
+  { prefix: "無", label: "无穷塔" },
+  { prefix: "藍", label: "蓝塔" },
+  { prefix: "紅", label: "红塔" },
+  { prefix: "黄", label: "黄塔" },
+  { prefix: "翠", label: "绿塔" }
+];
+
+let questData = null, towerData = null;
+let mode = "quest";
+
+function parseGvizJson(text){
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  return JSON.parse(text.slice(start, end + 1));
+}
+function cellVal(r, i){
+  try{
+    const c = r && r.c ? r.c : null;
+    if (!c || i >= c.length) return null;
+    const cell = c[i];
+    return cell ? (cell.f !== undefined ? cell.f : cell.v) : null;
+  }catch(e){ return null; }
+}
+function esc(v){
+  return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+async function loadCompact(url, googleUrl){
+  try{
+    const resp = await fetch(url);
+    if (resp.ok){
+      const d = await resp.json();
+      if (d && Array.isArray(d.rows)) return d;
+    }
+  }catch(e){ /* 本地缓存未就绪 */ }
+  const text = await (await fetch(googleUrl)).text();
+  const data = parseGvizJson(text);
+  const rows = data.table.rows;
+  const date = String(cellVal(rows[0], 0) || "");
+  return { date: date, cols: COLS, rows: rows.slice(1).map(r => IDX.map(i => cellVal(r, i))) };
+}
+
+function fmtDate(d){
+  const s = String(d || "").replace(/\.\d+$/, "");
+  const m = /^(\d{2})(\d{2})(\d{2})$/.exec(s);
+  return m ? "20" + m[1] + "-" + m[2] + "-" + m[3] : (s || "—");
+}
+
+async function loadData(force){
+  const el = document.getElementById("tbl-res");
+  el.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在读取怪物数据…</div>';
+  try{
+    if (!questData || force) questData = await loadCompact(DATA_QUEST, GOOGLE_QUEST);
+    if (!towerData || force) towerData = await loadCompact(DATA_TOWER, GOOGLE_TOWER);
+    const dq = fmtDate(questData.date);
+    const dt = fmtDate(towerData.date);
+    document.getElementById("data-date").textContent = "主线 " + dq + " · 塔 " + dt;
+    buildQuestSelects();
+    buildTowerSelects();
+    onQueryChange();
+  }catch(err){
+    el.innerHTML = '<div class="error">❌ 读取失败：' + esc(err.message) + '<br>请稍后再试，或点击“刷新数据”。</div>';
+  }
+}
+
+function buildQuestSelects(){
+  const set = new Set();
+  for (const r of questData.rows){
+    const m = /^(\d+)-(\d+)$/.exec(String(r[2] || ""));
+    if (m) set.add(parseInt(m[1], 10));
+  }
+  const chapters = [...set].sort((a, b) => a - b);
+  const sel = document.getElementById("sel-chapter");
+  sel.innerHTML = chapters.map(c => '<option value="' + c + '">第 ' + c + ' 章</option>').join("");
+  onChapterChange();
+}
+function onChapterChange(){
+  const ch = parseInt(document.getElementById("sel-chapter").value, 10);
+  const set = new Set();
+  for (const r of questData.rows){
+    const m = /^(\d+)-(\d+)$/.exec(String(r[2] || ""));
+    if (m && parseInt(m[1], 10) === ch) set.add(parseInt(m[2], 10));
+  }
+  const stages = [...set].sort((a, b) => a - b);
+  const sel = document.getElementById("sel-stage");
+  sel.innerHTML = stages.map(s => '<option value="' + ch + "-" + s + '">' + ch + "-" + s + '</option>').join("");
+  onQueryChange();
+}
+function buildTowerSelects(){
+  const sel = document.getElementById("sel-tower");
+  sel.innerHTML = TOWERS.map((t, i) => '<option value="' + i + '">' + t.label + '</option>').join("");
+  onTowerChange();
+}
+function onTowerChange(){
+  const ti = parseInt(document.getElementById("sel-tower").value, 10);
+  const t = TOWERS[ti];
+  const set = new Set();
+  for (const r of towerData.rows){
+    const m = /^(.+?)(\d+)$/.exec(String(r[2] || ""));
+    if (m && m[1] === t.prefix) set.add(parseInt(m[2], 10));
+  }
+  const levels = [...set].sort((a, b) => a - b);
+  const sel = document.getElementById("sel-level");
+  sel.innerHTML = levels.map(l => '<option value="' + l + '">' + t.prefix + l + '</option>').join("");
+  onQueryChange();
+}
+function setMode(m){
+  mode = m;
+  document.getElementById("tab-quest").classList.toggle("active", m === "quest");
+  document.getElementById("tab-tower").classList.toggle("active", m === "tower");
+  document.getElementById("q-quest").style.display = m === "quest" ? "flex" : "none";
+  document.getElementById("q-tower").style.display = m === "tower" ? "flex" : "none";
+  onQueryChange();
+}
+function onQueryChange(){
+  const el = document.getElementById("tbl-res");
+  if (mode === "quest" && questData){
+    const stage = document.getElementById("sel-stage").value;
+    renderRows(questData, r => String(r[2]) === stage, "关卡 " + stage);
+  } else if (mode === "tower" && towerData){
+    const ti = parseInt(document.getElementById("sel-tower").value, 10);
+    const lv = document.getElementById("sel-level").value;
+    const prefix = TOWERS[ti].prefix;
+    renderRows(towerData, r => String(r[2]) === prefix + lv, prefix + lv + " 层");
+  }
+}
+function renderRows(data, filter, note){
+  const el = document.getElementById("tbl-res");
+  const nameFilter = document.getElementById("inp-name").value.trim();
+  let rows = data.rows.filter(filter);
+  if (nameFilter){
+    rows = rows.filter(r => String(r[0] || "").toLowerCase().indexOf(nameFilter.toLowerCase()) >= 0);
+  }
+  document.getElementById("res-note").textContent = note + " · 共 " + rows.length + " 只怪物";
+  let body = "";
+  for (const r of rows){
+    const attr = String(r[1] || "").trim();
+    const tagCls = ELEMENT_TAG[attr] || "";
+    body += "<tr>"
+      + '<td class="mname">' + esc(r[0]) + "</td>"
+      + "<td>" + (attr ? '<span class="tag ' + tagCls + '">' + esc(attr) + "</span>" : "—") + "</td>"
+      + "<td>" + esc(r[2]) + "</td>"
+      + "<td>" + esc(r[3]) + "</td>"
+      + "<td>" + esc(r[4]) + "</td>"
+      + "<td>" + esc(r[5]) + "</td>"
+      + "<td>" + esc(r[6]) + "</td>"
+      + "<td>" + esc(r[7]) + "</td>"
+      + "<td>" + esc(r[8]) + "</td>"
+      + "<td>" + esc(r[9]) + "</td>"
+      + "</tr>";
+  }
+  el.innerHTML = '<table><thead><tr><th>怪物名</th><th>属性</th><th>关卡</th><th>共鸣</th><th>备注</th><th>攻击力</th><th>防御力</th><th>血量</th><th>魔防</th><th>物防</th></tr></thead><tbody>'
+    + (body || '<tr><td colspan="10" style="color:var(--muted)">无匹配怪物</td></tr>')
+    + "</tbody></table>";
+}
+
+function toggleSide(force){
+  const s = document.getElementById("side");
+  const m = document.getElementById("side-mask");
+  const open = typeof force === "boolean" ? force : !s.classList.contains("open");
+  s.classList.toggle("open", open);
+  if (m) m.classList.toggle("show", open);
+}
+function detectDevice(){
+  const mq = window.matchMedia("(max-width: 768px)");
+  const el = document.getElementById("device");
+  const apply = () => {
+    const isM = mq.matches;
+    document.documentElement.classList.toggle("mobile", isM);
+    if (el) el.textContent = isM ? "📱 移动端" : "💻 PC 端";
+  };
+  apply();
+  if (mq.addEventListener) mq.addEventListener("change", apply);
+  else if (mq.addListener) mq.addListener(apply);
+}
+
+detectDevice();
+loadData(false);
+</script>
+</body>
+</html>

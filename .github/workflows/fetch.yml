@@ -20,6 +20,33 @@ jobs:
           curl -fsSL "https://docs.google.com/spreadsheets/d/1VrnhPswVqPPbbC-Gps_e9Um7tWulYg4BI66HMt_OBZw/gviz/tq?gid=1850986413&tqx=out:json" -o data/usage.json
           ls -la data
 
+      - name: 抓取并压缩 quest / tower 数据
+        run: |
+          python3 - <<'PYEOF'
+          import json, urllib.request, time
+          SID = "1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA"
+          IDX = [3, 4, 5, 7, 8, 9, 10, 11, 12, 13]
+          COLS = ["name", "attr", "stage", "reson", "note", "atk", "def", "hp", "mdef", "pdef"]
+          def cv(r, i):
+              try:
+                  c = r.get("c") if isinstance(r, dict) else None
+                  if not c or i >= len(c): return None
+                  cell = c[i]
+                  return cell.get("f", cell.get("v")) if isinstance(cell, dict) else None
+              except Exception:
+                  return None
+          for fn, gid in [("quest.json", "1602712043"), ("tower.json", "698292977")]:
+              url = "https://docs.google.com/spreadsheets/d/%s/gviz/tq?gid=%s&tqx=out:json&x=%d" % (SID, gid, int(time.time()))
+              t = urllib.request.urlopen(url, timeout=240).read().decode("utf-8")
+              d = json.loads(t[t.index("{"):t.rindex("}")+1])
+              rows = d["table"]["rows"]
+              date = str(cv(rows[0], 0) or "")
+              out = {"date": date, "cols": COLS, "rows": [[cv(r, i) for i in IDX] for r in rows[1:]]}
+              with open("data/" + fn, "w", encoding="utf-8") as f:
+                  json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
+          PYEOF
+          ls -la data
+
       - name: 提交数据更新到 main
         run: |
           git config user.name "GitHub Actions"

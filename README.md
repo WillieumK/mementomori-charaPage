@@ -10,3 +10,9 @@
 - `.github/workflows/deploy.yml` 仅负责把页面部署到 GitHub Pages，不再生成内容。
 
 - 预览图：GitHub 仓库只保留一张 `preview_screenshot.png`（随版本更新，不留档）；每个版本另存本地 `previews/260810_HHMM.png` 存档（`.gitignore` 忽略，不上传）。
+
+## 分页
+- 左侧悬浮标题列导航（桌面常驻，移动端默认收起、点 ☰ 展开）：
+  - `index.html` — charaPage（巅峰使用率统计 & 当期卡池表）
+  - `monsters.html` — 推图推关 · 怪物数值查询（主线 Quest 12 章 + 塔 Tower 5 座：无穷/蓝/红/黄/绿）
+- quest/tower 数据由 GitHub Actions 同一定时抓取并压缩到 `data/quest.json`、`data/tower.json`（只保留查询需要的列）。
