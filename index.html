@@ -138,6 +138,9 @@ tbody tr:nth-child(even){background:rgba(255,255,255,.03)}
 tbody tr:hover{background:rgba(124,108,240,.14)}
 tbody tr:last-child td{border-bottom:none}
 .cell-name{font-weight:600;color:#f1eef8}
+.cell-two-line{font-size:12px;line-height:1.15;white-space:nowrap;display:inline-block;vertical-align:middle}
+.cell-two-line .l1::after{content:" "}
+.cell-two-line .lb{display:none}
 .cell-ico{min-width:64px}
 .cell-ico .ico{
   display:inline-block;
@@ -216,7 +219,11 @@ footer a{color:#a99fd9}
   section.card h2{font-size:15px}
   .h2-note{flex-wrap:wrap}
   thead th, tbody td{padding:7px 8px;font-size:12px}
-  .cell-ico .ico{width:40px;height:40px;border-radius:6px}
+  .cell-ico{padding:4px 2px}
+  .cell-ico .ico{width:34px;height:34px;border-radius:5px}
+  .cell-two-line{font-size:10px;line-height:1.1;white-space:normal}
+  .cell-two-line .lb{display:inline}
+  .cell-two-line .l1::after{content:""}
   .toolbar{justify-content:center}
   .grp{display:block}
   .grp-label{line-height:normal;padding:8px 4px;font-size:15px}
@@ -460,12 +467,18 @@ function iconsCell(ids){
 function esc(v){
   return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
+function twoLineNames(s){
+  const parts = String(s || "").split(/\s+/).filter(Boolean);
+  if (parts.length <= 3) return esc(s);
+  const mid = Math.ceil(parts.length / 2);
+  return '<span class="cell-two-line"><span class="l1">' + esc(parts.slice(0, mid).join(" ")) + '</span><br class="lb"><span class="l2">' + esc(parts.slice(mid).join(" ")) + '</span></span>';
+}
 function renderOverview(ov){
   let body = "";
   for (const r of ov){
     body += "<tr>"
       + '<td class="cell-name">' + esc(r.name) + "</td>"
-      + "<td>" + esc(r.latest) + "</td>"
+      + "<td>" + (r.name === "新星辰" ? twoLineNames(r.latest) : esc(r.latest)) + "</td>"
       + "<td>" + esc(r.prev) + "</td>"
       + "<td>" + esc(r.upcoming) + "</td>"
       + iconsCell(r.ids)
