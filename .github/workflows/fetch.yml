@@ -1,0 +1,39 @@
+name: 更新数据并部署
+on:
+  schedule:
+    # 北京时间 4 / 10 / 16 / 22 点 = UTC 20 / 02 / 08 / 14 点
+    - cron: '0 20,2,8,14 * * *'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 抓取 Google Sheets 数据（卡-0 + 动态率）
+        run: |
+          mkdir -p data
+          curl -fsSL "https://docs.google.com/spreadsheets/d/1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA/gviz/tq?gid=157463114&tqx=out:json" -o data/card0.json
+          curl -fsSL "https://docs.google.com/spreadsheets/d/1VrnhPswVqPPbbC-Gps_e9Um7tWulYg4BI66HMt_OBZw/gviz/tq?gid=1850986413&tqx=out:json" -o data/usage.json
+          ls -la data
+
+      - name: 提交数据更新到 main
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add data/
+          if ! git diff --cached --quiet; then
+            git commit -m "数据缓存更新 $(date '+%Y-%m-%d %H:%M')"
+            git push
+          fi
+
+      - name: 部署到 GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          publish_branch: gh-pages
+          keep_files: false
