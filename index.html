@@ -173,7 +173,7 @@ tbody tr:last-child td{border-bottom:none}
 .usage-wrap{padding:8px 10px}
 .grp{display:flex;align-items:flex-start;border-bottom:1px solid rgba(255,255,255,.06)}
 .grp:last-child{border-bottom:none}
-.grp-label{flex:0 0 80px;padding:14px 10px;font-weight:700;color:var(--gold);font-size:20px;line-height:90px}
+.grp-label{flex:0 0 80px;padding:14px 10px;font-weight:700;color:var(--gold);font-size:20px;line-height:90px;white-space:nowrap}
 .grp .icons{display:flex;flex-wrap:wrap;flex:0 0 900px;width:900px;gap:0;padding:8px 0}
 .ic{width:90px;height:90px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
 .ic img{width:100%;height:100%;object-fit:cover;display:block}
@@ -475,10 +475,10 @@ let pctOpen = false;
 
 function groupsFor(list){
   return [
-    { label: "20以上", min: 0.20,  max: Infinity },
-    { label: "10-20",  min: 0.10,  max: 0.20 },
-    { label: "10以下", min: 1e-9,  max: 0.10 }
-  ].map(g => ({ label: g.label, items: list.filter(x => x.v >= g.min && x.v < g.max) }));
+    { label: "18%+", th: 0.18, cap: Infinity },
+    { label: "13%+", th: 0.13, cap: Infinity },
+    { label: "3%+",  th: 0.03, cap: 30 }
+  ].map(g => ({ label: g.label, items: list.filter(x => x.v >= g.th).slice(0, g.cap) }));
 }
 function renderUsage(){
   const wrap = document.getElementById("tbl-usage");
