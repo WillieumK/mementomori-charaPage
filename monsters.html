@@ -160,10 +160,7 @@ section[id]{scroll-margin-top:16px}
 const CARD_SHEET_ID = "1zfViKEEZCk1fdozmX_i1Udtc115QxeWP3lzaf3vrvYA";
 const DATA_QUEST = "data/quest.json";
 const DATA_TOWER = "data/tower.json";
-const GOOGLE_QUEST = "https://docs.google.com/spreadsheets/d/" + CARD_SHEET_ID + "/gviz/tq?gid=1602712043&tqx=out:json";
-const GOOGLE_TOWER = "https://docs.google.com/spreadsheets/d/" + CARD_SHEET_ID + "/gviz/tq?gid=698292977&tqx=out:json";
-const IDX = [3, 4, 5, 7, 8, 9, 10, 11, 12, 13];
-const COLS = ["name", "attr", "stage", "reson", "note", "atk", "def", "hp", "mdef", "pdef"];
+const COLS = ["stage", "name", "attr", "rarity", "rank", "speed", "reson", "atk", "def", "hp", "mdef", "pdef", "skill", "stamina", "magic", "strength"];
 const ELEMENT_TAG = { "光":"light", "暗":"dark", "蓝":"blue", "红":"red", "绿":"green", "黄":"yellow", "翠":"green" };
 const TOWERS = [
   { prefix: "無", label: "无穷塔" },
@@ -193,19 +190,12 @@ function esc(v){
   return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-async function loadCompact(url, googleUrl){
-  try{
-    const resp = await fetch(url);
-    if (resp.ok){
-      const d = await resp.json();
-      if (d && Array.isArray(d.rows)) return d;
-    }
-  }catch(e){ /* 本地缓存未就绪 */ }
-  const text = await (await fetch(googleUrl)).text();
-  const data = parseGvizJson(text);
-  const rows = data.table.rows;
-  const date = String(cellVal(rows[0], 0) || "");
-  return { date: date, cols: COLS, rows: rows.slice(1).map(r => IDX.map(i => cellVal(r, i))) };
+async function loadCompact(url){
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error("数据缓存未就绪(" + resp.status + ")，请点击刷新或稍后再试");
+  const d = await resp.json();
+  if (!d || !Array.isArray(d.rows)) throw new Error("数据格式错误");
+  return d;
 }
 
 function fmtDate(d){
@@ -218,11 +208,9 @@ async function loadData(force){
   const el = document.getElementById("tbl-res");
   el.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在读取怪物数据…</div>';
   try{
-    if (!questData || force) questData = await loadCompact(DATA_QUEST, GOOGLE_QUEST);
-    if (!towerData || force) towerData = await loadCompact(DATA_TOWER, GOOGLE_TOWER);
-    const dq = fmtDate(questData.date);
-    const dt = fmtDate(towerData.date);
-    document.getElementById("data-date").textContent = "主线 " + dq + " · 塔 " + dt;
+    if (!questData || force) questData = await loadCompact(DATA_QUEST);
+    if (!towerData || force) towerData = await loadCompact(DATA_TOWER);
+    document.getElementById("data-date").textContent = "数据源：masterbook（在线）";
     buildQuestSelects();
     buildTowerSelects();
     onQueryChange();
@@ -234,7 +222,7 @@ async function loadData(force){
 function buildQuestSelects(){
   const set = new Set();
   for (const r of questData.rows){
-    const m = /^(\d+)-(\d+)$/.exec(String(r[2] || ""));
+    const m = /^(\d+)-(\d+)$/.exec(String(r[0] || ""));
     if (m) set.add(parseInt(m[1], 10));
   }
   const chapters = [...set].sort((a, b) => a - b);
@@ -246,7 +234,7 @@ function onChapterChange(){
   const ch = parseInt(document.getElementById("sel-chapter").value, 10);
   const set = new Set();
   for (const r of questData.rows){
-    const m = /^(\d+)-(\d+)$/.exec(String(r[2] || ""));
+    const m = /^(\d+)-(\d+)$/.exec(String(r[0] || ""));
     if (m && parseInt(m[1], 10) === ch) set.add(parseInt(m[2], 10));
   }
   const stages = [...set].sort((a, b) => a - b);
@@ -264,7 +252,7 @@ function onTowerChange(){
   const t = TOWERS[ti];
   const set = new Set();
   for (const r of towerData.rows){
-    const m = /^(.+?)(\d+)$/.exec(String(r[2] || ""));
+    const m = /^(.+?)(\d+)$/.exec(String(r[0] || ""));
     if (m && m[1] === t.prefix) set.add(parseInt(m[2], 10));
   }
   const levels = [...set].sort((a, b) => a - b);
@@ -284,12 +272,12 @@ function onQueryChange(){
   const el = document.getElementById("tbl-res");
   if (mode === "quest" && questData){
     const stage = document.getElementById("sel-stage").value;
-    renderRows(questData, r => String(r[2]) === stage, "关卡 " + stage);
+    renderRows(questData, r => String(r[0]) === stage, "关卡 " + stage);
   } else if (mode === "tower" && towerData){
     const ti = parseInt(document.getElementById("sel-tower").value, 10);
     const lv = document.getElementById("sel-level").value;
     const prefix = TOWERS[ti].prefix;
-    renderRows(towerData, r => String(r[2]) === prefix + lv, prefix + lv + " 层");
+    renderRows(towerData, r => String(r[0]) === prefix + lv, prefix + lv + " 层");
   }
 }
 function renderRows(data, filter, note){
@@ -297,17 +285,17 @@ function renderRows(data, filter, note){
   const nameFilter = document.getElementById("inp-name").value.trim();
   let rows = data.rows.filter(filter);
   if (nameFilter){
-    rows = rows.filter(r => String(r[0] || "").toLowerCase().indexOf(nameFilter.toLowerCase()) >= 0);
+    rows = rows.filter(r => String(r[1] || "").toLowerCase().indexOf(nameFilter.toLowerCase()) >= 0);
   }
   document.getElementById("res-note").textContent = note + " · 共 " + rows.length + " 只怪物";
   let body = "";
   for (const r of rows){
-    const attr = String(r[1] || "").trim();
+    const attr = String(r[2] || "").trim();
     const tagCls = ELEMENT_TAG[attr] || "";
     body += "<tr>"
-      + '<td class="mname">' + esc(r[0]) + "</td>"
+      + "<td>" + esc(r[0]) + "</td>"
+      + '<td class="mname">' + esc(r[1]) + "</td>"
       + "<td>" + (attr ? '<span class="tag ' + tagCls + '">' + esc(attr) + "</span>" : "—") + "</td>"
-      + "<td>" + esc(r[2]) + "</td>"
       + "<td>" + esc(r[3]) + "</td>"
       + "<td>" + esc(r[4]) + "</td>"
       + "<td>" + esc(r[5]) + "</td>"
@@ -315,10 +303,16 @@ function renderRows(data, filter, note){
       + "<td>" + esc(r[7]) + "</td>"
       + "<td>" + esc(r[8]) + "</td>"
       + "<td>" + esc(r[9]) + "</td>"
+      + "<td>" + esc(r[10]) + "</td>"
+      + "<td>" + esc(r[11]) + "</td>"
+      + "<td>" + esc(r[12]) + "</td>"
+      + "<td>" + esc(r[13]) + "</td>"
+      + "<td>" + esc(r[14]) + "</td>"
+      + "<td>" + esc(r[15]) + "</td>"
       + "</tr>";
   }
-  el.innerHTML = '<table><thead><tr><th>怪物名</th><th>属性</th><th>关卡</th><th>共鸣</th><th>备注</th><th>攻击力</th><th>防御力</th><th>血量</th><th>魔防</th><th>物防</th></tr></thead><tbody>'
-    + (body || '<tr><td colspan="10" style="color:var(--muted)">无匹配怪物</td></tr>')
+  el.innerHTML = '<table><thead><tr><th>关卡</th><th>怪物名</th><th>属性</th><th>稀有度</th><th>等级</th><th>速度</th><th>共鸣</th><th>攻击</th><th>防御</th><th>血量</th><th>魔防</th><th>物防</th><th>战技</th><th>耐力</th><th>魔力</th><th>力量</th></tr></thead><tbody>'
+    + (body || '<tr><td colspan="16" style="color:var(--muted)">无匹配怪物</td></tr>')
     + "</tbody></table>";
 }
 
