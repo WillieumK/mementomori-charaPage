@@ -535,21 +535,37 @@ const NUM_COLS = [4,5,7,8,9,10,11,12,13,14,15];
 let sortCol = 0, sortDir = 1;
 let lastSearch = null;
 function buildCondSelects(){
-  const opts = SEARCH_COLS.map(([ci, lab]) => '<option value="' + ci + '">' + lab + '</option>').join("");
+  const opts = [];
+  for (const [ci, lab] of SEARCH_COLS){
+    if (NUM_COLS.indexOf(ci) >= 0){
+      opts.push('<option value="' + ci + ':gt">' + lab + ' ></option>');
+      opts.push('<option value="' + ci + ':lt">' + lab + ' <</option>');
+    } else {
+      opts.push('<option value="' + ci + ':contains">' + lab + ' 包含</option>');
+    }
+  }
   ["sel-c1","sel-c2","sel-c3"].forEach((id, i) => {
     const sel = document.getElementById(id);
-    sel.innerHTML = opts;
-    sel.value = "1"; // 默认怪物名
+    sel.innerHTML = opts.join("");
+    sel.value = "1:contains"; // 默认怪物名 包含
     onCondColChange(i + 1);
   });
 }
+const OP_MAP = { gt: ">", lt: "<", ge: ">=", le: "<=", eq: "" };
 function activeConds(){
   const out = [];
   for (let i = 1; i <= 3; i++){
-    const cv = parseInt(document.getElementById("sel-c" + i).value, 10);
-    const col = isNaN(cv) ? 1 : cv;
+    const raw = String(document.getElementById("sel-c" + i).value || "");
+    const parts = raw.split(":");
+    const c = parseInt(parts[0], 10);
+    const col = isNaN(c) ? 1 : c;
+    const op = parts[1] || "contains";
     const val = document.getElementById("inp-m" + i).value.trim();
-    if (val) out.push({ col: col, val: val });
+    if (val){
+      let v = val;
+      if (OP_MAP[op] !== undefined && !/^(>=|<=|>|<)/.test(val)) v = OP_MAP[op] + val;
+      out.push({ col: col, val: v });
+    }
   }
   return out;
 }
@@ -557,8 +573,9 @@ function onCondColChange(i){
   const sel = document.getElementById("sel-c" + i);
   const inp = document.getElementById("inp-m" + i);
   if (!sel || !inp) return;
-  const col = parseInt(sel.value, 10);
-  if (NUM_COLS.indexOf(col) >= 0) inp.placeholder = ">数字 或 <数字";
+  const raw = String(sel.value || "");
+  const col = parseInt(raw.split(":")[0], 10);
+  if (NUM_COLS.indexOf(col) >= 0) inp.placeholder = "数字（可用万/亿）";
   else if (col === 0) inp.placeholder = "如 39-23";
   else if (col === 1 || col === 6) inp.placeholder = "名称";
   else inp.placeholder = "文本";
@@ -570,7 +587,13 @@ function matchCond(r, cd){
     return raw.toLowerCase().indexOf(String(cd.val).trim().toLowerCase()) >= 0;
   }
   // 其它列：数值比较 （支持 > >= < <=，数据里万/亿会先转换）
-  const v = String(cd.val == null ? "" : cd.val).trim();
+  const v = String(cd.val == null ? "" : cd.val).trim()
+    .replace(/≥/g, ">=").replace(/≤/g, "<=")   // 全角 ≥ ≤
+    .replace(/＞/g, ">").replace(/＜/g, "<")     // 全角 ＞ ＜
+    .replace(/大于等于/g, ">=").replace(/小于等于/g, "<=")
+    .replace(/大于/g, ">").replace(/小于/g, "<")
+    .replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))  // 全角数字
+    .replace(/．/g, ".");  // 全角小数点
   const m = /^(>=|<=|>|<)\s*(.+)$/.exec(v);
   let op = null, num = null;
   if (m){ op = m[1]; num = parseNum(m[2]); }
