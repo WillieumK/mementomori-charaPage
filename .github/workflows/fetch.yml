@@ -20,20 +20,30 @@ jobs:
           curl -fsSL "https://docs.google.com/spreadsheets/d/1VrnhPswVqPPbbC-Gps_e9Um7tWulYg4BI66HMt_OBZw/gviz/tq?gid=1850986413&tqx=out:json" -o data/usage.json
           ls -la data
 
-      - name: 抓取并压缩 masterbook 怪物数据（在线 JSON）
+      - name: 抓取并压缩 怪物数据（官方 boi CDN）
         run: |
+          pip install msgpack -q
           python3 - <<'PYEOF'
-          import json, re, urllib.request, collections
-          BOSS = "https://raw.githubusercontent.com/nnsh774/mememori-masterbook/refs/heads/master/BossBattleEnemyMB.json"
-          TOWER = "https://raw.githubusercontent.com/nnsh774/mememori-masterbook/refs/heads/master/TowerBattleEnemyMB.json"
-          TEXT = "https://raw.githubusercontent.com/nnsh774/mememori-masterbook/refs/heads/master/TextResourceZhCnMB.json"
+          import json, re, urllib.request, collections, msgpack
+          def fetch(url, headers=None):
+              req = urllib.request.Request(url, headers=headers or {"User-Agent":"Mozilla/5.0"})
+              return urllib.request.urlopen(req, timeout=600).read()
+          for ver in ["4.19.2", "4.19.0", "4.18.0"]:
+              try:
+                  h = {"OrtegaDeviceType":"4","ortegaappversion":ver,"Content-Type":"application/octet-stream"}
+                  r = urllib.request.Request("https://prd1-auth.mememori-boi.com/api/auth/getDataUri", data=msgpack.packb({"CountryCode":"JP","UserId":0}), headers=h, method="POST")
+                  mver = dict(urllib.request.urlopen(r, timeout=30).headers)["ortegamasterversion"]
+                  break
+              except Exception:
+                  continue
+          else:
+              raise RuntimeError("getDataUri failed")
+          base = "https://cdn-mememori.akamaized.net/master/prd1/version/%s/" % mver
+          def load_mb(n): return msgpack.unpackb(fetch(base + n))
           COLS = ["stage","name","attr","rarity","rank","speed","reson","atk","def","hp","mdef","pdef","skill","stamina","magic","strength","icon","type"]
-          ELEM = {1:"\u84dd",2:"\u7ea2",3:"\u7eff",4:"\u9ec4",5:"\u5149",6:"\u6697"}
+          ELEM = {1:"\u84dd",2:"\u7ea2",3:"\u7eff",4:"\u9ec4",5:"\u5149",6:"\u6697","Blue":"\u84dd","Red":"\u7ea2","Green":"\u7eff","Yellow":"\u9ec4","Light":"\u5149","Dark":"\u6697"}
           RAR = {0:"\u65e0",1:"N",2:"R",4:"R+",8:"SR",16:"SR+",32:"SSR",64:"SSR+",128:"UR",256:"UR+",512:"LR",1024:"LR+",2048:"LR+2",4096:"LR+3",8192:"LR+4",16384:"LR+5",32768:"LR+6",65536:"LR+7",131072:"LR+8",262144:"LR+9",524288:"LR+10"}
           WAN="\u4e07"; YI="\u4ebf"; GAO="\u9ad8"; DI="\u4f4e"
-          def fetch(url):
-              req = urllib.request.Request(url, headers={"User-Agent":"Mozilla/5.0"})
-              return json.loads(urllib.request.urlopen(req, timeout=300).read().decode("utf-8"))
           def fmt(v):
               if v is None or v == "" or v == 0: return ""
               val = float(v)
@@ -44,7 +54,7 @@ jobs:
               rows = []
               for it in items:
                   b = it.get("BattleParameter") or {}
-                  base = it.get("BaseParameter") or {}
+                  basep = it.get("BaseParameter") or {}
                   memo = str(it.get("Memo","")).replace('"',"").strip()
                   if is_tower:
                       stage = memo.split("_")[0] if "_" in memo else memo
@@ -55,7 +65,7 @@ jobs:
                           m2 = re.match(r"(\d+-\d+)_", memo)
                           stage = m2.group(1) if m2 else ""
                   et = it.get("ElementType")
-                  rows.append({"stage":stage,"name":it.get("_name",""),"attr":ELEM.get(et,("\u65e0" if et in (0,None) else str(et))),"rarity":RAR.get(it.get("CharacterRarityFlags"),str(it.get("CharacterRarityFlags"))),"rank":it.get("EnemyRank"),"speed":b.get("Speed"),"reson":"","atk":b.get("AttackPower"),"def":b.get("Defense"),"hp":b.get("HP"),"mdef":b.get("MagicDamageRelax"),"pdef":b.get("PhysicalDamageRelax"),"skill":base.get("Energy"),"stamina":base.get("Health"),"magic":base.get("Intelligence"),"strength":base.get("Muscle"),"icon":it.get("UnitIconId"),"type":(1 if "EnemyCharacterName" in str(it.get("NameKey","")) else 0)})
+                  rows.append({"stage":stage,"name":it.get("_name",""),"attr":ELEM.get(et,("\u65e0" if et in (0,None) else str(et))),"rarity":RAR.get(it.get("CharacterRarityFlags"),str(it.get("CharacterRarityFlags"))),"rank":it.get("EnemyRank"),"speed":b.get("Speed"),"reson":"","atk":b.get("AttackPower"),"def":b.get("Defense"),"hp":b.get("HP"),"mdef":b.get("MagicDamageRelax"),"pdef":b.get("PhysicalDamageRelax"),"skill":basep.get("Energy"),"stamina":basep.get("Health"),"magic":basep.get("Intelligence"),"strength":basep.get("Muscle"),"icon":it.get("UnitIconId"),"type":(1 if "EnemyCharacterName" in str(it.get("NameKey","")) else 0)})
               groups = collections.defaultdict(list)
               for i,r in enumerate(rows):
                   if r["stage"]: groups[r["stage"]].append(i)
@@ -67,16 +77,15 @@ jobs:
               for c in ["atk","def","hp","mdef","pdef","skill","stamina","magic","strength"]:
                   for r in rows: r[c] = fmt(r[c])
               return rows
-          text = fetch(TEXT)
+          text = load_mb("TextResourceZhCnMB")
           nm = {i["StringKey"]: i["Text"] for i in text if "StringKey" in i and "Text" in i}
-          boss = fetch(BOSS); tw = fetch(TOWER)
+          boss = load_mb("BossBattleEnemyMB"); tw = load_mb("TowerBattleEnemyMB")
           for it in boss: it["_name"] = nm.get(it.get("NameKey",""),"")
           for it in tw: it["_name"] = nm.get(it.get("NameKey",""),"")
           for fn, items, is_t in [("quest.json", boss, False), ("tower.json", tw, True)]:
               rows = process(items, is_t)
               d = json.dumps({"date":"masterbook","cols":COLS,"rows":[[r[c] for c in COLS] for r in rows]}, ensure_ascii=False, separators=(",",":"))
-              with open("data/"+fn, "w", encoding="utf-8") as f:
-                  f.write(d)
+              open("data/"+fn, "w", encoding="utf-8").write(d)
               print(fn, len(rows))
           PYEOF
           ls -la data
