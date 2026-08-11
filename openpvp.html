@@ -72,6 +72,38 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
 .side-mask.show{display:block}
 @media (min-width:769px){body:not(.side-collapsed){padding-left:345px}}
 @media (max-width:768px){.side-open{display:block}header.top{padding-top:52px}.wrap{padding:16px 10px 40px}header.top h1{font-size:22px;flex-wrap:wrap}section.card{padding:14px 12px 18px}.cslot img{width:40px;height:40px}.cslot{width:44px}}
+.pvp-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:24px 10px;overflow:auto}
+.pvp-modal.open{display:flex}
+.pvp-modal .box{background:#151223;border:1px solid var(--panel-border);border-radius:14px;max-width:1000px;width:100%;padding:16px 18px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.pvp-modal .mhead{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.pvp-modal .mhead img{width:64px;height:64px;border-radius:12px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
+.pvp-modal .mname{font-size:20px;font-weight:700}
+.pvp-modal .mmeta{color:var(--muted);font-size:12px;margin-top:2px}
+.pvp-modal .mclose{margin-left:auto;width:34px;height:34px;border-radius:8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);color:var(--gold);font-size:18px;cursor:pointer}
+.pvp-modal .tag{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11px;border:1px solid var(--panel-border);background:rgba(255,255,255,.06);margin-right:4px}
+.regions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+@media(max-width:920px){.regions{grid-template-columns:1fr}}
+.region{background:rgba(0,0,0,.2);border:1px solid var(--panel-border);border-radius:10px;padding:8px 10px;min-width:0}
+.region h3{margin:0 0 6px;font-size:13px;color:var(--gold);border-bottom:1px solid var(--panel-border);padding-bottom:4px;letter-spacing:.5px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:4px 6px;line-height:1.35}
+.stat .sk{color:var(--muted);font-size:10px}
+.stat .sv{font-size:12px;color:#f1eef8}
+.skill{padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.06)}
+.skill:last-child{border-bottom:none}
+.skill .skn{font-weight:600;color:#f1eef8;font-size:13px}
+.skill .skd{color:var(--muted);font-size:11px;margin-top:2px;line-height:1.5}
+.eqslot{display:flex;gap:8px;align-items:flex-start;border-bottom:1px dashed rgba(255,255,255,.06);padding:5px 0}
+.eqslot:last-child{border-bottom:none}
+.eqslot .en{font-weight:600;font-size:12px;color:#f1eef8}
+.eqslot .em{color:var(--muted);font-size:10px;margin-top:1px;line-height:1.4}
+.eqslot .spheres{margin-left:auto;display:flex;gap:4px}
+.eqslot .sphere{width:44px;text-align:center;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25);padding:2px;font-size:9px;color:var(--muted);line-height:1.3}
+.eqslot .sphere .sv{color:#ffe9a8;font-size:10px;font-weight:600}
+.cslot{cursor:pointer}
+.cslot:hover img{outline:1px solid var(--gold)}
+
 </style>
 </head>
 <body>
@@ -178,21 +210,125 @@ function setMode(m){
   load(true);
 }
 
-function charSlots(list){
+let lastList = [];
+let P = { char:null, skill:null, equip:null, legend:null, matchless:null, sphere:null };
+async function ensurePvpData(){
+  if (P.char) return;
+  const [ch, sk, eq, lg, mc, sp] = await Promise.all([
+    fetchJson("data/pvp_char.json"), fetchJson("data/pvp_skill.json"), fetchJson("data/pvp_equip.json"),
+    fetchJson("data/pvp_legend.json"), fetchJson("data/pvp_matchless.json"), fetchJson("data/pvp_sphere.json")
+  ]);
+  P = { char: ch, skill: sk, equip: eq, legend: lg, matchless: mc, sphere: sp };
+}
+function charSlots(pi, list){
   let h = "";
-  for (const c of (list || []).slice(0, 5)){
+  for (let j = 0; j < (list || []).length && j < 5; j++){
+    const c = list[j];
     const id = padId(c.CharacterId);
-    h += '<span class="cslot"><img src="' + ICON_BASE + id + "_00_s.png" + '" loading="lazy" alt="' + esc(c.CharacterId) + '"><span class="clv">Lv' + esc(c.Level) + "</span></span>";
+    h += '<span class="cslot" onclick="event.stopPropagation();openChar(' + pi + ',' + j + ')"><img src="' + ICON_BASE + id + '_00_s.png" loading="lazy" alt="' + esc(c.CharacterId) + '"><span class="clv">Lv' + esc(c.Level) + "</span></span>";
   }
   return h;
 }
-function charDetail(list){
-  let h = "";
-  for (const c of (list || []).slice(0, 5)){
-    const id = padId(c.CharacterId);
-    h += '<span class="char"><img src="' + ICON_BASE + id + "_00_s.png" + '" loading="lazy"><span class="dn">' + esc(rarityLabel(c.RarityFlags)) + " · Lv" + esc(c.Level) + "</span><span class=\"dn\">战力 " + fmtNum(c.BattlePower) + "</span></span>";
+const SLOT_NAMES = ["武器","副手","手套","头盔","护甲","鞋"];
+const SLOT_FIELDS = ["WeaponAttackPowerPercent","SubHitPercent","GauntletCriticalDamagePercent","HelmetPhysicalCriticalDamageRelaxPercent","ArmorMagicCriticalDamageRelaxPercent","ShoesHpDrainPercent"];
+const SLOT_FIELDS2 = ["WeaponAttackPower","SubPhysicalDamageRelax","GauntletMagicDamageRelax","HelmetCritical","ArmorDefensePenetration","ShoesHp"];
+function fmtBig(v){
+  const n = Number(v);
+  if (!isFinite(n)) return "—";
+  if (n >= 1e8) return (n/1e8).toFixed(2) + "亿";
+  if (n >= 1e4) return (n/1e4).toFixed(1) + "万";
+  return n.toLocaleString();
+}
+function statCell(k, v){
+  return '<div class="stat"><div class="sk">' + k + '</div><div class="sv">' + (v == null ? "—" : fmtBig(v)) + "</div></div>";
+}
+function skillHtml(sid, prefix, label){
+  const s = P.skill && P.skill[prefix + "_" + sid];
+  if (!s) return "";
+  return '<div class="skill"><div class="skn">[' + label + '] ' + esc(s.n) + '</div><div class="skd">' + esc(s.d || "（无描述）") + "</div></div>";
+}
+function charPanel(c){
+  const cm = P.char && P.char[String(c.CharacterId)];
+  const name = cm ? cm.n : ("角色 " + c.CharacterId);
+  const elem = cm ? cm.e : "";
+  const eTag = elem ? '<span class="tag">' + esc(elem) + "</span>" : "";
+  const b = c.BaseParameter || {};
+  const bp = c.BattleParameter || {};
+  let stats = "";
+  stats += statCell("力量", b.Muscle) + statCell("智力", b.Intelligence) + statCell("战技", b.Energy) + statCell("耐力", b.Health);
+  stats += statCell("攻击力", bp.AttackPower) + statCell("防御力", bp.Defense) + statCell("血量", bp.HP) + statCell("速度", bp.Speed);
+  stats += statCell("魔防", bp.MagicDamageRelax) + statCell("物防", bp.PhysicalDamageRelax) + statCell("暴击", bp.Critical) + statCell("命中", bp.Hit);
+  let skills = "";
+  if (cm){
+    if (cm.nor) skills += skillHtml(cm.nor, "a", "普攻");
+    (cm.act || []).forEach(sid => skills += skillHtml(sid, "a", "主动"));
+    (cm.pas || []).forEach(sid => skills += skillHtml(sid, "p", "被动"));
   }
-  return h;
+  return '<div class="region"><h3>角色 ' + esc(rarityLabel(c.RarityFlags)) + " " + eTag + " · Lv" + esc(c.Level) + "</h3>"
+    + '<div class="stats">' + stats + "</div>"
+    + '<div style="margin-top:8px">' + (skills || '<div class="skd">无技能数据</div>') + "</div></div>";
+}
+function equipPanel(c){
+  const eqs = c.UserEquipmentDtoInfos || [];
+  let html = "";
+  eqs.slice(0, 6).forEach((e, i) => {
+    const em = P.equip && P.equip[String(e.EquipmentId)];
+    const name = em ? em.n : ("装备 " + e.EquipmentId);
+    const rarity = em ? em.r : "";
+    const lv = em ? em.lv : "—";
+    const lg = P.legend && P.legend[String(e.LegendSacredTreasureLv)];
+    const mc = P.matchless && P.matchless[String(e.MatchlessSacredTreasureLv)];
+    const lgv = lg ? lg[SLOT_FIELDS[i]] : null;
+    const mcv = mc ? mc[SLOT_FIELDS2[i]] : null;
+    let lines = "";
+    if (e.LegendSacredTreasureLv > 0 && lgv != null){
+      lines += '<div class="em" style="color:#ffe9a8">圣装 Lv' + e.LegendSacredTreasureLv + " " + (SLOT_FIELDS[i] === "WeaponAttackPowerPercent" ? "攻击力 " : "") + (lgv/100) + "%</div>";
+    }
+    if (e.MatchlessSacredTreasureLv > 0 && mcv != null){
+      lines += '<div class="em" style="color:#b5f0c3">魔装 Lv' + e.MatchlessSacredTreasureLv + " " + (SLOT_FIELDS2[i] === "WeaponAttackPower" ? "攻击力 " : "") + Number(mcv).toLocaleString() + "</div>";
+    }
+    let spheres = "";
+    for (let s = 1; s <= 4; s++){
+      const sid = e["SphereId" + s];
+      const sp = sid && P.sphere ? P.sphere[String(sid)] : null;
+      if (sp){
+        spheres += '<span class="sphere">' + esc(sp.n) + '<div class="sv">' + (sp.v != null ? fmtBig(sp.v) : "—") + "</div></span>";
+      } else {
+        spheres += '<span class="sphere">空</span>';
+      }
+    }
+    html += '<div class="eqslot">'
+      + '<div><div class="en">' + SLOT_NAMES[i] + " · " + esc(name) + "</div>"
+      + '<div class="em">' + esc(rarity) + " · 装备等级 " + esc(lv) + " · 强化 " + esc(e.ReinforcementLv) + "</div>"
+      + lines
+      + "</div>"
+      + '<div class="spheres">' + spheres + "</div>"
+      + "</div>";
+  });
+  return '<div class="region"><h3>装备（6槽）</h3>' + (html || '<div class="skd">无装备</div>') + "</div>";
+}
+async function openChar(pi, j){
+  const pl = lastList[pi];
+  const c = pl && pl.UserCharacterInfoList ? pl.UserCharacterInfoList[j] : null;
+  if (!c) return;
+  const el = document.getElementById("tbl-res");
+  el.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在加载角色/装备数据…</div>';
+  try{ await ensurePvpData(); }catch(e){ el.innerHTML = '<div class="error">❌ 角色数据加载失败：' + esc(e.message) + "</div>"; return; }
+  const cm = P.char && P.char[String(c.CharacterId)];
+  const name = cm ? cm.n : ("角色 " + c.CharacterId);
+  const id = padId(c.CharacterId);
+  const modal = document.createElement("div");
+  modal.className = "pvp-modal open";
+  modal.onclick = e => { if (e.target === modal) closeModal(); };
+  modal.innerHTML = '<div class="box">'
+    + '<div class="mhead"><img src="' + ICON_BASE + id + '_00_s.png" alt=""><div><div class="mname">' + esc(name) + "</div><div class=\"mmeta\">" + esc(rarityLabel(c.RarityFlags)) + " · Lv" + esc(c.Level) + " · 战力 " + fmtNum(c.BattlePower) + "</div></div>"
+    + '<button class="mclose" onclick="closeModal()">×</button></div>'
+    + '<div class="regions">' + charPanel(c) + equipPanel(c) + "</div>"
+    + "</div>";
+  document.body.appendChild(modal);
+}
+function closeModal(){
+  document.querySelectorAll(".pvp-modal").forEach(m => m.remove());
 }
 
 async function load(force){
@@ -212,7 +348,8 @@ async function load(force){
     }
     const data = await fetchJson(url);
     const list = data.data || [];
-    document.getElementById("res-note").textContent = label + " · 共 " + list.length + " 名";
+    lastList = list;
+    document.getElementById("res-note").textContent = label + " · 共 " + list.length + " 名 · 点角色开盒";
     let body = "";
     list.forEach((p, i) => {
       const rank = i + 1;
@@ -221,26 +358,19 @@ async function load(force){
       const pointLine = mode === "legend"
         ? "积分 " + fmtNum(p.CurrentPoint) + " · 连胜 " + p.ConsecutiveVictoryCount + (world ? " · " + world : "")
         : "战力 " + fmtNum(p.BattlePower);
-      body += '<tr class="prow" onclick="toggleDetail(this)">'
+      body += "<tr>"
         + '<td class="rank ' + rc + '">' + rank + "</td>"
         + '<td><div class="pname">' + esc(p.PlayerName) + "</div><div class=\"pinfo\">Lv" + esc(p.PlayerLevel) + " · " + pointLine + "</div></td>"
-        + "<td>" + charSlots(p.UserCharacterInfoList) + "</td>"
-        + '<td class="detail"><div>' + charDetail(p.UserCharacterInfoList) + "</div></td>"
+        + "<td>" + charSlots(i, p.UserCharacterInfoList) + "</td>"
         + "</tr>";
     });
-    el.innerHTML = '<table><thead><tr><th>排名</th><th>玩家</th><th>队伍开盒（点行展开详情）</th></tr></thead><tbody>'
+    el.innerHTML = '<table><thead><tr><th>排名</th><th>玩家</th><th>队伍（点角色开盒）</th></tr></thead><tbody>'
       + (body || '<tr><td colspan="3" style="color:var(--muted)">暂无数据</td></tr>')
       + "</tbody></table>";
   }catch(err){
-    el.innerHTML = '<div class="error">❌ 读取失败：' + esc(err.message) + '<br>请稍后再试。</div>';
+    el.innerHTML = '<div class="error">❌ 读取失败：' + esc(err.message) + "<br>请稍后再试。</div>";
   }
 }
-function toggleDetail(tr){
-  const d = tr.querySelector(".detail");
-  const open = d.classList.toggle("open");
-  d.style.display = open ? "table-cell" : "none";
-}
-
 function toggleSide(force){
   const s = document.getElementById("side");
   const m = document.getElementById("side-mask");
