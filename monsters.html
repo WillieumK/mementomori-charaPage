@@ -64,6 +64,10 @@ section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;backg
 .dd-pager{display:flex;align-items:center;gap:8px;padding:6px 2px 8px;color:var(--muted);font-size:12px}
 .dd-pager .mini{padding:4px 10px;font-size:11px}
 .dd-pager .mini:disabled{opacity:.4;cursor:default}
+.dd-list{display:flex;flex-direction:column;gap:4px;min-width:150px}
+.dd-list button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer;text-align:left}
+.dd-list button:hover{background:rgba(124,108,240,.25)}
+.dd-list button.sel{background:rgba(124,108,240,.35);border-color:rgba(124,108,240,.7);font-weight:700}
 .sres{border:1px solid var(--panel-border);border-radius:10px;margin:10px 0;background:rgba(0,0,0,.18);overflow:hidden}
 .sres-head{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--panel-border);background:#1c1730}
 .sres-stage{font-weight:700;color:var(--gold)}
@@ -184,7 +188,7 @@ section[id]{scroll-margin-top:16px}
       <label>塔</label>
       <div class="dd" id="dd-tower">
         <button class="dd-btn" onclick="toggleDD('tower')"><span id="dd-tower-label">—</span><span class="dd-arrow">▾</span></button>
-        <div class="dd-panel" id="ddp-tower" style="display:none"><div class="dd-grid" id="ddg-tower" style="grid-template-columns:repeat(5,1fr);min-width:0"></div></div>
+        <div class="dd-panel" id="ddp-tower" style="display:none"><div class="dd-list" id="ddg-tower"></div></div>
       </div>
       <label>层数</label>
       <div class="dd" id="dd-level">
@@ -205,6 +209,7 @@ section[id]{scroll-margin-top:16px}
     </div>
     <div class="qrow" style="margin-top:12px;flex-wrap:wrap">
       <label class="chk"><input type="checkbox" id="chk-all" onchange="doSearch()"> 搜索全部章节</label>
+      <label id="lbl-tower-filter" style="display:none">塔类型</label><select id="sel-tower-filter" style="display:none" onchange="doSearch()"></select>
       <label>条件1</label><select id="sel-c1" class="cond-sel" onchange="doSearch()"></select><input type="text" id="inp-m1" class="num-inp" style="width:110px" placeholder="值" onchange="doSearch()">
       <label>条件2</label><select id="sel-c2" class="cond-sel" onchange="doSearch()"></select><input type="text" id="inp-m2" class="num-inp" style="width:110px" placeholder="值" onchange="doSearch()">
       <label>条件3</label><select id="sel-c3" class="cond-sel" onchange="doSearch()"></select><input type="text" id="inp-m3" class="num-inp" style="width:110px" placeholder="值" onchange="doSearch()">
@@ -353,7 +358,17 @@ function buildTowerSelects(){
   const lab = document.getElementById("dd-tower-label");
   lab.textContent = TOWERS[towerIdx].label;
   lab.style.color = TOWERS[towerIdx].color;
+  const fsel = document.getElementById("sel-tower-filter");
+  if (fsel && !fsel.dataset.built){
+    fsel.innerHTML = '<option value="-1">' + '全部塔' + '</option>' + TOWERS.map((t, i) => '<option value="' + i + '" style="color:' + t.color + '">' + t.label + '</option>').join('');
+    fsel.dataset.built = '1';
+  }
   onTowerChange();
+}
+function towerFilter(){
+  const fsel = document.getElementById("sel-tower-filter");
+  const v = fsel ? parseInt(fsel.value, 10) : -1;
+  return (v >= 0 && v < TOWERS.length) ? TOWERS[v] : null;
 }
 function selectTower(i){
   towerIdx = i;
@@ -435,6 +450,9 @@ function setMode(m){
   document.getElementById("tab-tower").classList.toggle("active", m === "tower");
   document.getElementById("q-quest").style.display = m === "quest" ? "flex" : "none";
   document.getElementById("q-tower").style.display = m === "tower" ? "flex" : "none";
+  const tfm = m === "tower";
+  document.getElementById("lbl-tower-filter").style.display = tfm ? "" : "none";
+  document.getElementById("sel-tower-filter").style.display = tfm ? "" : "none";
   onQueryChange();
 }
 function currentStageStr(){
@@ -559,6 +577,13 @@ function sortRows(rows){
     return String(a[sortCol] || "").localeCompare(String(b[sortCol] || ""), "zh-Hans-CN") * dir;
   });
 }
+function towerStageHtml(stageStr){
+  const m = /^(.+?)(\d+)$/.exec(String(stageStr));
+  if (!m) return esc(stageStr);
+  const t = TOWERS.find(x => x.prefix === m[1]);
+  if (!t || towerFilter() !== null) return esc(m[2]);
+  return '<span style="color:' + t.color + '">' + esc(t.label) + "</span> " + esc(m[2]);
+}
 function sortResult(col){
   if (sortCol === col) sortDir = -sortDir;
   else { sortCol = col; sortDir = 1; }
@@ -573,7 +598,8 @@ function doSearch(){
   const data = mode === "quest" ? questData : towerData;
   if (!data) return;
   const all = document.getElementById("chk-all").checked;
-  const pool = all ? data.rows : data.rows.filter(r => String(r[0]) === currentStageStr());
+  const tf = mode === "tower" ? towerFilter() : null;
+  const pool = (all ? data.rows : data.rows.filter(r => String(r[0]) === currentStageStr())).filter(r => !tf || String(r[0]).startsWith(tf.prefix));
   const map = {};
   for (const r of pool){ const s = String(r[0]); (map[s] = map[s] || []).push(r); }
   const results = Object.keys(map)
@@ -597,9 +623,9 @@ function renderSearch(results, conds, all){
     }
     const sorted = sortRows(matchedAll);
     for (const r of sorted){
-      const st = mode === "tower" ? String(r[0]).replace(/^.+?(\d+)$/, "$1") : String(r[0]);
+      const st = mode === "tower" ? towerStageHtml(r[0]) : esc(String(r[0]));
       rowsHtml += "<tr>"
-        + "<td>" + esc(st) + "</td>"
+        + "<td>" + st + "</td>"
         + '<td class="mname">' + esc(r[1]) + "</td>"
         + "<td>" + esc(r[5]) + "</td>"
         + "<td>" + esc(r[6]) + "</td>"
@@ -617,9 +643,9 @@ function renderSearch(results, conds, all){
     }
   } else {
     for (const rs of results){
-      const st = mode === "tower" ? String(rs.stage).replace(/^.+?(\d+)$/, "$1") : String(rs.stage);
+      const st = mode === "tower" ? towerStageHtml(rs.stage) : esc(String(rs.stage));
       rowsHtml += "<tr>"
-        + "<td>" + esc(st) + "</td>"
+        + "<td>" + st + "</td>"
         + "<td>" + esc(rs.stage) + " · 含 " + conds.length + " 个条件</td>"
         + '<td><button class="mini" onclick="expandStage(this, \'' + esc(rs.stage) + '\')">展开本关敌人</button></td>'
         + "</tr>";
@@ -637,7 +663,7 @@ function renderSearch(results, conds, all){
   let fulls = "";
   for (const rs of results){
     fulls += '<div class="sres-full" data-stage="' + esc(rs.stage) + '" style="display:none">'
-      + '<div class="sres-full-head"><span class="sres-stage">' + esc(rs.stage) + " · 全部敌人</span><button class=\"mini\" onclick=\"backToList(this)\">收起</button></div>"
+      + '<div class="sres-full-head"><span class="sres-stage">' + (mode === "tower" ? towerStageHtml(rs.stage) : esc(rs.stage)) + " · 全部敌人</span><button class=\"mini\" onclick=\"backToList(this)\">收起</button></div>"
       + stageContentHtml(rs.rows)
       + "</div>";
   }
