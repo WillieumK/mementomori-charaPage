@@ -181,7 +181,11 @@ section[id]{scroll-margin-top:16px}
       <input id="inp-stage-manual" class="num-inp" style="width:110px" placeholder="如 39-23" onchange="onQueryChange()">
     </div>
     <div class="qrow" id="q-tower" style="display:none;flex-wrap:wrap">
-      <label>塔</label><select id="sel-tower" onchange="onTowerChange()"></select>
+      <label>塔</label>
+      <div class="dd" id="dd-tower">
+        <button class="dd-btn" onclick="toggleDD('tower')"><span id="dd-tower-label">—</span><span class="dd-arrow">▾</span></button>
+        <div class="dd-panel" id="ddp-tower" style="display:none"><div class="dd-grid" id="ddg-tower" style="grid-template-columns:repeat(5,1fr);min-width:0"></div></div>
+      </div>
       <label>层数</label>
       <div class="dd" id="dd-level">
         <button class="dd-btn" onclick="toggleDD('level')"><span id="dd-level-label">—</span><span class="dd-arrow">▾</span></button>
@@ -320,7 +324,7 @@ function buildStageGrid(){
   document.getElementById("dd-stage-label").textContent = qState.stage !== null ? String(qState.stage) : "—";
 }
 function toggleDD(type){
-  const map = { chapter: "ddp-chapter", stage: "ddp-stage", level: "ddp-level" };
+  const map = { chapter: "ddp-chapter", stage: "ddp-stage", tower: "ddp-tower", level: "ddp-level" };
   const cur = document.getElementById(map[type]);
   const open = cur.style.display !== "none";
   Object.keys(map).forEach(k => document.getElementById(map[k]).style.display = "none");
@@ -340,9 +344,24 @@ function selectStage(s){
   document.getElementById("ddp-stage").style.display = "none";
   onQueryChange();
 }
+let towerIdx = 0;
 function buildTowerSelects(){
-  const sel = document.getElementById("sel-tower");
-  sel.innerHTML = TOWERS.map((t, i) => '<option value="' + i + '" style="color:' + t.color + '">' + t.label + '</option>').join("");
+  const grid = document.getElementById("ddg-tower");
+  grid.innerHTML = TOWERS.map((t, i) =>
+    '<button class="' + (i === towerIdx ? "sel" : "") + '" style="color:' + t.color + '" onclick="selectTower(' + i + ')">' + t.label + '</button>'
+  ).join("");
+  const lab = document.getElementById("dd-tower-label");
+  lab.textContent = TOWERS[towerIdx].label;
+  lab.style.color = TOWERS[towerIdx].color;
+  onTowerChange();
+}
+function selectTower(i){
+  towerIdx = i;
+  document.getElementById("ddp-tower").style.display = "none";
+  const lab = document.getElementById("dd-tower-label");
+  lab.textContent = TOWERS[i].label;
+  lab.style.color = TOWERS[i].color;
+  document.querySelectorAll("#ddg-tower button").forEach((b, k) => b.classList.toggle("sel", k === i));
   onTowerChange();
 }
 let towerLevel = null;
@@ -350,8 +369,7 @@ let levelPage = 1;
 const LEVELS_PER_PAGE = 100;
 const LEVELS_PER_ROW = 20;
 function towerLevels(){
-  const ti = parseInt(document.getElementById("sel-tower").value, 10);
-  const t = TOWERS[ti];
+  const t = TOWERS[towerIdx];
   const set = new Set();
   for (const r of towerData.rows){
     const m = /^(.+?)(\d+)$/.exec(String(r[0] || ""));
@@ -426,8 +444,7 @@ function currentStageStr(){
     if (qState.chapter === null || qState.stage === null) return "";
     return qState.chapter + "-" + qState.stage;
   }
-  const ti = parseInt(document.getElementById("sel-tower").value, 10);
-  const prefix = TOWERS[ti].prefix;
+  const prefix = TOWERS[towerIdx].prefix;
   const m = document.getElementById("inp-level-manual").value.trim();
   if (m) return prefix + m;
   return prefix + (towerLevel !== null ? towerLevel : "");
