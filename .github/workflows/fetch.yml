@@ -45,11 +45,9 @@ jobs:
           RAR = {0:"\u65e0",1:"N",2:"R",4:"R+",8:"SR",16:"SR+",32:"SSR",64:"SSR+",128:"UR",256:"UR+",512:"LR",1024:"LR+",2048:"LR+2",4096:"LR+3",8192:"LR+4",16384:"LR+5",32768:"LR+6",65536:"LR+7",131072:"LR+8",262144:"LR+9",524288:"LR+10"}
           WAN="\u4e07"; YI="\u4ebf"; GAO="\u9ad8"; DI="\u4f4e"
           def fmt(v):
+              # 缓存存原始数值（不带万/亿），显示时再转换
               if v is None or v == "" or v == 0: return ""
-              val = float(v)
-              if val >= 1e8: return "%.4g%s" % (val/1e8, YI)
-              if val >= 1e4: return "%.4g%s" % (val/1e4, WAN)
-              return str(int(val))
+              return int(v)
           def process(items, is_tower):
               rows = []
               for it in items:
