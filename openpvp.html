@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>竞技场与巅峰开盒</title>
+<link rel="icon" href="icon.png">
+<style>
+:root{--bg:#0d0b14;--panel:rgba(255,255,255,.045);--panel-border:rgba(255,255,255,.09);--gold:#d9b26a;--accent:#7c6cf0;--text:#e8e6f0;--muted:#9a94ad}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--text);font-family:"Segoe UI","Microsoft YaHei","PingFang SC",Arial,sans-serif;background:radial-gradient(1200px 600px at 80% -10%,rgba(124,108,240,.18),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(217,178,106,.10),transparent 60%),linear-gradient(180deg,#0d0b14 0%,#12101c 55%,#0a0910 100%);background-attachment:fixed}
+.wrap{max-width:1280px;margin:0 auto;padding:36px 20px 60px}
+header.top{text-align:center;padding:34px 20px 24px;border-bottom:1px solid var(--panel-border);margin-bottom:26px}
+header.top h1{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 10px;font-size:30px;letter-spacing:1px}
+h1 .logo{width:42px;height:42px;border-radius:10px;box-shadow:0 0 18px rgba(217,178,106,.35)}
+h1 .title-grad{background:linear-gradient(90deg,#f5e6c4,#d9b26a 45%,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+header.top .subtitle{margin:0 0 12px;color:var(--muted);font-size:14px}
+.badge{display:inline-block;padding:5px 12px;border:1px solid rgba(217,178,106,.4);border-radius:999px;color:var(--gold);font-size:12px;background:rgba(217,178,106,.08);margin:3px}
+.toolbar{display:flex;justify-content:flex-end;gap:10px;margin:0 0 14px}
+.toolbar button,.mini{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;border:none;border-radius:999px;padding:8px 18px;font-size:13px;cursor:pointer;transition:filter .2s,transform .1s}
+.toolbar button:hover,.mini:hover{filter:brightness(1.12)}
+.mini{padding:6px 14px;font-size:12px}
+section.card{background:var(--panel);border:1px solid var(--panel-border);border-radius:16px;padding:20px 22px 24px;margin:0 0 24px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+section.card h2{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-size:18px;color:#f1eef8}
+section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;background:linear-gradient(180deg,var(--gold),var(--accent))}
+.h2-note{color:var(--muted);font-size:12px;font-weight:400;margin-left:auto}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tabs button{background:rgba(255,255,255,.05);border:1px solid var(--panel-border);color:var(--text);border-radius:999px;padding:8px 18px;font-size:13px;cursor:pointer}
+.tabs button.active{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;border-color:transparent;font-weight:600}
+.qrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.qrow label{color:var(--muted);font-size:13px}
+.qrow select,.qrow input{background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:7px 10px;font-size:13px;outline:none}
+.table-wrap{overflow-x:auto;border:1px solid var(--panel-border);border-radius:10px;background:rgba(0,0,0,.18)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{position:sticky;top:0;background:#1c1730;color:var(--gold);font-weight:600;text-align:left;white-space:nowrap;padding:9px 12px;border-bottom:1px solid rgba(217,178,106,.25)}
+tbody td{padding:8px 12px;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
+tbody tr:nth-child(even){background:rgba(255,255,255,.03)}
+tbody tr:hover{background:rgba(124,108,240,.14)}
+.rank{font-weight:700;color:var(--muted)}
+.rank.top1{color:#ffd76a}
+.rank.top2{color:#d7dbe8}
+.rank.top3{color:#d9a066}
+.pname{font-weight:600;color:#f1eef8}
+.pinfo{color:var(--muted);font-size:11px;margin-top:2px}
+.cslot{display:inline-block;width:52px;text-align:center;margin-right:8px}
+.cslot img{width:48px;height:48px;border-radius:9px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);object-fit:cover;display:block;margin:0 auto}
+.cslot .clv{color:var(--muted);font-size:10px;margin-top:2px}
+.prow{cursor:pointer}
+.detail{display:none;background:rgba(0,0,0,.22);border-top:1px solid var(--panel-border);padding:12px}
+.detail.open{display:block}
+.detail .char{display:inline-block;width:150px;text-align:center;margin:6px;vertical-align:top}
+.detail .char img{width:64px;height:64px;border-radius:10px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);object-fit:cover}
+.detail .char .dn{color:var(--muted);font-size:11px;margin-top:3px}
+.loading,.error{color:var(--muted);padding:30px;text-align:center}
+.error{color:#ff9d9d}
+.spinner{display:inline-block;width:26px;height:26px;margin-bottom:10px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:10px;line-height:1.9}
+footer a{color:#a99fd9}
+/* 侧栏 */
+.side{position:fixed;left:0;top:0;bottom:0;width:345px;background:rgba(16,13,26,.97);border-right:1px solid var(--panel-border);padding:22px 14px;z-index:80;transform:translateX(-100%);transition:transform .25s ease;overflow-y:auto}
+.side.open{transform:translateX(0)}
+.side .side-title{color:var(--gold);font-weight:700;font-size:19px;margin:0 0 16px;padding:0 6px;letter-spacing:1px}
+.side .side-title .cyl{display:inline-block;width:18px;height:18px;background:var(--gold);-webkit-mask:url("cyl.png") center/contain no-repeat;mask:url("cyl.png") center/contain no-repeat;vertical-align:-3px;margin-right:6px}
+.side .side-link{display:block;color:var(--text);text-decoration:none;padding:14px 16px;border-radius:10px;margin-bottom:8px;font-size:17px;line-height:1.4}
+.side .side-link:hover{background:rgba(124,108,240,.18)}
+.side .side-link.active{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;font-weight:600}
+.side .side-link .sub{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.side-open{position:fixed;left:10px;top:10px;z-index:90;width:40px;height:40px;border-radius:10px;border:1px solid var(--panel-border);background:rgba(20,17,32,.9);color:var(--gold);font-size:18px;cursor:pointer;display:block}
+body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
+.side-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:70;display:none}
+.side-mask.show{display:block}
+@media (min-width:769px){body:not(.side-collapsed){padding-left:345px}}
+@media (max-width:768px){.side-open{display:block}header.top{padding-top:52px}.wrap{padding:16px 10px 40px}header.top h1{font-size:22px;flex-wrap:wrap}section.card{padding:14px 12px 18px}.cslot img{width:40px;height:40px}.cslot{width:44px}}
+</style>
+</head>
+<body>
+<div class="side-mask" id="side-mask" onclick="toggleSide(false)"></div>
+<nav class="side" id="side">
+  <div class="side-title"><span class="cyl"></span>MementoMori 数据</div>
+  <a class="side-link" href="index.html#sec-usage">巅峰使用率<span class="sub">18%+ / 13%+ / 3%+ 分组</span></a>
+  <a class="side-link" href="index.html#sec-overview">当期卡池记录<span class="sub">新角色 · 新复刻 · 新星辰</span></a>
+  <a class="side-link" href="index.html#sec-elements">属性轮档记录<span class="sub">天光 · 幽冥 · 忧蓝 · 业红 · 苍翠 · 流金</span></a>
+  <a class="side-link" href="monsters.html">怪物数值查询<span class="sub">主线 Quest / 塔 Tower</span></a>
+  <a class="side-link active" href="openpvp.html">竞技场与巅峰开盒<span class="sub">Arena / Legend 排名开盒</span></a>
+</nav>
+<button class="side-open" id="side-open" onclick="toggleSide()">☰</button>
+
+<div class="wrap">
+  <header class="top">
+    <h1><img class="logo" src="icon.png" alt="icon"><span class="title-grad">竞技场与巅峰开盒</span></h1>
+    <p class="subtitle">竞技场 Arena / 巅峰 Legend · 排名与队伍开盒</p>
+    <p>
+      <span class="badge"><span class="dot"></span>在线读取 mentemori.icu API</span>
+      <span class="badge" id="device">💻 desktop 端</span>
+    </p>
+  </header>
+
+  <div class="toolbar">
+    <button id="btn-refresh" onclick="load(true)">🔄 刷新数据</button>
+  </div>
+
+  <section class="card">
+    <h2>查询条件</h2>
+    <div class="tabs">
+      <button id="tab-arena" class="active" onclick="setMode('arena')">Battle League 竞技场</button>
+      <button id="tab-legend" onclick="setMode('legend')">Legend League 巅峰</button>
+    </div>
+    <div class="qrow" id="q-arena">
+      <label>服务器</label><select id="sel-world" onchange="load(true)"></select>
+    </div>
+    <div class="qrow" id="q-legend" style="display:none">
+      <label>世界组</label><select id="sel-group" onchange="load(true)"></select>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>排名<span class="h2-note" id="res-note"></span></h2>
+    <div class="table-wrap" id="tbl-res"></div>
+  </section>
+
+  <footer>
+    原始数据来自 <a href="https://mentemori.icu" target="_blank" rel="noopener">mentemori.icu API</a> · 网页数据存于 <a href="https://github.com/WillieumK/mementomori-charaPage" target="_blank" rel="noopener">GitHub</a>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const API = "https://api.mentemori.icu";
+const ICON_BASE = "https://mentemori.icu/assets/CHR_";
+const RAR = {0:"无",1:"N",2:"R",4:"R+",8:"SR",16:"SR+",32:"SSR",64:"SSR+",128:"UR",256:"UR+",512:"LR",1024:"LR+",2048:"LR+2",4096:"LR+3",8192:"LR+4",16384:"LR+5",32768:"LR+6",65536:"LR+7",131072:"LR+8",262144:"LR+9",524288:"LR+10"};
+let mode = "arena";
+let worlds = [], groups = [];
+
+function esc(v){ return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function fmtNum(v){
+  if (v == null) return "—";
+  const val = Number(v);
+  if (val >= 1e8) return (val/1e8).toFixed(2) + "亿";
+  if (val >= 1e4) return (val/1e4).toFixed(1) + "万";
+  return String(Math.round(val));
+}
+function padId(id){ return String(id).padStart(6, "0"); }
+function rarityLabel(flags){
+  const f = Number(flags);
+  return RAR[f] || (f > 524288 ? "LR+" + Math.round(Math.log2(f / 512)) : String(f));
+}
+
+async function fetchJson(url){
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error("HTTP " + resp.status);
+  return await resp.json();
+}
+
+async function init(){
+  try{
+    const [w, g] = await Promise.all([fetchJson(API + "/worlds"), fetchJson(API + "/wgroups")]);
+    worlds = w.data || [];
+    groups = g.data || [];
+    const selW = document.getElementById("sel-world");
+    selW.innerHTML = worlds.map(x => '<option value="' + x.world_id + '">W' + x.world_id + (x.server ? " · " + x.server : "") + '</option>').join("");
+    if (selW.options.length) selW.value = "1001";
+    const selG = document.getElementById("sel-group");
+    selG.innerHTML = groups.map((x, i) => '<option value="' + i + '">世界组 ' + x.group_id + '</option>').join("");
+    if (selG.options.length) selG.value = "0";
+    await load(true);
+  }catch(e){
+    document.getElementById("tbl-res").innerHTML = '<div class="error">❌ 初始化失败：' + esc(e.message) + '</div>';
+  }
+}
+
+function setMode(m){
+  mode = m;
+  document.getElementById("tab-arena").classList.toggle("active", m === "arena");
+  document.getElementById("tab-legend").classList.toggle("active", m === "legend");
+  document.getElementById("q-arena").style.display = m === "arena" ? "flex" : "none";
+  document.getElementById("q-legend").style.display = m === "legend" ? "flex" : "none";
+  load(true);
+}
+
+function charSlots(list){
+  let h = "";
+  for (const c of (list || []).slice(0, 5)){
+    const id = padId(c.CharacterId);
+    h += '<span class="cslot"><img src="' + ICON_BASE + id + "_00_s.png" + '" loading="lazy" alt="' + esc(c.CharacterId) + '"><span class="clv">Lv' + esc(c.Level) + "</span></span>";
+  }
+  return h;
+}
+function charDetail(list){
+  let h = "";
+  for (const c of (list || []).slice(0, 5)){
+    const id = padId(c.CharacterId);
+    h += '<span class="char"><img src="' + ICON_BASE + id + "_00_s.png" + '" loading="lazy"><span class="dn">' + esc(rarityLabel(c.RarityFlags)) + " · Lv" + esc(c.Level) + "</span><span class=\"dn\">战力 " + fmtNum(c.BattlePower) + "</span></span>";
+  }
+  return h;
+}
+
+async function load(force){
+  const el = document.getElementById("tbl-res");
+  el.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在在线读取…</div>';
+  try{
+    let url, label;
+    if (mode === "arena"){
+      const world = document.getElementById("sel-world").value;
+      url = API + "/" + world + "/arena/latest";
+      label = "W" + world + " 竞技场";
+    } else {
+      const gi = parseInt(document.getElementById("sel-group").value, 10) || 0;
+      const g = groups[gi];
+      url = API + "/wg/" + g.group_id + "/legend/latest";
+      label = "世界组 " + g.group_id + " 巅峰";
+    }
+    const data = await fetchJson(url);
+    const list = data.data || [];
+    document.getElementById("res-note").textContent = label + " · 共 " + list.length + " 名";
+    let body = "";
+    list.forEach((p, i) => {
+      const rank = i + 1;
+      const rc = rank === 1 ? "top1" : rank === 2 ? "top2" : rank === 3 ? "top3" : "";
+      const world = mode === "legend" && p.PlayerId ? "W" + String(p.PlayerId).slice(-2) : "";
+      const pointLine = mode === "legend"
+        ? "积分 " + fmtNum(p.CurrentPoint) + " · 连胜 " + p.ConsecutiveVictoryCount + (world ? " · " + world : "")
+        : "战力 " + fmtNum(p.BattlePower);
+      body += '<tr class="prow" onclick="toggleDetail(this)">'
+        + '<td class="rank ' + rc + '">' + rank + "</td>"
+        + '<td><div class="pname">' + esc(p.PlayerName) + "</div><div class=\"pinfo\">Lv" + esc(p.PlayerLevel) + " · " + pointLine + "</div></td>"
+        + "<td>" + charSlots(p.UserCharacterInfoList) + "</td>"
+        + '<td class="detail"><div>' + charDetail(p.UserCharacterInfoList) + "</div></td>"
+        + "</tr>";
+    });
+    el.innerHTML = '<table><thead><tr><th>排名</th><th>玩家</th><th>队伍开盒（点行展开详情）</th></tr></thead><tbody>'
+      + (body || '<tr><td colspan="3" style="color:var(--muted)">暂无数据</td></tr>')
+      + "</tbody></table>";
+  }catch(err){
+    el.innerHTML = '<div class="error">❌ 读取失败：' + esc(err.message) + '<br>请稍后再试。</div>';
+  }
+}
+function toggleDetail(tr){
+  const d = tr.querySelector(".detail");
+  const open = d.classList.toggle("open");
+  d.style.display = open ? "table-cell" : "none";
+}
+
+function toggleSide(force){
+  const s = document.getElementById("side");
+  const m = document.getElementById("side-mask");
+  const open = typeof force === "boolean" ? force : !s.classList.contains("open");
+  s.classList.toggle("open", open);
+  if (m){
+    const isM = window.matchMedia("(max-width: 768px)").matches;
+    m.classList.toggle("show", open && isM);
+  }
+  document.body.classList.toggle("side-collapsed", !open);
+}
+function detectDevice(){
+  const mq = window.matchMedia("(max-width: 768px)");
+  const el = document.getElementById("device");
+  const apply = () => {
+    const isM = mq.matches;
+    document.documentElement.classList.toggle("mobile", isM);
+    if (el) el.textContent = isM ? "📱 移动端" : "💻 desktop 端";
+  };
+  apply();
+  if (mq.addEventListener) mq.addEventListener("change", apply);
+  else if (mq.addListener) mq.addListener(apply);
+}
+detectDevice();
+toggleSide(window.matchMedia("(min-width: 769px)").matches);
+init();
+</script>
+</body>
+</html>
