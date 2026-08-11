@@ -73,6 +73,9 @@ section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;backg
 .sres tbody td{padding:5px 8px}
 .sres .mini{padding:5px 10px;font-size:11px}
 .sres-full-head{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--panel-border);background:#1c1730}
+.sres th.sortable{cursor:pointer;user-select:none}
+.sres th.sortable:hover{color:#ffe9a8}
+.qrow .cond-sel{background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:7px 8px;font-size:13px;outline:none}
 .sres-full-head .mini{margin-left:auto}
 .qrow input[type=text]{width:180px}
 .table-wrap{overflow-x:auto;border:1px solid var(--panel-border);border-radius:10px;background:rgba(0,0,0,.18)}
@@ -198,9 +201,9 @@ section[id]{scroll-margin-top:16px}
     </div>
     <div class="qrow" style="margin-top:12px;flex-wrap:wrap">
       <label class="chk"><input type="checkbox" id="chk-all" onchange="doSearch()"> 搜索全部章节</label>
-      <label>条件1</label><input type="text" id="inp-m1" class="num-inp" style="width:120px" placeholder="怪物名" onchange="doSearch()">
-      <label>条件2</label><input type="text" id="inp-m2" class="num-inp" style="width:120px" placeholder="怪物名" onchange="doSearch()">
-      <label>条件3</label><input type="text" id="inp-m3" class="num-inp" style="width:120px" placeholder="怪物名" onchange="doSearch()">
+      <label>条件1</label><select id="sel-c1" class="cond-sel" onchange="doSearch()"></select><input type="text" id="inp-m1" class="num-inp" style="width:110px" placeholder="值" onchange="doSearch()">
+      <label>条件2</label><select id="sel-c2" class="cond-sel" onchange="doSearch()"></select><input type="text" id="inp-m2" class="num-inp" style="width:110px" placeholder="值" onchange="doSearch()">
+      <label>条件3</label><select id="sel-c3" class="cond-sel" onchange="doSearch()"></select><input type="text" id="inp-m3" class="num-inp" style="width:110px" placeholder="值" onchange="doSearch()">
     </div>
   </section>
 
@@ -222,11 +225,11 @@ const DATA_TOWER = "data/tower.json";
 const COLS = ["stage", "name", "attr", "rarity", "rank", "speed", "reson", "atk", "def", "hp", "mdef", "pdef", "skill", "stamina", "magic", "strength"];
 const ELEMENT_TAG = { "光":"light", "暗":"dark", "蓝":"blue", "红":"red", "绿":"green", "黄":"yellow", "翠":"green" };
 const TOWERS = [
-  { prefix: "無", label: "无穷塔" },
-  { prefix: "藍", label: "蓝塔" },
-  { prefix: "紅", label: "红塔" },
-  { prefix: "黄", label: "黄塔" },
-  { prefix: "翠", label: "绿塔" }
+  { prefix: "無", label: "无穷塔", color: "#c9b8ff" },
+  { prefix: "藍", label: "蓝塔",   color: "#7ab8ff" },
+  { prefix: "紅", label: "红塔",   color: "#ff6b6b" },
+  { prefix: "翠", label: "绿塔",   color: "#6ddb8a" },
+  { prefix: "黄", label: "黄塔",   color: "#ffd76a" }
 ];
 
 let questData = null, towerData = null;
@@ -278,6 +281,7 @@ async function loadData(force){
     document.getElementById("data-date").textContent = "数据源：masterbook（在线）";
     buildQuestSelects();
     buildTowerSelects();
+    buildCondSelects();
     onQueryChange();
   }catch(err){
     el.innerHTML = '<div class="error">❌ 读取失败：' + esc(err.message) + '<br>请稍后再试，或点击“刷新数据”。</div>';
@@ -338,7 +342,7 @@ function selectStage(s){
 }
 function buildTowerSelects(){
   const sel = document.getElementById("sel-tower");
-  sel.innerHTML = TOWERS.map((t, i) => '<option value="' + i + '">' + t.label + '</option>').join("");
+  sel.innerHTML = TOWERS.map((t, i) => '<option value="' + i + '" style="color:' + t.color + '">' + t.label + '</option>').join("");
   onTowerChange();
 }
 let towerLevel = null;
@@ -488,8 +492,63 @@ function renderRows(data, filter, note){
   document.getElementById("res-note").textContent = note + " · 共 " + rows.length + " 只怪物";
   el.innerHTML = stageContentHtml(rows);
 }
+const SEARCH_COLS = [
+  [0,"关卡"],[1,"怪物名"],[2,"属性"],[3,"稀有度"],[4,"等级"],[5,"速度"],[6,"共鸣"],[7,"攻击"],[8,"防御"],[9,"血量"],[10,"魔防"],[11,"物防"],[12,"战技"],[13,"耐力"],[14,"魔力"],[15,"力量"]
+];
+const DISP_COLS = [[0,"关卡"],[1,"怪物名"],[5,"速度"],[6,"共鸣"],[7,"攻击"],[8,"防御"],[9,"血量"],[10,"魔防"],[11,"物防"],[12,"战技"],[13,"耐力"],[14,"魔力"],[15,"力量"]];
+const NUM_COLS = [4,5,7,8,9,10,11,12,13,14,15];
+let sortCol = 0, sortDir = 1;
+let lastSearch = null;
+function buildCondSelects(){
+  const opts = SEARCH_COLS.map(([ci, lab]) => '<option value="' + ci + '">' + lab + '</option>').join("");
+  ["sel-c1","sel-c2","sel-c3"].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = opts;
+    sel.value = "1"; // 默认怪物名
+  });
+}
 function activeConds(){
-  return ["inp-m1", "inp-m2", "inp-m3"].map(id => document.getElementById(id).value.trim()).filter(Boolean);
+  const out = [];
+  for (let i = 1; i <= 3; i++){
+    const col = parseInt(document.getElementById("sel-c" + i).value, 10) || 1;
+    const val = document.getElementById("inp-m" + i).value.trim();
+    if (val) out.push({ col: col, val: val });
+  }
+  return out;
+}
+function matchCond(r, cd){
+  return String(r[cd.col] == null ? "" : r[cd.col]).toLowerCase().indexOf(cd.val.toLowerCase()) >= 0;
+}
+function stageNum(v){
+  const m = String(v == null ? "" : v).match(/\d+/g) || [];
+  if (m.length === 2) return (+m[0]) * 1000 + (+m[1]);
+  if (m.length === 1) return +m[0];
+  return 0;
+}
+function parseNum(v){
+  if (v == null) return -Infinity;
+  const s = String(v).replace(/,/g, "").trim();
+  if (!s) return -Infinity;
+  if (s.endsWith("万")) return parseFloat(s) * 1e4;
+  if (s.endsWith("亿")) return parseFloat(s) * 1e8;
+  const n = parseFloat(s);
+  return isNaN(n) ? -Infinity : n;
+}
+function sortRows(rows){
+  const dir = sortDir;
+  return rows.slice().sort((a, b) => {
+    if (sortCol === 0) return (stageNum(a[0]) - stageNum(b[0])) * dir;
+    if (NUM_COLS.indexOf(sortCol) >= 0) return (parseNum(a[sortCol]) - parseNum(b[sortCol])) * dir;
+    return String(a[sortCol] || "").localeCompare(String(b[sortCol] || ""), "zh-Hans-CN") * dir;
+  });
+}
+function sortResult(col){
+  if (sortCol === col) sortDir = -sortDir;
+  else { sortCol = col; sortDir = 1; }
+  if (lastSearch) renderSearch(lastSearch.results, lastSearch.conds, lastSearch.all);
+}
+function condLabel(cds){
+  return cds.map(cd => (SEARCH_COLS.find(x => x[0] === cd.col) || [cd.col, "列" + cd.col])[1] + "=" + cd.val).join("、");
 }
 function doSearch(){
   const conds = activeConds();
@@ -500,58 +559,68 @@ function doSearch(){
   const pool = all ? data.rows : data.rows.filter(r => String(r[0]) === currentStageStr());
   const map = {};
   for (const r of pool){ const s = String(r[0]); (map[s] = map[s] || []).push(r); }
-  const lower = conds.map(c => c.toLowerCase());
   const results = Object.keys(map)
-    .map(s => ({ stage: s, rows: map[s], hit: conds.filter((c, i) => map[s].some(r => String(r[1]).toLowerCase().indexOf(lower[i]) >= 0)) }))
+    .map(s => ({ stage: s, rows: map[s], hit: conds.filter(cd => map[s].some(r => matchCond(r, cd))) }))
     .filter(x => x.hit.length === conds.length)
-    .sort((a, b) => a.stage.localeCompare(b.stage, undefined, { numeric: true }));
+    .sort((a, b) => stageNum(a.stage) - stageNum(b.stage));
+  sortCol = 0; sortDir = 1; // 默认关卡升序
+  lastSearch = { results: results, conds: conds, all: all };
   renderSearch(results, conds, all);
 }
 function renderSearch(results, conds, all){
   const el = document.getElementById("tbl-res");
-  document.getElementById("res-note").textContent = "搜索：“" + conds.join("、") + "” · " + (all ? "全部章节" : "当前关卡") + " · 命中 " + results.length + " 个关卡";
+  document.getElementById("res-note").textContent = "搜索：“" + condLabel(conds) + "” · " + (all ? "全部章节" : "当前关卡") + " · 命中 " + results.length + " 个关卡";
   if (!results.length){ el.innerHTML = '<div class="error">未找到满足条件的关卡</div>'; return; }
   const one = conds.length === 1;
-  const c = one ? conds[0].toLowerCase() : null;
   let rowsHtml = "";
-  for (const rs of results){
-    const st = mode === "tower" ? String(rs.stage).replace(/^.+?(\d+)$/, "$1") : String(rs.stage);
-    const escStage = esc(rs.stage);
-    if (one){
-      const matched = rs.rows.filter(r => String(r[1]).toLowerCase().indexOf(c) >= 0);
-      for (const r of matched){
-        rowsHtml += "<tr>"
-          + "<td>" + esc(st) + "</td>"
-          + '<td class="mname">' + esc(r[1]) + "</td>"
-          + "<td>" + esc(r[5]) + "</td>"
-          + "<td>" + esc(r[6]) + "</td>"
-          + "<td>" + esc(r[7]) + "</td>"
-          + "<td>" + esc(r[8]) + "</td>"
-          + "<td>" + esc(r[9]) + "</td>"
-          + "<td>" + esc(r[10]) + "</td>"
-          + "<td>" + esc(r[11]) + "</td>"
-          + "<td>" + esc(r[12]) + "</td>"
-          + "<td>" + esc(r[13]) + "</td>"
-          + "<td>" + esc(r[14]) + "</td>"
-          + "<td>" + esc(r[15]) + "</td>"
-          + '<td><button class="mini" onclick="expandStage(this, \'' + escStage + '\')">展开本关敌人</button></td>'
-          + "</tr>";
-      }
-    } else {
+  let matchedAll = [];
+  if (one){
+    for (const rs of results){
+      for (const r of rs.rows){ if (matchCond(r, conds[0])) matchedAll.push(r); }
+    }
+    const sorted = sortRows(matchedAll);
+    for (const r of sorted){
+      const st = mode === "tower" ? String(r[0]).replace(/^.+?(\d+)$/, "$1") : String(r[0]);
+      rowsHtml += "<tr>"
+        + "<td>" + esc(st) + "</td>"
+        + '<td class="mname">' + esc(r[1]) + "</td>"
+        + "<td>" + esc(r[5]) + "</td>"
+        + "<td>" + esc(r[6]) + "</td>"
+        + "<td>" + esc(r[7]) + "</td>"
+        + "<td>" + esc(r[8]) + "</td>"
+        + "<td>" + esc(r[9]) + "</td>"
+        + "<td>" + esc(r[10]) + "</td>"
+        + "<td>" + esc(r[11]) + "</td>"
+        + "<td>" + esc(r[12]) + "</td>"
+        + "<td>" + esc(r[13]) + "</td>"
+        + "<td>" + esc(r[14]) + "</td>"
+        + "<td>" + esc(r[15]) + "</td>"
+        + '<td><button class="mini" onclick="expandStage(this, \'' + esc(r[0]) + '\')">展开本关敌人</button></td>'
+        + "</tr>";
+    }
+  } else {
+    for (const rs of results){
+      const st = mode === "tower" ? String(rs.stage).replace(/^.+?(\d+)$/, "$1") : String(rs.stage);
       rowsHtml += "<tr>"
         + "<td>" + esc(st) + "</td>"
         + "<td>" + esc(rs.stage) + " · 含 " + conds.length + " 个条件</td>"
-        + '<td><button class="mini" onclick="expandStage(this, \'' + escStage + '\')">展开本关敌人</button></td>'
+        + '<td><button class="mini" onclick="expandStage(this, \'' + esc(rs.stage) + '\')">展开本关敌人</button></td>'
         + "</tr>";
     }
   }
-  const headers = one
-    ? "<th>关卡</th><th>怪物名</th><th>速度</th><th>共鸣</th><th>攻击</th><th>防御</th><th>血量</th><th>魔防</th><th>物防</th><th>战技</th><th>耐力</th><th>魔力</th><th>力量</th><th>操作</th>"
-    : "<th>关卡</th><th>说明</th><th>操作</th>";
+  let headers;
+  if (one){
+    headers = DISP_COLS.map(([ci, lab]) => {
+      const arrow = sortCol === ci ? (sortDir === 1 ? " ▲" : " ▼") : "";
+      return '<th class="sortable" onclick="sortResult(' + ci + ')">' + lab + arrow + "</th>";
+    }).join("") + "<th>操作</th>";
+  } else {
+    headers = "<th>关卡</th><th>说明</th><th>操作</th>";
+  }
   let fulls = "";
   for (const rs of results){
     fulls += '<div class="sres-full" data-stage="' + esc(rs.stage) + '" style="display:none">'
-      + '<div class="sres-full-head"><span class="sres-stage">' + esc(rs.stage) + ' · 全部敌人</span><button class="mini" onclick="backToList(this)">收起</button></div>'
+      + '<div class="sres-full-head"><span class="sres-stage">' + esc(rs.stage) + " · 全部敌人</span><button class=\"mini\" onclick=\"backToList(this)\">收起</button></div>"
       + stageContentHtml(rs.rows)
       + "</div>";
   }
