@@ -210,9 +210,9 @@ section[id]{scroll-margin-top:16px}
     <div class="qrow" style="margin-top:12px;flex-wrap:wrap">
       <label class="chk"><input type="checkbox" id="chk-all" onchange="doSearch()"> 搜索全部章节</label>
       <label id="lbl-tower-filter" style="display:none">塔类型</label><select id="sel-tower-filter" style="display:none" onchange="doSearch()"></select>
-      <label>条件1</label><select id="sel-c1" class="cond-sel" onchange="doSearch()"></select><input type="text" id="inp-m1" class="num-inp" style="width:110px" placeholder="值" onchange="doSearch()">
-      <label>条件2</label><select id="sel-c2" class="cond-sel" onchange="doSearch()"></select><input type="text" id="inp-m2" class="num-inp" style="width:110px" placeholder="值" onchange="doSearch()">
-      <label>条件3</label><select id="sel-c3" class="cond-sel" onchange="doSearch()"></select><input type="text" id="inp-m3" class="num-inp" style="width:110px" placeholder="值" onchange="doSearch()">
+      <label>条件1</label><select id="sel-c1" class="cond-sel" onchange="onCondColChange(1);doSearch()"></select><input type="text" id="inp-m1" class="num-inp" style="width:130px" placeholder="值" onchange="doSearch()">
+      <label>条件2</label><select id="sel-c2" class="cond-sel" onchange="onCondColChange(2);doSearch()"></select><input type="text" id="inp-m2" class="num-inp" style="width:130px" placeholder="值" onchange="doSearch()">
+      <label>条件3</label><select id="sel-c3" class="cond-sel" onchange="onCondColChange(3);doSearch()"></select><input type="text" id="inp-m3" class="num-inp" style="width:130px" placeholder="值" onchange="doSearch()">
     </div>
   </section>
 
@@ -536,23 +536,53 @@ let sortCol = 0, sortDir = 1;
 let lastSearch = null;
 function buildCondSelects(){
   const opts = SEARCH_COLS.map(([ci, lab]) => '<option value="' + ci + '">' + lab + '</option>').join("");
-  ["sel-c1","sel-c2","sel-c3"].forEach(id => {
+  ["sel-c1","sel-c2","sel-c3"].forEach((id, i) => {
     const sel = document.getElementById(id);
     sel.innerHTML = opts;
     sel.value = "1"; // 默认怪物名
+    onCondColChange(i + 1);
   });
 }
 function activeConds(){
   const out = [];
   for (let i = 1; i <= 3; i++){
-    const col = parseInt(document.getElementById("sel-c" + i).value, 10) || 1;
+    const cv = parseInt(document.getElementById("sel-c" + i).value, 10);
+    const col = isNaN(cv) ? 1 : cv;
     const val = document.getElementById("inp-m" + i).value.trim();
     if (val) out.push({ col: col, val: val });
   }
   return out;
 }
+function onCondColChange(i){
+  const sel = document.getElementById("sel-c" + i);
+  const inp = document.getElementById("inp-m" + i);
+  if (!sel || !inp) return;
+  const col = parseInt(sel.value, 10);
+  if (NUM_COLS.indexOf(col) >= 0) inp.placeholder = ">数字 或 <数字";
+  else if (col === 0) inp.placeholder = "如 39-23";
+  else if (col === 1 || col === 6) inp.placeholder = "名称";
+  else inp.placeholder = "文本";
+}
 function matchCond(r, cd){
-  return String(r[cd.col] == null ? "" : r[cd.col]).toLowerCase().indexOf(cd.val.toLowerCase()) >= 0;
+  const raw = String(r[cd.col] == null ? "" : r[cd.col]);
+  // 关卡 / 怪物名 / 共鸣：保持文本包含匹配
+  if (cd.col === 0 || cd.col === 1 || cd.col === 6){
+    return raw.toLowerCase().indexOf(String(cd.val).trim().toLowerCase()) >= 0;
+  }
+  // 其它列：数值比较 （支持 > >= < <=，数据里万/亿会先转换）
+  const v = String(cd.val == null ? "" : cd.val).trim();
+  const m = /^(>=|<=|>|<)\s*(.+)$/.exec(v);
+  let op = null, num = null;
+  if (m){ op = m[1]; num = parseNum(m[2]); }
+  else { num = parseNum(v); }
+  if (!isFinite(num)) return raw.toLowerCase().indexOf(v.toLowerCase()) >= 0;
+  const dv = parseNum(raw);
+  if (!isFinite(dv)) return false;
+  if (op === ">") return dv > num;
+  if (op === "<") return dv < num;
+  if (op === ">=") return dv >= num;
+  if (op === "<=") return dv <= num;
+  return dv === num;
 }
 function stageNum(v){
   const m = String(v == null ? "" : v).match(/\d+/g) || [];
