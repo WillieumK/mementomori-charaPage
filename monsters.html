@@ -210,9 +210,9 @@ section[id]{scroll-margin-top:16px}
     <div class="qrow" style="margin-top:12px;flex-wrap:wrap">
       <label class="chk"><input type="checkbox" id="chk-all" onchange="doSearch()"> 搜索全部章节</label>
       <label id="lbl-tower-filter" style="display:none">塔类型</label><select id="sel-tower-filter" style="display:none" onchange="doSearch()"></select>
-      <label>条件1</label><select id="sel-c1" class="cond-sel" onchange="onCondColChange(1);doSearch()"></select><input type="text" id="inp-m1" class="num-inp" style="width:130px" placeholder="值" onchange="doSearch()">
-      <label>条件2</label><select id="sel-c2" class="cond-sel" onchange="onCondColChange(2);doSearch()"></select><input type="text" id="inp-m2" class="num-inp" style="width:130px" placeholder="值" onchange="doSearch()">
-      <label>条件3</label><select id="sel-c3" class="cond-sel" onchange="onCondColChange(3);doSearch()"></select><input type="text" id="inp-m3" class="num-inp" style="width:130px" placeholder="值" onchange="doSearch()">
+      <label>条件1</label><div class="dd" id="dd-c1"><button class="dd-btn" onclick="toggleCondDD(1)"><span id="cdd-label-1">怪物名</span><span class="dd-arrow">▾</span></button><div class="dd-panel cdd-panel" id="cdd-panel-1" style="display:none"><div class="cdd-cols"><div class="cdd-left" id="cdd-left-1"></div><div class="cdd-right" id="cdd-right-1"></div></div></div></div><input type="text" id="inp-m1" class="num-inp" style="width:130px" placeholder="值" onchange="doSearch()">
+      <label>条件2</label><div class="dd" id="dd-c2"><button class="dd-btn" onclick="toggleCondDD(2)"><span id="cdd-label-2">怪物名</span><span class="dd-arrow">▾</span></button><div class="dd-panel cdd-panel" id="cdd-panel-2" style="display:none"><div class="cdd-cols"><div class="cdd-left" id="cdd-left-2"></div><div class="cdd-right" id="cdd-right-2"></div></div></div></div><input type="text" id="inp-m2" class="num-inp" style="width:130px" placeholder="值" onchange="doSearch()">
+      <label>条件3</label><div class="dd" id="dd-c3"><button class="dd-btn" onclick="toggleCondDD(3)"><span id="cdd-label-3">怪物名</span><span class="dd-arrow">▾</span></button><div class="dd-panel cdd-panel" id="cdd-panel-3" style="display:none"><div class="cdd-cols"><div class="cdd-left" id="cdd-left-3"></div><div class="cdd-right" id="cdd-right-3"></div></div></div></div><input type="text" id="inp-m3" class="num-inp" style="width:130px" placeholder="值" onchange="doSearch()">
     </div>
   </section>
 
@@ -534,51 +534,97 @@ const DISP_COLS = [[0,"关卡"],[1,"怪物名"],[5,"速度"],[6,"共鸣"],[7,"�
 const NUM_COLS = [4,5,7,8,9,10,11,12,13,14,15];
 let sortCol = 0, sortDir = 1;
 let lastSearch = null;
+const condState = [ { col: 1, op: "contains" }, { col: 1, op: "contains" }, { col: 1, op: "contains" } ];
+function colName(col){ const f = SEARCH_COLS.find(x => x[0] === col); return f ? f[1] : String(col); }
 function buildCondSelects(){
-  const opts = [];
-  for (const [ci, lab] of SEARCH_COLS){
-    if (NUM_COLS.indexOf(ci) >= 0){
-      opts.push('<option value="' + ci + ':gt">' + lab + ' ></option>');
-      opts.push('<option value="' + ci + ':lt">' + lab + ' <</option>');
-    } else {
-      opts.push('<option value="' + ci + ':contains">' + lab + ' 包含</option>');
-    }
-  }
-  ["sel-c1","sel-c2","sel-c3"].forEach((id, i) => {
-    const sel = document.getElementById(id);
-    sel.innerHTML = opts.join("");
-    sel.value = "1:contains"; // 默认怪物名 包含
-    onCondColChange(i + 1);
-  });
-}
-const OP_MAP = { gt: ">", lt: "<", ge: ">=", le: "<=", eq: "" };
-function activeConds(){
-  const out = [];
   for (let i = 1; i <= 3; i++){
-    const raw = String(document.getElementById("sel-c" + i).value || "");
-    const parts = raw.split(":");
-    const c = parseInt(parts[0], 10);
-    const col = isNaN(c) ? 1 : c;
-    const op = parts[1] || "contains";
-    const val = document.getElementById("inp-m" + i).value.trim();
-    if (val){
-      let v = val;
-      if (OP_MAP[op] !== undefined && !/^(>=|<=|>|<)/.test(val)) v = OP_MAP[op] + val;
-      out.push({ col: col, val: v });
-    }
+    const lab = SEARCH_COLS.map(([ci, nm]) => '<button type="button" data-col="' + ci + '" onclick="condPickCol(' + i + ',' + ci + ')">' + nm + '</button>').join("");
+    document.getElementById("cdd-left-" + i).innerHTML = lab;
+    condState[i - 1] = { col: 1, op: "contains" };
+    updateCondLabel(i);
+    updateCondPlaceholder(i);
   }
-  return out;
 }
-function onCondColChange(i){
-  const sel = document.getElementById("sel-c" + i);
+function updateCondLabel(i){
+  const st = condState[i - 1];
+  const el = document.getElementById("cdd-label-" + i);
+  if (!el) return;
+  const sym = NUM_COLS.indexOf(st.col) >= 0 ? (st.op === "lt" ? " <" : " >") : "";
+  el.textContent = colName(st.col) + sym;
+}
+function updateCondPlaceholder(i){
   const inp = document.getElementById("inp-m" + i);
-  if (!sel || !inp) return;
-  const raw = String(sel.value || "");
-  const col = parseInt(raw.split(":")[0], 10);
+  const col = condState[i - 1].col;
+  if (!inp) return;
   if (NUM_COLS.indexOf(col) >= 0) inp.placeholder = "数字（可用万/亿）";
   else if (col === 0) inp.placeholder = "如 39-23";
   else if (col === 1 || col === 6) inp.placeholder = "名称";
   else inp.placeholder = "文本";
+}
+function toggleCondDD(i){
+  const pan = document.getElementById("cdd-panel-" + i);
+  if (!pan) return;
+  const open = pan.style.display !== "none";
+  document.querySelectorAll(".cdd-panel").forEach(p => p.style.display = "none");
+  if (!open){
+    renderCondRight(i);
+    document.querySelectorAll("#cdd-left-" + i + " button").forEach(b => b.classList.toggle("sel", parseInt(b.dataset.col, 10) === condState[i - 1].col));
+    pan.style.display = "block";
+  }
+}
+function closeCondDD(i){
+  const pan = document.getElementById("cdd-panel-" + i);
+  if (pan) pan.style.display = "none";
+}
+function renderCondRight(i){
+  const st = condState[i - 1];
+  const el = document.getElementById("cdd-right-" + i);
+  if (!el) return;
+  if (NUM_COLS.indexOf(st.col) >= 0){
+    el.innerHTML = '<button type="button" class="' + (st.op === "gt" ? "sel" : "") + '" onclick="condPickOp(' + i + ',\'gt\')">&gt;</button>'
+      + '<button type="button" class="' + (st.op === "lt" ? "sel" : "") + '" onclick="condPickOp(' + i + ',\'lt\')">&lt;</button>';
+  } else {
+    el.innerHTML = '<div class="cdd-tip">点选即定</div>';
+  }
+}
+function condPickCol(i, col){
+  const st = condState[i - 1];
+  st.col = col;
+  if (NUM_COLS.indexOf(col) >= 0){
+    if (st.op === "contains") st.op = "gt";
+    updateCondLabel(i);
+    renderCondRight(i);
+    document.querySelectorAll("#cdd-left-" + i + " button").forEach(b => b.classList.toggle("sel", parseInt(b.dataset.col, 10) === col));
+  } else {
+    st.op = "contains";
+    updateCondLabel(i);
+    updateCondPlaceholder(i);
+    closeCondDD(i);
+  }
+  doSearch();
+}
+function condPickOp(i, op){
+  const st = condState[i - 1];
+  if (NUM_COLS.indexOf(st.col) < 0) return;
+  st.op = op;
+  updateCondLabel(i);
+  updateCondPlaceholder(i);
+  closeCondDD(i);
+  doSearch();
+}
+const OP_MAP = { gt: ">", lt: "<" };
+function activeConds(){
+  const out = [];
+  for (let i = 0; i < 3; i++){
+    const st = condState[i];
+    const val = document.getElementById("inp-m" + (i + 1)).value.trim();
+    if (val){
+      let v = val;
+      if (OP_MAP[st.op] !== undefined && !/^(>=|<=|>|<)/.test(val)) v = OP_MAP[st.op] + val;
+      out.push({ col: st.col, val: v });
+    }
+  }
+  return out;
 }
 function matchCond(r, cd){
   const raw = String(r[cd.col] == null ? "" : r[cd.col]);
