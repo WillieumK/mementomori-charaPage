@@ -487,17 +487,17 @@ function rowTableHtml(rows){
     body += "<tr>"
       + "<td>" + esc(stageShow) + "</td>"
       + '<td class="mname">' + esc(r[1]) + "</td>"
-      + "<td>" + esc(r[5]) + "</td>"
+      + "<td>" + fmtCell(5, r[5]) + "</td>"
       + "<td>" + esc(r[6]) + "</td>"
-      + "<td>" + esc(r[7]) + "</td>"
-      + "<td>" + esc(r[8]) + "</td>"
-      + "<td>" + esc(r[9]) + "</td>"
-      + "<td>" + esc(r[10]) + "</td>"
-      + "<td>" + esc(r[11]) + "</td>"
-      + "<td>" + esc(r[12]) + "</td>"
-      + "<td>" + esc(r[13]) + "</td>"
-      + "<td>" + esc(r[14]) + "</td>"
-      + "<td>" + esc(r[15]) + "</td>"
+      + "<td>" + fmtCell(7, r[7]) + "</td>"
+      + "<td>" + fmtCell(8, r[8]) + "</td>"
+      + "<td>" + fmtCell(9, r[9]) + "</td>"
+      + "<td>" + fmtCell(10, r[10]) + "</td>"
+      + "<td>" + fmtCell(11, r[11]) + "</td>"
+      + "<td>" + fmtCell(12, r[12]) + "</td>"
+      + "<td>" + fmtCell(13, r[13]) + "</td>"
+      + "<td>" + fmtCell(14, r[14]) + "</td>"
+      + "<td>" + fmtCell(15, r[15]) + "</td>"
       + "</tr>";
   }
   return '<table><thead><tr><th>关卡</th><th>怪物名</th><th>速度</th><th>共鸣</th><th>攻击</th><th>防御</th><th>血量</th><th>魔防</th><th>物防</th><th>战技</th><th>耐力</th><th>魔力</th><th>力量</th></tr></thead><tbody>'
@@ -622,6 +622,26 @@ function parseNum(v){
   const n = parseFloat(s);
   return isNaN(n) ? -Infinity : n;
 }
+
+function fmtNum(v){
+  const n = parseNum(v);
+  if (!isFinite(n)) return esc(v);
+  const abs = Math.abs(n);
+  let val = n, unit = "";
+  if (abs >= 1e8){ val = n / 1e8; unit = "亿"; }
+  else if (abs >= 1e4){ val = n / 1e4; unit = "万"; }
+  let t = val;
+  if (Number.isInteger(val)) t = String(val);
+  else {
+    t = val.toPrecision(4);
+    if (t.indexOf("e") >= 0 || t.indexOf("E") >= 0) t = String(Math.round(val * 1000) / 1000);
+  }
+  if (t.indexOf(".") >= 0) t = t.replace(/\.?0+$/, "");
+  return t + unit;
+}
+function fmtCell(ci, v){
+  return NUM_COLS.indexOf(ci) >= 0 ? fmtNum(v) : esc(v);
+}
 function sortRows(rows){
   const dir = sortDir;
   return rows.slice().sort((a, b) => {
@@ -680,17 +700,17 @@ function renderSearch(results, conds, all){
       rowsHtml += "<tr>"
         + "<td>" + st + "</td>"
         + '<td class="mname">' + esc(r[1]) + "</td>"
-        + "<td>" + esc(r[5]) + "</td>"
+        + "<td>" + fmtCell(5, r[5]) + "</td>"
         + "<td>" + esc(r[6]) + "</td>"
-        + "<td>" + esc(r[7]) + "</td>"
-        + "<td>" + esc(r[8]) + "</td>"
-        + "<td>" + esc(r[9]) + "</td>"
-        + "<td>" + esc(r[10]) + "</td>"
-        + "<td>" + esc(r[11]) + "</td>"
-        + "<td>" + esc(r[12]) + "</td>"
-        + "<td>" + esc(r[13]) + "</td>"
-        + "<td>" + esc(r[14]) + "</td>"
-        + "<td>" + esc(r[15]) + "</td>"
+        + "<td>" + fmtCell(7, r[7]) + "</td>"
+        + "<td>" + fmtCell(8, r[8]) + "</td>"
+        + "<td>" + fmtCell(9, r[9]) + "</td>"
+        + "<td>" + fmtCell(10, r[10]) + "</td>"
+        + "<td>" + fmtCell(11, r[11]) + "</td>"
+        + "<td>" + fmtCell(12, r[12]) + "</td>"
+        + "<td>" + fmtCell(13, r[13]) + "</td>"
+        + "<td>" + fmtCell(14, r[14]) + "</td>"
+        + "<td>" + fmtCell(15, r[15]) + "</td>"
         + '<td><button class="mini" onclick="expandStage(this, \'' + esc(r[0]) + '\')">展开本关敌人</button></td>'
         + "</tr>";
     }
