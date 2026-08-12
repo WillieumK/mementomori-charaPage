@@ -43,10 +43,10 @@ section.card{background:var(--panel);border:1px solid var(--panel-border);border
 section.card h2{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-size:18px;color:#f1eef8}
 section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;background:linear-gradient(180deg,var(--gold),var(--accent))}
 .h2-note{color:var(--muted);font-size:12px;font-weight:400;margin-left:auto}
-.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tabs{display:flex;gap:8px;margin-bottom:10px}
 .tabs button{background:rgba(255,255,255,.05);border:1px solid var(--panel-border);color:var(--text);border-radius:999px;padding:8px 18px;font-size:13px;cursor:pointer}
 .tabs button.active{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;border-color:transparent;font-weight:600}
-.qrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.qrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
 .qrow label{color:var(--muted);font-size:13px}
 .qrow select,.qrow input{background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:7px 10px;font-size:13px;outline:none}
 .qrow .num-inp{width:64px;padding:7px 8px}
@@ -75,6 +75,9 @@ section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;backg
 .sres-head .mini{margin-left:auto}
 .sres-full{display:none}
 .sres tbody td{padding:5px 8px}
+.sres .lineup-tbl td{padding:3px 8px}
+.sres .lineup-tbl .eicons{padding:4px 10px;gap:5px;border-bottom:0}
+.sres .lineup-tbl .eicon img{width:50px;height:50px;border-radius:8px}
 .sres .mini{padding:5px 10px;font-size:11px}
 .sres-full-head{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--panel-border);background:#1c1730}
 .sres th.sortable{cursor:pointer;user-select:none}
@@ -133,6 +136,7 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
   thead th,tbody td{padding:7px 8px;font-size:12px}
   .qrow input[type=text]{width:120px}
   .eicon img{width:56px;height:56px}
+  .sres .lineup-tbl .eicon img{width:44px;height:44px}
 }
 html{scroll-behavior:smooth}
 section[id]{scroll-margin-top:16px}
@@ -208,7 +212,7 @@ section[id]{scroll-margin-top:16px}
       <label class="lbl-manual">填写关卡模式</label>
       <input id="inp-level-manual" class="num-inp" style="width:90px" placeholder="如 500" onchange="onQueryChange()">
     </div>
-    <div class="qrow" style="margin-top:12px;flex-wrap:wrap">
+    <div class="qrow" style="flex-wrap:wrap">
       <label class="chk"><input type="checkbox" id="chk-all" onchange="doSearch()"> 搜索全部章节</label><label class="chk"><input type="checkbox" id="chk-lineup" onchange="doSearch()"> 查询关卡阵容</label>
       <label id="lbl-tower-filter" style="display:none">塔类型</label><select id="sel-tower-filter" style="display:none" onchange="doSearch()"></select>
     </div>
@@ -756,7 +760,7 @@ function renderSearch(results, conds, all, lineup){
       + "</div>";
   }
   el.innerHTML = '<div class="sres">'
-    + '<div class="sres-list"><table><thead><tr>' + headers + "</tr></thead><tbody>" + rowsHtml + "</tbody></table></div>"
+    + '<div class="sres-list"><table' + (groupMode ? ' class="lineup-tbl"' : '') + '><thead><tr>' + headers + "</tr></thead><tbody>" + rowsHtml + "</tbody></table></div>"
     + fulls
     + "</div>";
 }
