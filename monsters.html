@@ -209,8 +209,10 @@ section[id]{scroll-margin-top:16px}
       <input id="inp-level-manual" class="num-inp" style="width:90px" placeholder="如 500" onchange="onQueryChange()">
     </div>
     <div class="qrow" style="margin-top:12px;flex-wrap:wrap">
-      <label class="chk"><input type="checkbox" id="chk-all" onchange="doSearch()"> 搜索全部章节</label>
+      <label class="chk"><input type="checkbox" id="chk-all" onchange="doSearch()"> 搜索全部章节</label><label class="chk"><input type="checkbox" id="chk-lineup" onchange="doSearch()"> 查询关卡阵容</label>
       <label id="lbl-tower-filter" style="display:none">塔类型</label><select id="sel-tower-filter" style="display:none" onchange="doSearch()"></select>
+    </div>
+    <div class="qrow" style="flex-wrap:wrap">
       <label>条件1</label><select id="sel-c1" class="cond-sel" onchange="onCondColChange(1);doSearch()"></select><select id="op-sel-1" class="cond-op" style="display:none" onchange="doSearch()"></select><input type="text" id="inp-m1" class="num-inp" style="width:130px" placeholder="值" onchange="doSearch()">
       <label>条件2</label><select id="sel-c2" class="cond-sel" onchange="onCondColChange(2);doSearch()"></select><select id="op-sel-2" class="cond-op" style="display:none" onchange="doSearch()"></select><input type="text" id="inp-m2" class="num-inp" style="width:130px" placeholder="值" onchange="doSearch()">
       <label>条件3</label><select id="sel-c3" class="cond-sel" onchange="onCondColChange(3);doSearch()"></select><select id="op-sel-3" class="cond-op" style="display:none" onchange="doSearch()"></select><input type="text" id="inp-m3" class="num-inp" style="width:130px" placeholder="值" onchange="doSearch()">
@@ -660,7 +662,7 @@ function towerStageHtml(stageStr){
 function sortResult(col){
   if (sortCol === col) sortDir = -sortDir;
   else { sortCol = col; sortDir = 1; }
-  if (lastSearch) renderSearch(lastSearch.results, lastSearch.conds, lastSearch.all);
+  if (lastSearch) renderSearch(lastSearch.results, lastSearch.conds, lastSearch.all, lastSearch.lineup);
 }
 function condLabel(cds){
   return cds.map(cd => (SEARCH_COLS.find(x => x[0] === cd.col) || [cd.col, "列" + cd.col])[1] + "=" + cd.val).join("、");
@@ -671,6 +673,7 @@ function doSearch(){
   const data = mode === "quest" ? questData : towerData;
   if (!data) return;
   const all = document.getElementById("chk-all").checked;
+  const lineup = document.getElementById("chk-lineup").checked;
   const tf = mode === "tower" ? towerFilter() : null;
   const pool = (all ? data.rows : data.rows.filter(r => String(r[0]) === currentStageStr())).filter(r => !tf || String(r[0]).startsWith(tf.prefix));
   const map = {};
@@ -680,17 +683,27 @@ function doSearch(){
     .filter(x => x.hit.length === conds.length)
     .sort((a, b) => stageNum(a.stage) - stageNum(b.stage));
   sortCol = 0; sortDir = 1; // 默认关卡升序
-  lastSearch = { results: results, conds: conds, all: all };
-  renderSearch(results, conds, all);
+  lastSearch = { results: results, conds: conds, all: all, lineup: lineup };
+  renderSearch(results, conds, all, lineup);
 }
-function renderSearch(results, conds, all){
+function renderSearch(results, conds, all, lineup){
   const el = document.getElementById("tbl-res");
-  document.getElementById("res-note").textContent = "搜索：“" + condLabel(conds) + "” · " + (all ? "全部章节" : "当前关卡") + " · 命中 " + results.length + " 个关卡";
+  document.getElementById("res-note").textContent = "搜索：“" + condLabel(conds) + "” · " + (all ? "全部章节" : "当前关卡") + (lineup ? " · 阵容模式" : "") + " · 命中 " + results.length + " 个关卡";
   if (!results.length){ el.innerHTML = '<div class="error">未找到满足条件的关卡</div>'; return; }
   const one = conds.length === 1;
+  const groupMode = !!lineup || conds.length > 1;
   let rowsHtml = "";
   let matchedAll = [];
-  if (one){
+  if (groupMode){
+    for (const rs of results){
+      const st = mode === "tower" ? towerStageHtml(rs.stage) : esc(String(rs.stage));
+      rowsHtml += "<tr>"
+        + "<td>" + st + "</td>"
+        + "<td>" + stageIconsHtml(rs.rows) + "</td>"
+        + "<td><button class=\"mini\" onclick=\"expandStage(this, '" + esc(rs.stage) + "')\">展开敌人数值</button></td>"
+        + "</tr>";
+    }
+  } else if (one){
     for (const rs of results){
       for (const r of rs.rows){ if (matchCond(r, conds[0])) matchedAll.push(r); }
     }
@@ -711,7 +724,7 @@ function renderSearch(results, conds, all){
         + "<td>" + fmtCell(13, r[13]) + "</td>"
         + "<td>" + fmtCell(14, r[14]) + "</td>"
         + "<td>" + fmtCell(15, r[15]) + "</td>"
-        + '<td><button class="mini" onclick="expandStage(this, \'' + esc(r[0]) + '\')">展开本关敌人</button></td>'
+        + "<td><button class=\"mini\" onclick=\"expandStage(this, '" + esc(r[0]) + "')\">展开本关敌人</button></td>"
         + "</tr>";
     }
   } else {
@@ -720,12 +733,14 @@ function renderSearch(results, conds, all){
       rowsHtml += "<tr>"
         + "<td>" + st + "</td>"
         + "<td>" + esc(rs.stage) + " · 含 " + conds.length + " 个条件</td>"
-        + '<td><button class="mini" onclick="expandStage(this, \'' + esc(rs.stage) + '\')">展开本关敌人</button></td>'
+        + "<td><button class=\"mini\" onclick=\"expandStage(this, '" + esc(rs.stage) + "')\">展开本关敌人</button></td>"
         + "</tr>";
     }
   }
   let headers;
-  if (one){
+  if (groupMode){
+    headers = "<th>关卡</th><th>敌人阵容</th><th>操作</th>";
+  } else if (one){
     headers = DISP_COLS.map(([ci, lab]) => {
       const arrow = sortCol === ci ? (sortDir === 1 ? " ▲" : " ▼") : "";
       return '<th class="sortable" onclick="sortResult(' + ci + ')">' + lab + arrow + "</th>";
@@ -737,7 +752,7 @@ function renderSearch(results, conds, all){
   for (const rs of results){
     fulls += '<div class="sres-full" data-stage="' + esc(rs.stage) + '" style="display:none">'
       + '<div class="sres-full-head"><span class="sres-stage">' + (mode === "tower" ? towerStageHtml(rs.stage) : esc(rs.stage)) + " · 全部敌人</span><button class=\"mini\" onclick=\"backToList(this)\">收起</button></div>"
-      + stageContentHtml(rs.rows)
+      + (lineup ? rowTableHtml(rs.rows) : stageContentHtml(rs.rows))
       + "</div>";
   }
   el.innerHTML = '<div class="sres">'
