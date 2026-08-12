@@ -756,7 +756,7 @@ function renderSearch(results, conds, all, lineup){
   for (const rs of results){
     fulls += '<div class="sres-full" data-stage="' + esc(rs.stage) + '" style="display:none">'
       + '<div class="sres-full-head"><span class="sres-stage">' + (mode === "tower" ? towerStageHtml(rs.stage) : esc(rs.stage)) + " · 全部敌人</span><button class=\"mini\" onclick=\"backToList(this)\">收起</button></div>"
-      + (lineup ? rowTableHtml(rs.rows) : stageContentHtml(rs.rows))
+      + stageContentHtml(rs.rows)
       + "</div>";
   }
   el.innerHTML = '<div class="sres">'
