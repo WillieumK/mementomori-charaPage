@@ -138,7 +138,7 @@ jobs:
               v = None
               if s.get("BaseParameterChangeInfo") and s["BaseParameterChangeInfo"].get("Value") is not None: v = s["BaseParameterChangeInfo"]["Value"]
               elif s.get("BattleParameterChangeInfo") and s["BattleParameterChangeInfo"].get("Value") is not None: v = s["BattleParameterChangeInfo"]["Value"]
-              spmap[str(s["Id"])] = {"n":t.get(s.get("NameKey"),s.get("Memo","")),"d":t.get(s.get("DescriptionKey"),""),"v":v,"r":RAR.get(s.get("RarityFlags"),str(s.get("RarityFlags")))}
+              spmap[str(s["Id"])] = {"n":t.get(s.get("NameKey"),s.get("Memo","")),"d":t.get(s.get("DescriptionKey"),""),"v":v,"r":RAR.get(s.get("RarityFlags"),str(s.get("RarityFlags"))),"cat":s.get("CategoryId"),"t":s.get("SphereType"),"lv":s.get("Lv")}
           save("pvp_sphere.json", spmap)
           print("pvp maps done, mver:", mver)
           PYEOF
