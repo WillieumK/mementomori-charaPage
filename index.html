@@ -868,6 +868,7 @@ async function doManualRefresh(){
       body: JSON.stringify({ ref: "main" })
     });
     if (!r.ok){ const t = (await r.text()).slice(0, 200); alert("触发失败（" + r.status + "）：" + t); closeModal(); return; }
+    closeModal(); // 弹窗立即关闭
     alert("已触发，正在后台抓取…完成后会再次提示");
     const run = await waitWorkflowDone(token, 180000);
     if (run && run.status === "completed"){
@@ -876,7 +877,6 @@ async function doManualRefresh(){
     } else {
       alert("等待超时，请稍后到 GitHub Actions 确认，或点「刷新数据」查看");
     }
-    closeModal();
   }catch(err){ alert("网络错误：" + err.message); closeModal(); }
 }
 async function waitWorkflowDone(token, timeoutMs){
