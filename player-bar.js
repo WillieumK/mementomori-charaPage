@@ -56,6 +56,8 @@ if (!audio){
   audio.preload = "metadata";
   document.body.appendChild(audio);
 }
+/* art 页启用 Web Audio 可视化：需 CORS（jsdelivr 等源支持），在设置 src 前声明 */
+if (isArt){ try{ audio.crossOrigin = "anonymous"; }catch(e){} }
 
 /* ---------------- 会话存取 ---------------- */
 function saveState(){
@@ -108,6 +110,7 @@ function setPlaying(on){
     if (cv) cv.classList.toggle("playing", on);
     var act = document.querySelector(".playlist .track.active");
     if (act) act.classList.toggle("paused", !on);
+    if (on) ensureViz(); else stopViz();
   }
   if (barEl){
     var pb = barEl.querySelector('[data-a="play"]');
@@ -145,14 +148,14 @@ function loadTrack(i, autoplay){
     var ti = document.getElementById("track-index");
     if (ti) ti.textContent = (idx + 1) + " / " + tracks.length;
     var cv = document.getElementById("cover");
-    cv.innerHTML = coverInner(t);
+    updateArtCover(t);
     cv.classList.remove("playing");
     document.getElementById("seek").value = 0;
     document.getElementById("cur-time").textContent = "0:00";
     document.getElementById("dur-time").textContent = t.duration ? fmt(t.duration) : "0:00";
   }
   audio.src = t.src;
-  audio.volume = vol;
+  applyVolume();
   audio.load();
   renderList();
   if (barEl) refreshBar();
@@ -194,7 +197,7 @@ function bindArt(){
   });
   document.getElementById("volume").addEventListener("input", function(){
     vol = this.value / 100;
-    audio.volume = vol;
+    applyVolume();
     saveState();
   });
 }
@@ -303,11 +306,95 @@ function installGestureResume(){
     var t = e.target;
     if (t && t.closest && (t.closest("#mmbar") || t.closest(".controls"))) return; /* 控件自己处理 */
     pendingResume = false;
-    audio.play().then(function(){ setPlaying(true); }).catch(function(){});
+    audio.play().then(function(){ setPlaying(true); ensureViz(); }).catch(function(){});
   };
   document.addEventListener("pointerdown", resume, true);
   document.addEventListener("touchstart", resume, true);
   document.addEventListener("keydown", resume, true);
+}
+
+/* ---------------- art 封面音频可视化（Web Audio 频谱射线，不旋转） ---------------- */
+var audioCtx = null, analyser = null, gainNode = null, freqData = null, rafId = null;
+function ensureViz(){
+  if (!isArt) return;
+  var canvas = document.getElementById("viz");
+  if (!canvas) return;
+  if (!audioCtx){
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    try{
+      audioCtx = new AC();
+      var src = audioCtx.createMediaElementSource(audio);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      analyser.smoothingTimeConstant = 0.82;
+      gainNode = audioCtx.createGain();
+      gainNode.gain.value = vol;
+      src.connect(analyser);
+      analyser.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      freqData = new Uint8Array(analyser.frequencyBinCount);
+    }catch(e){ audioCtx = null; return; }
+  }
+  if (audioCtx.state === "suspended"){ audioCtx.resume().catch(function(){}); }
+  if (rafId == null){ rafId = requestAnimationFrame(drawViz); }
+}
+function stopViz(){
+  if (rafId != null){ cancelAnimationFrame(rafId); rafId = null; }
+  var canvas = document.getElementById("viz");
+  if (canvas){ var c2 = canvas.getContext("2d"); if (c2) c2.clearRect(0, 0, canvas.width, canvas.height); }
+}
+function drawViz(){
+  rafId = requestAnimationFrame(drawViz);
+  if (!analyser || !freqData) return;
+  var canvas = document.getElementById("viz");
+  if (!canvas || canvas.style.display === "none") return;
+  var ctx = canvas.getContext("2d");
+  var dpr = window.devicePixelRatio || 1;
+  var w = canvas.clientWidth, h = canvas.clientHeight;
+  if (!w || !h) return;
+  var bw = Math.round(w * dpr), bh = Math.round(h * dpr);
+  if (canvas.width !== bw || canvas.height !== bh){ canvas.width = bw; canvas.height = bh; }
+  analyser.getByteFrequencyData(freqData);
+  ctx.clearRect(0, 0, bw, bh);
+  var cx = bw / 2, cy = bh / 2;
+  var baseR = Math.min(bw, bh) * 0.26;
+  var maxLen = Math.min(bw, bh) * 0.30;
+  var n = freqData.length;
+  for (var i = 0; i < n; i++){
+    var v = freqData[i] / 255;
+    var ang = (i / n) * Math.PI * 2 - Math.PI / 2;
+    var r0 = baseR + 4;
+    var r1 = baseR + 4 + v * maxLen;
+    var hue = Math.round(260 - v * 215); /* 紫(260) → 金(45)，能量越高越亮 */
+    ctx.strokeStyle = "hsla(" + hue + ",72%,62%,.92)";
+    ctx.lineWidth = Math.max(2, 4 * v);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(ang) * r0, cy + Math.sin(ang) * r0);
+    ctx.lineTo(cx + Math.cos(ang) * r1, cy + Math.sin(ang) * r1);
+    ctx.stroke();
+  }
+  /* 中心柔光 */
+  var glow = ctx.createRadialGradient(cx, cy, baseR * 0.35, cx, cy, baseR);
+  glow.addColorStop(0, "rgba(124,108,240,.20)");
+  glow.addColorStop(1, "rgba(124,108,240,0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(cx - baseR, cy - baseR, baseR * 2, baseR * 2);
+}
+/* 建立 Web Audio 后音量改走 GainNode，否则走 audio.volume */
+function applyVolume(){
+  if (gainNode){ gainNode.gain.value = vol; }
+  else { audio.volume = vol; }
+}
+function updateArtCover(t){
+  var img = document.getElementById("cover-img");
+  var note = document.getElementById("cover-note");
+  var viz = document.getElementById("viz");
+  var isImg = isImgUrl(t && t.cover);
+  if (img){ img.style.display = isImg ? "block" : "none"; if (isImg) img.src = t.cover; }
+  if (note){ note.textContent = isImg ? "" : ((t && t.cover) || "🎵"); }
+  if (viz){ viz.style.display = isImg ? "none" : "block"; }
 }
 
 /* ---------------- 音频事件 ---------------- */
@@ -394,6 +481,7 @@ function init(){
     if (typeof st.t === "number" && isFinite(st.t) && st.t > 0) initSeek = st.t;
   }
   audio.volume = vol;
+  applyVolume();
   injectSideCss();
   installGestureResume();
   if (isArt){
