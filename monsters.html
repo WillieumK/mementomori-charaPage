@@ -140,6 +140,15 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
 }
 html{scroll-behavior:smooth}
 section[id]{scroll-margin-top:16px}
+
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-box{background:#1c1730;border:1px solid var(--panel-border);border-radius:14px;padding:22px;width:min(360px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.modal-box h3{margin:0 0 8px;font-size:16px;color:var(--gold)}
+.modal-box p{margin:0 0 12px;font-size:12px;color:var(--muted);line-height:1.6}
+.modal-box input{width:100%;box-sizing:border-box;margin-bottom:10px;background:#141020;color:#fff;border:1px solid var(--panel-border);border-radius:8px;padding:9px 10px;font-size:13px;outline:none}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btns button{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer}
+.modal-btns button.ghost{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--panel-border)}
 </style>
 </head>
 <body>
@@ -167,6 +176,7 @@ section[id]{scroll-margin-top:16px}
 
   <div class="toolbar">
     <button id="btn-refresh" onclick="loadData(true)">🔄 刷新数据</button>
+    <button id="btn-manual" onclick="openRefresh()">action刷新</button>
   </div>
 
   <section class="card">
@@ -807,6 +817,71 @@ function detectDevice(){
 detectDevice();
 toggleSide(window.matchMedia("(min-width: 769px)").matches);
 loadData(false);
+
+// ---------- action 刷新（Token 触发 GitHub Actions，每天限 5 次） ----------
+
+// ---------- action 刷新（Token 触发 GitHub Actions） ----------
+const REPO_FULL = "WillieumK/mementomori-charaPage";
+const REFRESH_WF = "fetch.yml";
+function openRefresh(){
+  const m = document.getElementById("refresh-modal");
+  if (m) m.style.display = "flex";
+  const t = document.getElementById("rf-token");
+  if (t && !t.value) t.value = localStorage.getItem("mmt_gh_token") || "";
+}
+function closeModal(){ const m = document.getElementById("refresh-modal"); if (m) m.style.display = "none"; }
+async function doManualRefresh(){
+  let token = document.getElementById("rf-token").value.trim();
+  if (!token) token = localStorage.getItem("mmt_gh_token") || "";
+  if (token){ try { localStorage.setItem("mmt_gh_token", token); } catch(e){} }
+  if (!token){ alert("请填写 GitHub Token"); return; }
+  const url = "https://api.github.com/repos/" + REPO_FULL + "/actions/workflows/" + REFRESH_WF + "/dispatches";
+  try{
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json", "User-Agent": "mmt-page" },
+      body: JSON.stringify({ ref: "main" })
+    });
+    if (!r.ok){ const t = (await r.text()).slice(0, 200); alert("触发失败（" + r.status + "）：" + t); return; }
+    alert("已触发，正在后台抓取…完成后会再次提示");
+    const run = await waitWorkflowDone(token, 180000);
+    if (run && run.status === "completed"){
+      if (run.conclusion === "success") alert("数据刷新完成！请点「刷新数据」查看最新缓存");
+      else alert("刷新流程已结束，但结果异常：" + run.conclusion + "，请到 GitHub Actions 查看");
+    } else {
+      alert("等待超时，请稍后到 GitHub Actions 确认，或点「刷新数据」查看");
+    }
+    closeModal();
+  }catch(err){ alert("网络错误：" + err.message); }
+}
+async function waitWorkflowDone(token, timeoutMs){
+  const q = "https://api.github.com/repos/" + REPO_FULL + "/actions/workflows/" + REFRESH_WF + "/runs?per_page=1";
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs){
+    try{
+      const r = await fetch(q, { headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json", "User-Agent": "mmt-page" } });
+      if (r.ok){
+        const d = await r.json();
+        const run = d.workflow_runs && d.workflow_runs[0];
+        if (run && run.status === "completed") return run;
+      }
+    }catch(e){}
+    await new Promise(res => setTimeout(res, 8000));
+  }
+  return null;
+}
+
 </script>
+<div class="modal" id="refresh-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <h3>action 刷新</h3>
+    <p>将触发后台重新抓取全部数据缓存。Token 只保存在本机浏览器，不会上传。</p>
+    <input type="password" id="rf-token" placeholder="GitHub Token（PAT）">
+    <div class="modal-btns">
+      <button onclick="doManualRefresh()">确定执行</button>
+      <button class="ghost" onclick="closeModal()">取消</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
