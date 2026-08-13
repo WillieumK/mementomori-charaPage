@@ -244,7 +244,7 @@ footer a{color:#a99fd9}
 body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
 .side-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:70;display:none}
 .side-mask.show{display:block}
-@media (min-width:769px){body:not(.side-collapsed){padding-left:345px}}
+@media (min-width:769px){body:not(.side-collapsed) .side{transform:translateX(0)}body:not(.side-collapsed){padding-left:345px}}
 @media (max-width:768px){header.top{padding-top:52px}}
 
 html{scroll-behavior:smooth}
@@ -269,7 +269,10 @@ section[id]{scroll-margin-top:16px}
   <a class="side-link" href="index.html#sec-elements">属性轮档记录<span class="sub">天光 · 幽冥 · 忧蓝 · 业红 · 苍翠 · 流金</span></a>
   <a class="side-link" href="monsters.html">怪物数值查询<span class="sub">主线 Quest / 塔 Tower</span></a>
   <a class="side-link" href="openpvp.html">竞技场与巅峰开盒<span class="sub">Arena / Legend 排名 · 队伍角色数值与装备</span></a>
-  <a class="side-link" href="art.html">音乐室<span class="sub">MementoMori BGM 播放器</span></a>
+  <div class="side-split">
+    <a class="side-link" href="art.html" title="进入完整音乐室">🎧 音乐室<span class="sub">完整播放器页</span></a>
+    <button type="button" class="side-link side-quick" onclick="MMPlayer.startFirst()" title="在当前页打开迷你播放器，播放第一首">▶ 快速播放<span class="sub">顶栏小播放器</span></button>
+  </div>
 </nav>
 <button class="side-open" id="side-open" onclick="toggleSide()">☰</button>
 
@@ -636,7 +639,7 @@ function toggleSide(force){
 }
 function initScrollSpy(){
   const targets = ["sec-usage", "sec-overview", "sec-elements"];
-  const links = document.querySelectorAll(".side .side-link");
+  const links = document.querySelectorAll(".side a.side-link");
   const spy = new IntersectionObserver(entries => {
     entries.forEach(en => {
       if (en.isIntersecting){
@@ -934,5 +937,6 @@ async function waitWorkflowDone(token, timeoutMs){
     </div>
   </div>
 </div>
+<script src="player-bar.js"></script>
 </body>
 </html>
