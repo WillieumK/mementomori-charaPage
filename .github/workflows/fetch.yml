@@ -143,6 +143,8 @@ jobs:
           print("pvp maps done, mver:", mver)
           PYEOF
 
+      - name: 写入缓存时间戳
+        run: printf '{"time":"%s"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > data/cache_time.json
       - name: 提交数据更新到 main
         run: |
           git config user.name "GitHub Actions"
