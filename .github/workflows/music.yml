@@ -1,0 +1,72 @@
+name: 更新音乐列表
+on:
+  schedule:
+    # 每 6 小时更新一次（UTC），源: rainsillwood/mementomori-Sound
+    - cron: '0 0,6,12,18 * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 生成音乐列表
+        run: |
+          pip install msgpack -q
+          python3 - <<'PYEOF'
+          import json, os, re, urllib.request, msgpack, datetime
+          def fetch(url, headers=None, timeout=120):
+              req = urllib.request.Request(url, headers=headers or {"User-Agent":"codex"})
+              return urllib.request.urlopen(req, timeout=timeout).read()
+          tok = os.environ.get("GITHUB_TOKEN","")
+          h = {"Authorization":"Bearer "+tok, "User-Agent":"codex"} if tok else {"User-Agent":"codex"}
+          tree = json.loads(fetch("https://api.github.com/repos/rainsillwood/mementomori-Sound/git/trees/main?recursive=1", h))
+          flacs = [t["path"] for t in tree.get("tree",[]) if t.get("type")=="blob" and t["path"].endswith(".flac")]
+          mver=None
+          for ver in ["4.19.2","4.19.0","4.18.0"]:
+              try:
+                  hh={"OrtegaDeviceType":"4","ortegaappversion":ver,"Content-Type":"application/octet-stream"}
+                  r=urllib.request.Request("https://prd1-auth.mememori-boi.com/api/auth/getDataUri", data=msgpack.packb({"CountryCode":"JP","UserId":0}), headers=hh, method="POST")
+                  mver=dict(urllib.request.urlopen(r, timeout=30).headers)["ortegamasterversion"]; break
+              except Exception: continue
+          if not mver: raise RuntimeError("auth failed")
+          base="https://cdn-mememori.akamaized.net/master/prd1/version/%s/"%mver
+          def load_mb(n): return msgpack.unpackb(fetch(base+n))
+          texts={i["StringKey"]:i["Text"] for i in load_mb("TextResourceZhCnMB") if "StringKey" in i and "Text" in i}
+          cmap={}
+          for c in load_mb("CharacterMB"):
+              try: cmap[int(c["Id"])]=texts.get(c.get("NameKey"),"")
+              except Exception: pass
+          CDN="https://cdn.jsdelivr.net/gh/rainsillwood/mementomori-Sound@main/"
+          WAN="\u5b8c\u6574\u7248"; SHO="\u77ed\u7248"; SONG="\u89d2\u8272\u6b4c"; CHARP="\u89d2\u8272"
+          tracks=[]
+          for p in sorted(flacs):
+              if p.startswith("Sound/BGM/"):
+                  num=re.sub("\D","",p)
+                  tracks.append({"id":"bgm"+num,"title":"BGM "+num,"sub":"BGM","src":CDN+p})
+              elif "/CHR_" in p:
+                  m=re.match(r"CharacterSong/(CHR_(\d+))/CHR_\d+_SONG_([A-Z_]+)\.flac", p)
+                  if not m: continue
+                  d,cid,suf=m.group(1),int(m.group(2)),m.group(3)
+                  name=cmap.get(cid, CHARP+" "+str(cid).zfill(6))
+                  if suf=="SONG_JP": sid="chr"+str(cid).zfill(6); sub=SONG+" \u00b7 JP "+WAN
+                  elif suf=="SONG_SHORT_JP": sid="chr"+str(cid).zfill(6)+"-sjp"; sub=SONG+" \u00b7 JP "+SHO
+                  elif suf=="SONG_US": sid="chr"+str(cid).zfill(6)+"-us"; sub=SONG+" \u00b7 US "+WAN
+                  elif suf=="SONG_SHORT_US": sid="chr"+str(cid).zfill(6)+"-sus"; sub=SONG+" \u00b7 US "+SHO
+                  else: continue
+                  tracks.append({"id":sid,"title":name,"sub":sub,"src":CDN+p})
+          out={"date":datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),"source":"rainsillwood/mementomori-Sound","tracks":tracks}
+          open("data/music.json","w",encoding="utf-8").write(json.dumps(out,ensure_ascii=False,separators=(",",":")))
+          print("music.json tracks:", len(tracks))
+          PYEOF
+
+      - name: 提交音乐列表
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add data/music.json
+          if ! git diff --cached --quiet; then
+            git commit -m "音乐列表更新 $(date '+%Y-%m-%d %H:%M')"
+            git push
+          fi
