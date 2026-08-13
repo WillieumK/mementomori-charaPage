@@ -13,12 +13,13 @@
 
 /* ---------------- 默认曲库（可被 data/music.json 覆盖） ---------------- */
 var KEY = "mmt_player_state_v1";
+var DEFAULT_COVER = "icon.png"; /* 网站标题图标，作为默认歌曲封面 */
 var DEFAULT_TRACKS = [
-  { id: "demo1", title: "SoundHelix Song 1", sub: "示例音频 · 可替换为 MementoMori BGM", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", cover: "🎵", duration: null },
-  { id: "demo2", title: "SoundHelix Song 2", sub: "示例音频 · 可替换为 MementoMori BGM", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", cover: "🎶", duration: null },
-  { id: "demo3", title: "SoundHelix Song 3", sub: "示例音频 · 可替换为 MementoMori BGM", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", cover: "🎻", duration: null },
-  { id: "demo4", title: "SoundHelix Song 4", sub: "示例音频 · 可替换为 MementoMori BGM", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", cover: "🎷", duration: null },
-  { id: "demo5", title: "SoundHelix Song 5", sub: "示例音频 · 可替换为 MementoMori BGM", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", cover: "🥁", duration: null }
+  { id: "demo1", title: "SoundHelix Song 1", sub: "示例音频 · 可替换为 MementoMori BGM", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", cover: DEFAULT_COVER, duration: null },
+  { id: "demo2", title: "SoundHelix Song 2", sub: "示例音频 · 可替换为 MementoMori BGM", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", cover: DEFAULT_COVER, duration: null },
+  { id: "demo3", title: "SoundHelix Song 3", sub: "示例音频 · 可替换为 MementoMori BGM", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", cover: DEFAULT_COVER, duration: null },
+  { id: "demo4", title: "SoundHelix Song 4", sub: "示例音频 · 可替换为 MementoMori BGM", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", cover: DEFAULT_COVER, duration: null },
+  { id: "demo5", title: "SoundHelix Song 5", sub: "示例音频 · 可替换为 MementoMori BGM", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", cover: DEFAULT_COVER, duration: null }
 ];
 
 /* ---------------- 运行状态 ---------------- */
@@ -45,8 +46,9 @@ function isImgUrl(c){
 }
 function coverInner(t){
   var c = t && t.cover;
+  if (!c) return '<img src="' + DEFAULT_COVER + '" alt="">';
   if (isImgUrl(c)) return '<img src="' + esc(c) + '" alt="" loading="lazy">';
-  return esc(c || "🎵");
+  return esc(c);
 }
 
 /* ---------------- 音频元素（每页一个） ---------------- */
@@ -391,10 +393,14 @@ function updateArtCover(t){
   var img = document.getElementById("cover-img");
   var note = document.getElementById("cover-note");
   var viz = document.getElementById("viz");
-  var isImg = isImgUrl(t && t.cover);
-  if (img){ img.style.display = isImg ? "block" : "none"; if (isImg) img.src = t.cover; }
-  if (note){ note.textContent = isImg ? "" : ((t && t.cover) || "🎵"); }
-  if (viz){ viz.style.display = isImg ? "none" : "block"; }
+  var c = t && t.cover;
+  /* 真实封面图 → 铺满显示；默认站图标/无封面 → 音符层显示小图标，频谱照常 */
+  var isReal = c && isImgUrl(c) && c !== DEFAULT_COVER;
+  if (img){ img.style.display = isReal ? "block" : "none"; if (isReal) img.src = c; }
+  if (note){
+    note.innerHTML = isReal ? "" : '<img class="note-img" src="' + esc(isImgUrl(c) ? c : DEFAULT_COVER) + '" alt="">';
+  }
+  if (viz){ viz.style.display = isReal ? "none" : "block"; }
 }
 
 /* ---------------- 音频事件 ---------------- */
@@ -448,7 +454,7 @@ function fetchMusicJson(){
             title: t.title || t.name || "—",
             sub: t.sub || t.subtitle || "",
             src: t.src || t.url || "",
-            cover: t.cover || t.icon || "🎵",
+            cover: t.cover || t.icon || DEFAULT_COVER,
             duration: (typeof t.duration === "number" && isFinite(t.duration)) ? t.duration : null
           };
         }).filter(function(t){ return t.src; });
@@ -546,7 +552,8 @@ function injectSideCss(){
     "button.side-link{background:transparent;border:1px solid transparent;font-family:inherit;text-align:left;cursor:pointer;color:inherit}",
     ".side-split .side-quick{border:1px dashed rgba(217,178,106,.45);background:rgba(217,178,106,.06)}",
     ".side-split .side-quick:hover{background:rgba(217,178,106,.14)}",
-    ".side-split .side-quick:active{transform:scale(.97)}"
+    ".side-split .side-quick:active{transform:scale(.97)}",
+    ".side-split .side-ico{width:18px;height:18px;border-radius:5px;vertical-align:-3px;margin-right:4px;box-shadow:0 0 8px rgba(217,178,106,.35)}"
   ].join("\n");
   document.head.appendChild(st);
 }
