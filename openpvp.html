@@ -398,6 +398,16 @@ function idbClear(){
     tx.onerror = () => res();
   });
 }
+/* 带超时的 fetch → blob（20 秒，超时返回 status 0） */
+async function fetchBlobT(url){
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 20000);
+  try{
+    const r = await fetch(url, { mode: "cors", signal: ctrl.signal });
+    return { status: r.status, ok: r.ok, blob: r.ok ? await r.blob() : null };
+  }catch(e){ return { status: 0, ok: false, blob: null }; }
+  finally{ clearTimeout(t); }
+}
 /* 缓存模式下，图片地址：内存命中用 objectURL，否则在线地址（并后台渐进缓存） */
 let cacheQueue = [], cacheRunning = false;
 function queueCache(url){
@@ -411,12 +421,11 @@ async function drainCache(){
     const url = cacheQueue.shift();
     try{
       if (imgMem.has(url)) continue;
-      const r = await fetch(url, { mode: "cors" });
-      if (!r.ok) continue;
-      const blob = await r.blob();
+      const res = await fetchBlobT(url);
+      if (!res.ok || !res.blob) continue;
       await openIDB();
-      await idbPut(url, blob);
-      imgMem.set(url, URL.createObjectURL(blob));
+      await idbPut(url, res.blob);
+      imgMem.set(url, URL.createObjectURL(res.blob));
     }catch(e){}
   }
   cacheRunning = false;
@@ -527,11 +536,10 @@ async function doPreload(){
       await Promise.all(batch.map(async u => {
         try{
           if (have.has(u) || imgMem.has(u)){ existed++; return; }
-          const r = await fetch(u, { mode: "cors" });
-          if (!r.ok){ missing++; return; }
-          const blob = await r.blob();
-          await idbPut(u, blob);
-          if (!/\.json$/.test(u)) imgMem.set(u, URL.createObjectURL(blob));
+          const res = await fetchBlobT(u);
+          if (!res.ok){ if (res.status === 0) failed++; else missing++; return; }
+          await idbPut(u, res.blob);
+          if (!/\.json$/.test(u)) imgMem.set(u, URL.createObjectURL(res.blob));
           added++;
         }catch(e){ failed++; }
       }));
