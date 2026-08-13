@@ -439,6 +439,7 @@ async function fetchWithTimeout(url, opts, ms){
 async function doManualRefresh(){
   const token = document.getElementById("rf-token").value.trim();
   if (!token){ alert("请填写 GitHub Token"); return; }
+  closeModal(); // 点击后立即关闭弹窗，结果后续提示
   const url = "https://api.github.com/repos/" + REPO_FULL + "/actions/workflows/" + REFRESH_WF + "/dispatches";
   try{
     const r = await fetchWithTimeout(url, {
@@ -446,8 +447,7 @@ async function doManualRefresh(){
       headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json", "User-Agent": "mmt-page" },
       body: JSON.stringify({ ref: "main" })
     }, 15000);
-    if (!r.ok){ const t = (await r.text()).slice(0, 200); closeModal(); alert("触发失败（" + r.status + "）：" + t); return; }
-    closeModal(); // 先关弹窗再提示
+    if (!r.ok){ const t = (await r.text()).slice(0, 200); alert("触发失败（" + r.status + "）：" + t); return; }
     alert("已触发，正在后台抓取…完成后会再次提示");
     const run = await waitWorkflowDone(token, 180000);
     if (run && run.status === "completed"){
@@ -457,7 +457,6 @@ async function doManualRefresh(){
       alert("等待超时，请稍后到 GitHub Actions 确认，或点「刷新数据」查看");
     }
   }catch(err){
-    closeModal();
     alert("请求失败或超时：" + err.message);
   }
 }
