@@ -60,6 +60,10 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:10px;line-
 footer a{color:#a99fd9}
 
 /* 队伍出场统计 */
+.fold-btn{margin-left:auto;flex:none;background:rgba(255,255,255,.06);border:1px solid var(--panel-border);color:var(--muted);border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer;transition:color .15s,background .15s}
+.fold-btn:hover{color:var(--gold);background:rgba(217,178,106,.1)}
+section.card.collapsed .stats-grid{display:none}
+section.card.collapsed h2{margin-bottom:0}
 .stats-grid{display:flex;flex-wrap:wrap;gap:10px}
 .stat-item{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.2);border:1px solid var(--panel-border);border-radius:10px;padding:6px 12px 6px 8px;min-width:150px;flex:1 1 150px;max-width:220px}
 .stat-item img{width:40px;height:40px;border-radius:8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
@@ -130,19 +134,32 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
 .stat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:4px 6px;line-height:1.35;min-width:0}
 .stat .sk{color:var(--muted);font-size:10px}
 .stat .sv{font-size:12px;color:#f1eef8}
-.skill{padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.06)}
+.skill{display:flex;gap:8px;align-items:flex-start;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.06)}
 .skill:last-child{border-bottom:none}
+.skill img.skicon{width:34px;height:34px;border-radius:7px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);flex:none;object-fit:cover}
 .skill .skn{font-weight:600;color:#f1eef8;font-size:13px}
 .skill .skd{color:var(--muted);font-size:11px;margin-top:2px;line-height:1.5}
-.eqslot{display:flex;gap:8px;align-items:flex-start;border-bottom:1px dashed rgba(255,255,255,.06);padding:5px 0}
+.eqslot{display:flex;gap:10px;align-items:center;border-bottom:1px dashed rgba(255,255,255,.06);padding:5px 0}
 .eqslot:last-child{border-bottom:none}
+.eqslot img.eqicon{width:44px;height:44px;border-radius:8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);flex:none;object-fit:cover}
+.eqslot .eqmain{flex:1;min-width:0}
 .eqslot .en{font-weight:600;font-size:12px;color:#f1eef8}
 .eqslot .em{color:var(--muted);font-size:10px;margin-top:1px;line-height:1.4}
-.eqslot .ex{font-size:10px;margin-top:1px;line-height:1.4}
-.eqslot .spheres{margin-left:auto;display:flex;gap:4px;flex:none}
-.eqslot .sphere{width:46px;text-align:center;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25);padding:2px;font-size:9px;color:var(--muted);line-height:1.3;cursor:help}
+.eqslot .exline{display:flex;flex-wrap:wrap;gap:2px 12px;margin-top:1px}
+.eqslot .ex{font-size:10px;line-height:1.4;white-space:nowrap}
+.eqslot .spheres{display:flex;gap:5px;flex:none}
+.eqslot .sphere{width:56px;text-align:center;border:1px solid rgba(255,255,255,.08);border-radius:7px;background:rgba(0,0,0,.25);padding:3px 2px;font-size:9px;color:var(--muted);line-height:1.3;cursor:help}
+.eqslot .sphere img.sphicon{width:30px;height:30px;border-radius:5px;background:rgba(0,0,0,.3);object-fit:cover;display:block;margin:0 auto 2px}
 .eqslot .sphere .sv{color:#ffe9a8;font-size:10px;font-weight:600}
+.eqslot .sphere .slv{font-size:9px;color:var(--muted)}
 .eqslot .sphere.empty{opacity:.35}
+@media(max-width:640px){.eqslot{flex-wrap:wrap}.eqslot .eqmain{flex:1 1 100%}.eqslot .spheres{margin-left:54px}}
+/* 稀有度框头像 + 等级角标 */
+.mavatar{position:relative;width:72px;height:72px;flex:none}
+.mavatar img.face{width:72px;height:72px;border-radius:12px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
+.mavatar img.frame{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:86px;height:86px;pointer-events:none}
+.mavatar .lvchip{position:absolute;right:-6px;bottom:-5px;background:#1c1730;border:1px solid var(--gold);color:var(--gold);border-radius:999px;font-size:11px;padding:1px 8px;font-weight:700;white-space:nowrap}
+.tag img{width:13px;height:13px;vertical-align:-2px;margin-right:3px}
 .sync-mark{display:inline-block;font-size:10px;color:#9fe3c0;border:1px solid rgba(159,227,192,.35);border-radius:4px;padding:0 4px;margin-left:4px}
 
 /* 通用 modal（action 刷新） */
@@ -151,9 +168,13 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
 .modal-box h3{margin:0 0 8px;font-size:16px;color:var(--gold)}
 .modal-box p{margin:0 0 12px;font-size:12px;color:var(--muted);line-height:1.6}
 .modal-box input{width:100%;box-sizing:border-box;margin-bottom:10px;background:#141020;color:#fff;border:1px solid var(--panel-border);border-radius:8px;padding:9px 10px;font-size:13px;outline:none}
-.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .modal-btns button{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer}
 .modal-btns button.ghost{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--panel-border)}
+/* 预载进度条 */
+.pbar{height:8px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;margin:10px 0 6px}
+.pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#d9b26a,#7c6cf0);border-radius:4px;transition:width .2s}
+.pl-txt{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5;word-break:break-all}
 </style>
 </head>
 <body>
@@ -181,6 +202,7 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
 
   <div class="toolbar">
     <span class="search"><span class="sicon">🔍</span><input id="q-name" type="text" placeholder="按玩家名过滤…" oninput="renderTable()"></span>
+    <button id="btn-preload" onclick="openPreload()">📦 预载资源</button>
     <button id="btn-refresh" onclick="load(true)">🔄 刷新数据</button>
     <button id="btn-manual" onclick="openRefresh()">action刷新</button>
   </div>
@@ -199,8 +221,8 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
     </div>
   </section>
 
-  <section class="card">
-    <h2>队伍出场统计<span class="h2-note">当前榜单全员队伍 · 按出场次数</span></h2>
+  <section class="card" id="sec-stats">
+    <h2>队伍出场统计<span class="h2-note">当前榜单全员队伍 · 按出场次数</span><button class="fold-btn" id="btn-fold-stats" onclick="toggleStats()" title="点击展开/收起">收起 ▲</button></h2>
     <div class="stats-grid" id="tbl-stats"><div class="loading"><span class="spinner"></span><br>等待数据…</div></div>
   </section>
 
@@ -227,24 +249,27 @@ const SERVER_CN = {jp:"日服",kr:"韩服",as:"亚服",na:"北美",eu:"欧服",g
 const SERVER_ORDER = ["jp","kr","as","na","eu","gl"];
 /* 装备 SlotType -> 槽位名（s:1武器 2副手 3手套 4头盔 5护甲 6鞋） */
 const SLOT_NAMES = {1:"武器",2:"副手",3:"手套",4:"头盔",5:"护甲",6:"鞋"};
-/* 圣装（Legend）按槽位序号取字段 */
+/* 圣装（Legend）按槽位序号取字段（官方简中名） */
 const LEGEND_FIELDS = [
-  ["WeaponAttackPowerPercent","攻击力"],["SubHitPercent","命中率"],["GauntletCriticalDamagePercent","暴击伤害"],
-  ["HelmetPhysicalCriticalDamageRelaxPercent","物暴伤减免"],["ArmorMagicCriticalDamageRelaxPercent","魔暴伤减免"],["ShoesHpDrainPercent","吸血率"]
+  ["WeaponAttackPowerPercent","攻击力"],["SubHitPercent","命中"],["GauntletCriticalDamagePercent","暴击伤害强化"],
+  ["HelmetPhysicalCriticalDamageRelaxPercent","物理暴击伤害降低"],["ArmorMagicCriticalDamageRelaxPercent","魔法暴击伤害降低"],["ShoesHpDrainPercent","吸血"]
 ];
-/* 魔装（Matchless）按槽位序号取字段 */
+/* 魔装（Matchless）按槽位序号取字段（官方简中名） */
 const MATCHLESS_FIELDS = [
-  ["WeaponAttackPower","攻击力"],["SubPhysicalDamageRelax","物防"],["GauntletMagicDamageRelax","魔防"],
-  ["HelmetCritical","暴击"],["ArmorDefensePenetration","物穿"],["ShoesHp","血量"]
+  ["WeaponAttackPower","攻击力"],["SubPhysicalDamageRelax","物理防御力"],["GauntletMagicDamageRelax","魔法防御力"],
+  ["HelmetCritical","暴击"],["ArmorDefensePenetration","防御穿透"],["ShoesHp","生命"]
 ];
-/* 战斗参数展示字段：[字段名, 中文名, 是否为百分比(原始值÷100)] */
+/* 战斗参数展示字段：[字段名, 官方简中名, 是否为百分比(原始值÷100)]
+   对应官方枚举 BattleParameterType（1生命 2攻击力 3物理防御力 4魔法防御力 5命中 6闪避 7暴击 8暴击抗性
+   9暴击伤害强化 10物理暴击伤害降低 11魔法暴击伤害降低 12防御穿透 13防御力 14物魔防御穿透（非"增伤"！）
+   15弱化效果命中 16弱化效果抗性 17伤害反弹 18吸血 19速度） */
 const BP_FIELDS = [
-  ["AttackPower","攻击力",0],["Defense","防御力",0],["HP","血量",0],["Speed","速度",0],
-  ["Hit","命中",0],["Avoidance","闪避",0],["Critical","暴击",0],["CriticalResist","暴击抵抗",0],
-  ["MagicDamageRelax","魔防",0],["PhysicalDamageRelax","物防",0],["DebuffHit","弱体命中",0],["DebuffResist","弱体耐性",0],
-  ["CriticalDamageEnhance","暴伤增强",1],["DamageEnhance","增伤",1],["DamageReflect","反伤",1],
-  ["DefensePenetration","物穿",1],["HpDrain","吸血",1],
-  ["MagicCriticalDamageRelax","魔暴伤减免",1],["PhysicalCriticalDamageRelax","物暴伤减免",1]
+  ["AttackPower","攻击力",0],["Defense","防御力",0],["HP","生命",0],["Speed","速度",0],
+  ["Hit","命中",0],["Avoidance","闪避",0],["Critical","暴击",0],["CriticalResist","暴击抗性",0],
+  ["PhysicalDamageRelax","物理防御力",0],["MagicDamageRelax","魔法防御力",0],["DebuffHit","弱化效果命中",0],["DebuffResist","弱化效果抗性",0],
+  ["CriticalDamageEnhance","暴击伤害强化",1],["DamageEnhance","物魔防御穿透",1],["DamageReflect","伤害反弹",1],
+  ["DefensePenetration","防御穿透",1],["HpDrain","吸血",1],
+  ["PhysicalCriticalDamageRelax","物理暴击伤害降低",1],["MagicCriticalDamageRelax","魔法暴击伤害降低",1]
 ];
 let mode = "arena";
 let worlds = [], groups = [];
@@ -268,6 +293,22 @@ function fmtPct(v){ /* 游戏内百分比按 ×100 存：4000 = 40% */
   if (!isFinite(n)) return "—";
   return (n/100).toFixed(1).replace(/\.0$/,"") + "%";
 }
+/* 图标资源（与社区油猴脚本同源） */
+const ASSET_BASE = "https://raw.githubusercontent.com/rainsillwood/MaintenanceMoriHelper/main/assets/";
+const ASSET_REPO = "https://raw.githubusercontent.com/rainsillwood/mementomori-Assets/refs/heads/main/";
+const FRAME_BASE = "https://mentemori.icu/assets/char_frame_";
+const JOB_ICON = {1:"warrior",2:"sniper",4:"sorcerer"};
+function padN(id, n){ return String(id).padStart(n, "0"); }
+function frameUrl(label){ /* 角色稀有度边框 */
+  const m = String(label || "").match(/^(N|R|SR|SSR|UR|LR)/);
+  const k = m ? m[1].toLowerCase() : "r";
+  return FRAME_BASE + k + ".png";
+}
+function equipIconUrl(em){ return (em && em.ic != null) ? ASSET_BASE + "Icon/Equipment/EQP_" + padN(em.ic, 6) + ".png" : ""; }
+function sphereIconUrl(sp){ return (sp && sp.cat != null && sp.t != null) ? ASSET_BASE + "Icon/Sphere/SPH_" + padN(sp.cat, 2) + "0" + sp.t + ".png" : ""; }
+function skillIconUrl(sid){ return ASSET_REPO + "Icon/Skill/CSK_" + padN(sid, 9) + ".png"; }
+function elemIconUrl(e){ return ASSET_BASE + "icon_element_" + e + ".png"; }
+function jobIconUrl(j){ return JOB_ICON[j] ? ASSET_BASE + "icon_job_" + JOB_ICON[j] + ".png" : ""; }
 function padId(id){ return String(id).padStart(6, "0"); }
 function rarityLabel(flags){
   const f = Number(flags);
@@ -284,7 +325,14 @@ function elemTag(e){
   const key = String(e);
   const cls = ELEM_CLASS[key] || "";
   const name = ELEM[key] || ("属性" + key);
-  return '<span class="tag ' + cls + '">' + esc(name) + "</span>";
+  const ic = ELEM[key] ? '<img src="' + imgSrc(elemIconUrl(key)) + '" onerror="this.remove()" alt="">' : "";
+  return '<span class="tag ' + cls + '">' + ic + esc(name) + "</span>";
+}
+function jobTag(j){
+  const name = JOB[j];
+  if (!name) return "";
+  const ic = '<img src="' + imgSrc(jobIconUrl(j)) + '" onerror="this.remove()" alt="">';
+  return '<span class="tag job-tag">' + ic + name + "</span>";
 }
 function fmtTime(ts){
   if (!ts) return "—";
@@ -298,13 +346,230 @@ function iconOnError(img){
   img.src = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" rx="8" fill="#241f38"/><text x="24" y="30" font-size="16" fill="#9a94ad" text-anchor="middle">?</text></svg>');
 }
 
+/* ---------- 可选本地缓存（默认实时在线；点「预载资源」后启用） ---------- */
+let imgMem = new Map();   /* 图片 url -> objectURL（仅缓存模式使用） */
+let cacheMode = false;
+let idb = null;
+function openIDB(){
+  return new Promise((res, rej) => {
+    if (idb) return res(idb);
+    const req = indexedDB.open("mmt_pvp_cache", 1);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains("files")) db.createObjectStore("files");
+    };
+    req.onsuccess = e => { idb = e.target.result; res(idb); };
+    req.onerror = e => rej(e.target.error);
+  });
+}
+function idbPut(key, blob){
+  return new Promise((res, rej) => {
+    if (!idb) return res();
+    const tx = idb.transaction("files", "readwrite");
+    tx.objectStore("files").put(blob, key);
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+}
+function idbGet(key){
+  return new Promise(res => {
+    if (!idb) return res(null);
+    const tx = idb.transaction("files", "readonly");
+    const rq = tx.objectStore("files").get(key);
+    rq.onsuccess = () => res(rq.result || null);
+    rq.onerror = () => res(null);
+  });
+}
+function idbKeys(){
+  return new Promise(res => {
+    if (!idb) return res([]);
+    const tx = idb.transaction("files", "readonly");
+    const rq = tx.objectStore("files").getAllKeys();
+    rq.onsuccess = () => res(rq.result || []);
+    rq.onerror = () => res([]);
+  });
+}
+function idbClear(){
+  return new Promise(res => {
+    if (!idb) return res();
+    const tx = idb.transaction("files", "readwrite");
+    tx.objectStore("files").clear();
+    tx.oncomplete = () => res();
+    tx.onerror = () => res();
+  });
+}
+/* 缓存模式下，图片地址：内存命中用 objectURL，否则在线地址（并后台渐进缓存） */
+let cacheQueue = [], cacheRunning = false;
+function queueCache(url){
+  if (cacheQueue.indexOf(url) >= 0) return;
+  cacheQueue.push(url);
+  if (!cacheRunning) drainCache();
+}
+async function drainCache(){
+  cacheRunning = true;
+  while (cacheQueue.length){
+    const url = cacheQueue.shift();
+    try{
+      if (imgMem.has(url)) continue;
+      const r = await fetch(url, { mode: "cors" });
+      if (!r.ok) continue;
+      const blob = await r.blob();
+      await openIDB();
+      await idbPut(url, blob);
+      imgMem.set(url, URL.createObjectURL(blob));
+    }catch(e){}
+  }
+  cacheRunning = false;
+}
+function imgSrc(url){
+  if (!url) return url;
+  if (cacheMode){
+    if (imgMem.has(url)) return imgMem.get(url);
+    queueCache(url);
+  }
+  return url;
+}
+/* 启动时恢复缓存模式：IDB 全量入内存后重渲染 */
+async function initCache(){
+  try{ cacheMode = localStorage.getItem("mmt_pvp_cache") === "1"; }catch(e){ cacheMode = false; }
+  if (!cacheMode) return;
+  try{
+    await openIDB();
+    const keys = await idbKeys();
+    let n = 0;
+    await Promise.all(keys.map(async k => {
+      const b = await idbGet(k);
+      if (b && b instanceof Blob){ imgMem.set(k, URL.createObjectURL(b)); n++; }
+    }));
+    if (n && lastList.length){ renderStats(); renderTable(); }
+  }catch(e){}
+}
+function openPreload(){
+  document.getElementById("pl-txt").textContent = "点击「开始预载」执行";
+  document.getElementById("pl-bar").style.width = "0";
+  document.getElementById("preload-modal").style.display = "flex";
+}
+function closePreload(){ document.getElementById("preload-modal").style.display = "none"; }
+async function doClearCache(){
+  const txt = document.getElementById("pl-txt");
+  if (txt) txt.textContent = "正在清除…";
+  try{ await openIDB(); await idbClear(); }catch(e){}
+  imgMem.forEach(v => { try{ URL.revokeObjectURL(v); }catch(e){} });
+  imgMem.clear();
+  try{ localStorage.removeItem("mmt_pvp_cache"); }catch(e){}
+  cacheMode = false;
+  renderStats(); renderTable();
+  if (txt) txt.textContent = "✅ 已清除本地缓存，恢复实时在线加载";
+}
+let preloadAbort = false;
+function buildPreloadList(){
+  const urls = [];
+  /* 1) 主数据 JSON（技能文本等） */
+  ["pvp_char","pvp_skill","pvp_equip","pvp_legend","pvp_matchless","pvp_sphere"].forEach(n => urls.push("data/" + n + ".json"));
+  /* 2) 静态小件：稀有度边框 / 属性图标 / 职业图标 */
+  ["n","r","sr","ssr","ur","lr"].forEach(k => urls.push(FRAME_BASE + k + ".png"));
+  for (let i = 0; i <= 6; i++) urls.push(ASSET_BASE + "icon_element_" + i + ".png");
+  ["warrior","sniper","sorcerer"].forEach(j => urls.push(ASSET_BASE + "icon_job_" + j + ".png"));
+  /* 3) 符石图标（全量组合） */
+  if (P.sphere){
+    const seen = new Set();
+    Object.keys(P.sphere).forEach(id => {
+      const sp = P.sphere[id];
+      if (sp.cat != null && sp.t != null){
+        const k = sp.cat + "_" + sp.t;
+        if (!seen.has(k)){ seen.add(k); urls.push(sphereIconUrl(sp)); }
+      }
+    });
+  }
+  /* 4) 角色图标（全量 133） */
+  if (P.char) Object.keys(P.char).forEach(id => urls.push(ICON_BASE + padId(id) + "_00_s.png"));
+  /* 5) 装备图标（全量 ic 去重 ~896） */
+  if (P.equip){
+    const seen = new Set();
+    Object.keys(P.equip).forEach(id => {
+      const em = P.equip[id];
+      if (em.ic != null && !seen.has(em.ic)){ seen.add(em.ic); urls.push(equipIconUrl(em)); }
+    });
+  }
+  /* 6) 技能图标（当前榜单用到的技能） */
+  if (P.skill && lastList.length){
+    const seen = new Set();
+    lastList.forEach(p => (p.UserCharacterInfoList || []).forEach(c => {
+      const cm = P.char && P.char[String(c.CharacterId)];
+      if (!cm) return;
+      [cm.nor].concat(cm.act || []).concat(cm.pas || []).forEach(sid => {
+        if (sid && !seen.has(sid)){ seen.add(sid); urls.push(skillIconUrl(sid)); }
+      });
+    }));
+  }
+  return urls;
+}
+async function doPreload(){
+  const bar = document.getElementById("pl-bar");
+  const txt = document.getElementById("pl-txt");
+  const startBtn = document.getElementById("pl-start");
+  const cancelBtn = document.getElementById("pl-cancel");
+  preloadAbort = false;
+  startBtn.style.display = "none";
+  cancelBtn.style.display = "";
+  try{
+    txt.textContent = "正在准备主数据映射…";
+    await ensurePvpData();
+    const urls = buildPreloadList();
+    await openIDB();
+    const have = new Set(await idbKeys());
+    let done = 0, added = 0, existed = 0, missing = 0, failed = 0;
+    txt.textContent = "共 " + urls.length + " 项，开始下载…";
+    const BATCH = 5;
+    for (let i = 0; i < urls.length; i += BATCH){
+      if (preloadAbort) throw new Error("用户取消");
+      const batch = urls.slice(i, i + BATCH);
+      await Promise.all(batch.map(async u => {
+        try{
+          if (have.has(u) || imgMem.has(u)){ existed++; return; }
+          const r = await fetch(u, { mode: "cors" });
+          if (!r.ok){ missing++; return; }
+          const blob = await r.blob();
+          await idbPut(u, blob);
+          if (!/\.json$/.test(u)) imgMem.set(u, URL.createObjectURL(blob));
+          added++;
+        }catch(e){ failed++; }
+      }));
+      done += batch.length;
+      bar.style.width = Math.round(done / urls.length * 100) + "%";
+      txt.textContent = "进度 " + done + "/" + urls.length + " · 新增 " + added + " · 已缓存 " + existed + " · 无资源 " + missing + (failed ? " · 失败 " + failed : "");
+    }
+    try{ localStorage.setItem("mmt_pvp_cache", "1"); }catch(e){}
+    cacheMode = true;
+    txt.textContent = "✅ 完成！已缓存 " + (added + existed) + " 项（无资源跳过 " + missing + " 项）。已启用本地缓存，开盒不再在线加载图标与技能文本；刷新页面后依然生效。";
+    renderStats(); renderTable();
+  }catch(e){
+    txt.textContent = "预载停止：" + e.message;
+  }finally{
+    startBtn.style.display = "";
+    cancelBtn.style.display = "none";
+  }
+}
+
 async function fetchJson(url){
+  /* 缓存模式下优先读本地，缺失则在线并顺手缓存 */
+  if (cacheMode){
+    try{
+      await openIDB();
+      const b = await idbGet(url);
+      if (b && b instanceof Blob) return JSON.parse(await b.text());
+    }catch(e){}
+  }
   const ctrl = new AbortController();
   const timer = setTimeout(function(){ ctrl.abort(); }, 25000);
   try{
     const resp = await fetch(url, { signal: ctrl.signal });
     if (!resp.ok) throw new Error("HTTP " + resp.status);
-    return await resp.json();
+    const data = await resp.json();
+    if (cacheMode){
+      try{ await openIDB(); await idbPut(url, new Blob([JSON.stringify(data)], { type: "application/json" })); }catch(e){}
+    }
+    return data;
   }finally{ clearTimeout(timer); }
 }
 
@@ -319,6 +584,8 @@ async function init(){
     buildWorldSelect();
     buildGroupSelect();
     restoreSelects();
+    /* 若上次已启用本地缓存，与榜单加载并行恢复本地图标 */
+    initCache();
     await load(false);
     /* 后台预加载角色/装备映射，完成后刷新统计区与头像提示（显示中文角色名） */
     ensurePvpData().then(() => { if (lastList.length){ renderStats(); renderTable(); } }).catch(() => {});
@@ -473,7 +740,7 @@ function renderStats(){
     const name = cm ? cm.n : ("角色 " + t.id);
     const pct = (t.n / total * 100);
     return '<div class="stat-item">'
-      + '<img src="' + ICON_BASE + padId(t.id) + '_00_s.png" loading="lazy" onerror="iconOnError(this)" alt="">'
+      + '<img src="' + imgSrc(ICON_BASE + padId(t.id) + '_00_s.png') + '" loading="lazy" onerror="iconOnError(this)" alt="">'
       + '<div class="sinfo"><div class="sname" title="' + esc(name) + '">' + esc(name) + '</div>'
       + '<div class="sbar"><i style="width:' + Math.max(6, pct) + '%"></i></div></div>'
       + '<div class="scount">' + t.n + "次 · " + pct.toFixed(0) + "%</div>"
@@ -489,7 +756,7 @@ function charSlots(pi, list){
     const cm = P.char && P.char[String(c.CharacterId)];
     const name = cm ? cm.n : "";
     h += '<span class="cslot" title="' + esc(name || ("角色 " + c.CharacterId)) + '" onclick="event.stopPropagation();openChar(' + pi + ',' + j + ')">'
-      + '<img src="' + ICON_BASE + id + '_00_s.png" loading="lazy" onerror="iconOnError(this)" alt="' + esc(c.CharacterId) + '">'
+      + '<img src="' + imgSrc(ICON_BASE + id + '_00_s.png') + '" loading="lazy" onerror="iconOnError(this)" alt="' + esc(c.CharacterId) + '">'
       + '<span class="clv">Lv' + esc(c.Level) + "</span></span>";
   });
   return h;
@@ -548,7 +815,8 @@ function statCell(k, v, pct){
 function skillHtml(sid, prefix, label){
   const s = P.skill && P.skill[prefix + "_" + sid];
   if (!s) return "";
-  return '<div class="skill"><div class="skn">[' + label + '] ' + esc(s.n || "") + '</div><div class="skd">' + esc(s.d || "（无描述）") + "</div></div>";
+  const ic = '<img class="skicon" src="' + imgSrc(skillIconUrl(sid)) + '" onerror="this.remove()" alt="">';
+  return '<div class="skill">' + ic + '<div style="min-width:0"><div class="skn">[' + label + '] ' + esc(s.n || "") + '</div><div class="skd">' + esc(s.d || "（无描述）") + "</div></div></div>";
 }
 function charPanel(c){
   const cm = P.char && P.char[String(c.CharacterId)];
@@ -556,7 +824,7 @@ function charPanel(c){
   const elem = cm ? cm.e : "";
   const job = cm ? cm.j : 0;
   const eTag = elem != null && elem !== "" ? elemTag(elem) : "";
-  const jTag = JOB[job] ? '<span class="tag job-tag">' + JOB[job] + "</span>" : "";
+  const jTag = jobTag(job);
   const b = c.BaseParameter || {};
   const bp = c.BattleParameter || {};
   let stats = "";
@@ -606,21 +874,27 @@ function equipPanel(c){
     if (e.AdditionalParameterHealth) add.push("耐力+" + fmtNum(e.AdditionalParameterHealth));
     if (add.length) lines += '<div class="ex">附加 ' + add.join(" ") + "</div>";
     const sync = e.SetBaseSynchroGroupId > 0 ? '<span class="sync-mark">同步组' + e.SetBaseSynchroGroupId + "</span>" : "";
+    const eqIcon = equipIconUrl(em) ? '<img class="eqicon" src="' + imgSrc(equipIconUrl(em)) + '" onerror="this.remove()" alt="">' : "";
     let spheres = "";
     for (let s = 1; s <= 4; s++){
       const sid = e["SphereId" + s];
       const sp = sid && P.sphere ? P.sphere[String(sid)] : null;
       if (sp){
-        spheres += '<span class="sphere" title="' + esc(sp.n) + " · " + esc(sp.r || "") + "\n" + esc(sp.d || "") + '">' + esc(sp.n) + '<div class="sv">' + (sp.v != null ? fmtNum(sp.v) : "—") + "</div></span>";
+        const spIcon = sphereIconUrl(sp);
+        spheres += '<span class="sphere" title="' + esc(sp.n) + (sp.lv != null ? " Lv" + sp.lv : "") + " · " + esc(sp.r || "") + "\n" + esc(sp.d || "") + '">'
+          + (spIcon ? '<img class="sphicon" src="' + imgSrc(spIcon) + '" onerror="this.remove()">' : "")
+          + '<div class="sv">' + (sp.v != null ? fmtNum(sp.v) : "—") + "</div>"
+          + (sp.lv != null ? '<div class="slv">Lv' + sp.lv + "</div>" : "")
+          + "</span>";
       } else {
         spheres += '<span class="sphere empty">空</span>';
       }
     }
     html += '<div class="eqslot">'
-      + '<div style="min-width:0"><div class="en">' + slotName + " · " + esc(name) + sync + "</div>"
-      + '<div class="em"><span class="' + rarityClass(rarity) + '">' + esc(rarity) + "</span> · 装备等级 " + esc(lv) + " · 强化 +" + esc(e.ReinforcementLv) + "</div>"
-      + lines
-      + "</div>"
+      + eqIcon
+      + '<div class="eqmain"><div class="en">' + slotName + " · " + esc(name) + sync + "</div>"
+      + '<div class="em"><span class="' + rarityClass(rarity) + '">' + esc(rarity) + "</span> · Lv" + esc(lv) + (e.ReinforcementLv ? " · +" + esc(e.ReinforcementLv) : "") + "</div>"
+      + '<div class="exline">' + lines + "</div></div>"
       + '<div class="spheres">' + spheres + "</div>"
       + "</div>";
   });
@@ -658,12 +932,13 @@ async function renderCharBody(){
   let tabs = "";
   list.slice(0, 5).forEach((ch, j) => {
     const cm2 = P.char && P.char[String(ch.CharacterId)];
-    tabs += '<span class="ttab' + (j === curModal.j ? " on" : "") + '" onclick="switchChar(' + j + ')"><img src="' + ICON_BASE + padId(ch.CharacterId) + '_00_s.png" loading="lazy" onerror="iconOnError(this)" alt=""><span class="tlv">Lv' + esc(ch.Level) + "</span></span>";
+    tabs += '<span class="ttab' + (j === curModal.j ? " on" : "") + '" onclick="switchChar(' + j + ')"><img src="' + imgSrc(ICON_BASE + padId(ch.CharacterId) + '_00_s.png') + '" loading="lazy" onerror="iconOnError(this)" alt=""><span class="tlv">Lv' + esc(ch.Level) + "</span></span>";
   });
-  box.innerHTML = '<div class="mhead"><img src="' + ICON_BASE + id + '_00_s.png" onerror="iconOnError(this)" alt="">'
+  box.innerHTML = '<div class="mhead">'
+    + '<div class="mavatar"><img class="face" src="' + imgSrc(ICON_BASE + id + '_00_s.png') + '" onerror="iconOnError(this)" alt=""><img class="frame" src="' + imgSrc(frameUrl(rarityLabel(c.RarityFlags))) + '" onerror="this.remove()" alt=""><span class="lvchip">Lv' + esc(c.Level) + "</span></div>"
     + '<div><div class="mname">' + esc(name) + "</div>"
-    + '<div class="mtags">' + (elem != null && elem !== "" ? elemTag(elem) : "") + (JOB[job] ? '<span class="tag job-tag">' + JOB[job] + "</span>" : "") + '<span class="tag">' + esc(rarityLabel(c.RarityFlags)) + "</span></div>"
-    + '<div class="mmeta">Lv' + esc(c.Level) + (c.SubLevel ? " · 副等级 " + esc(c.SubLevel) : "") + " · 战力 " + fmtNum(c.BattlePower) + " · 队伍第" + (curModal.j + 1) + "位</div></div>"
+    + '<div class="mtags">' + (elem != null && elem !== "" ? elemTag(elem) : "") + jobTag(job) + '<span class="tag">' + esc(rarityLabel(c.RarityFlags)) + "</span></div>"
+    + '<div class="mmeta">' + (c.SubLevel ? "副等级 " + esc(c.SubLevel) + " · " : "") + "战力 " + fmtNum(c.BattlePower) + " · 队伍第" + (curModal.j + 1) + "位</div></div>"
     + '<button class="mclose" onclick="closeCharModal()">×</button></div>'
     + '<div class="team-tabs">' + tabs + "</div>"
     + '<div class="regions">' + charPanel(c) + equipPanel(c) + "</div>";
@@ -683,6 +958,19 @@ function closeCharModal(){
 document.addEventListener("keydown", function(e){
   if (e.key === "Escape"){ closeCharModal(); closeRefreshModal(); }
 });
+
+/* ---------- 出场统计折叠 ---------- */
+function setStatsFold(fold){
+  const sec = document.getElementById("sec-stats");
+  const btn = document.getElementById("btn-fold-stats");
+  if (sec) sec.classList.toggle("collapsed", !!fold);
+  if (btn) btn.textContent = fold ? "展开 ▼" : "收起 ▲";
+  try{ localStorage.setItem("mmt_pvp_stats_fold", fold ? "1" : "0"); }catch(e){}
+}
+function toggleStats(){
+  const sec = document.getElementById("sec-stats");
+  setStatsFold(!sec.classList.contains("collapsed"));
+}
 
 /* ---------- 侧栏 / 设备 ---------- */
 function toggleSide(force){
@@ -710,6 +998,12 @@ function detectDevice(){
 }
 detectDevice();
 toggleSide(window.matchMedia("(min-width: 769px)").matches);
+/* 恢复统计区折叠状态 */
+(function(){
+  let fold = false;
+  try{ fold = localStorage.getItem("mmt_pvp_stats_fold") === "1"; }catch(e){}
+  if (fold) setStatsFold(true);
+})();
 init();
 
 /* ---------- action 刷新（Token 触发 GitHub Actions，不保存、完成后自动清除） ---------- */
@@ -785,6 +1079,20 @@ async function waitWorkflowDone(token, timeoutMs){
     <div class="modal-btns">
       <button onclick="doManualRefresh()">确定执行</button>
       <button class="ghost" onclick="closeRefreshModal()">取消</button>
+    </div>
+  </div>
+</div>
+<div class="modal" id="preload-modal" onclick="if(event.target===this)closePreload()">
+  <div class="modal-box" style="width:min(440px,92vw)">
+    <h3>📦 图标与数据预载（可选）</h3>
+    <p>默认实时在线加载。点「开始预载」后，把主数据文本（角色/技能/装备/符石映射）与图标（角色133张 + 装备896张 + 技能榜单相关 + 符石 + 稀有度边框等）下载到浏览器本地，此后开盒不再在线加载图标与技能文本，已缓存项自动跳过。约 15MB，请耐心等待，可随时取消。</p>
+    <div class="pbar"><i id="pl-bar"></i></div>
+    <div class="pl-txt" id="pl-txt">点击「开始预载」执行</div>
+    <div class="modal-btns">
+      <button id="pl-start" onclick="doPreload()">开始预载</button>
+      <button id="pl-cancel" class="ghost" onclick="preloadAbort = true" style="display:none">取消</button>
+      <button class="ghost" onclick="doClearCache()">清除缓存</button>
+      <button class="ghost" onclick="closePreload()">关闭</button>
     </div>
   </div>
 </div>
