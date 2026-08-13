@@ -43,6 +43,7 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
 #viz{position:absolute;inset:0;width:100%;height:100%;display:block}
 #cover-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
 .cover-note{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:72px;line-height:1;filter:drop-shadow(0 0 16px rgba(217,178,106,.5));pointer-events:none;z-index:2}
+.cover-note img.note-img{width:76px;height:76px;border-radius:50%;object-fit:cover;box-shadow:0 0 18px rgba(217,178,106,.45);border:1px solid rgba(217,178,106,.5)}
 .cover.playing .cover-note{animation:note-float 2.4s ease-in-out infinite}
 @keyframes note-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-6px) scale(1.05)}}
 .cover.playing::after{content:"";position:absolute;inset:0;border-radius:20px;box-shadow:0 0 0 0 rgba(124,108,240,.45);animation:pulse 1.8s ease-out infinite;pointer-events:none;z-index:3}
@@ -89,7 +90,7 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
 .track.active .trk-eq{display:flex}
 .track.active.paused .trk-eq i{animation-play-state:paused;height:6px}
 .music-tip{color:var(--muted);font-size:12px;margin:10px 2px 0;line-height:1.7}
-@media (max-width:768px){.cover{width:150px;height:150px}.cover-note{font-size:52px}.track-title{font-size:19px}.vol{margin-left:0}.trk-cover{width:44px;height:44px;font-size:22px;border-radius:10px}.track{gap:10px;padding:8px 10px}}
+@media (max-width:768px){.cover{width:150px;height:150px}.cover-note{font-size:52px}.cover-note img.note-img{width:54px;height:54px}.track-title{font-size:19px}.vol{margin-left:0}.trk-cover{width:44px;height:44px;font-size:22px;border-radius:10px}.track{gap:10px;padding:8px 10px}}
 </style>
 </head>
 <body>
@@ -101,7 +102,7 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
   <a class="side-link" href="monsters.html">怪物数值查询<span class="sub">主线 Quest / 塔 Tower</span></a>
   <a class="side-link" href="openpvp.html">竞技场与巅峰开盒<span class="sub">Arena / Legend 排名开盒</span></a>
   <div class="side-split">
-    <a class="side-link active" href="art.html" title="进入完整音乐室">🎧 音乐室<span class="sub">完整播放器页</span></a>
+    <a class="side-link active" href="art.html" title="进入完整音乐室"><img class="side-ico" src="icon.png" alt="">音乐室<span class="sub">完整播放器页</span></a>
     <button type="button" class="side-link side-quick" onclick="MMPlayer.startFirst()" title="在当前页打开迷你播放器，播放第一首">▶ 快速播放<span class="sub">顶栏小播放器</span></button>
   </div>
 </nav>
