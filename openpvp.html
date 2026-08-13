@@ -411,19 +411,27 @@ init();
 // ---------- action 刷新（Token 触发 GitHub Actions，每天限 5 次） ----------
 
 // ---------- action 刷新（Token 触发 GitHub Actions） ----------
+
+// ---------- action 刷新（Token 触发 GitHub Actions，不保存、完成后自动清除） ----------
 const REPO_FULL = "WillieumK/mementomori-charaPage";
 const REFRESH_WF = "fetch.yml";
+function clearToken(){
+  const t = document.getElementById("rf-token");
+  if (t) t.value = "";
+  try { localStorage.removeItem("mmt_gh_token"); } catch(e){}
+}
 function openRefresh(){
   const m = document.getElementById("refresh-modal");
   if (m) m.style.display = "flex";
-  const t = document.getElementById("rf-token");
-  if (t && !t.value) t.value = localStorage.getItem("mmt_gh_token") || "";
+  clearToken();
 }
-function closeModal(){ const m = document.getElementById("refresh-modal"); if (m) m.style.display = "none"; }
+function closeModal(){
+  const m = document.getElementById("refresh-modal");
+  if (m) m.style.display = "none";
+  clearToken();
+}
 async function doManualRefresh(){
-  let token = document.getElementById("rf-token").value.trim();
-  if (!token) token = localStorage.getItem("mmt_gh_token") || "";
-  if (token){ try { localStorage.setItem("mmt_gh_token", token); } catch(e){} }
+  const token = document.getElementById("rf-token").value.trim();
   if (!token){ alert("请填写 GitHub Token"); return; }
   const url = "https://api.github.com/repos/" + REPO_FULL + "/actions/workflows/" + REFRESH_WF + "/dispatches";
   try{
@@ -432,7 +440,7 @@ async function doManualRefresh(){
       headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json", "User-Agent": "mmt-page" },
       body: JSON.stringify({ ref: "main" })
     });
-    if (!r.ok){ const t = (await r.text()).slice(0, 200); alert("触发失败（" + r.status + "）：" + t); return; }
+    if (!r.ok){ const t = (await r.text()).slice(0, 200); alert("触发失败（" + r.status + "）：" + t); closeModal(); return; }
     alert("已触发，正在后台抓取…完成后会再次提示");
     const run = await waitWorkflowDone(token, 180000);
     if (run && run.status === "completed"){
@@ -442,7 +450,7 @@ async function doManualRefresh(){
       alert("等待超时，请稍后到 GitHub Actions 确认，或点「刷新数据」查看");
     }
     closeModal();
-  }catch(err){ alert("网络错误：" + err.message); }
+  }catch(err){ alert("网络错误：" + err.message); closeModal(); }
 }
 async function waitWorkflowDone(token, timeoutMs){
   const q = "https://api.github.com/repos/" + REPO_FULL + "/actions/workflows/" + REFRESH_WF + "/runs?per_page=1";
@@ -461,11 +469,12 @@ async function waitWorkflowDone(token, timeoutMs){
   return null;
 }
 
+
 </script>
 <div class="modal" id="refresh-modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-box">
     <h3>action 刷新</h3>
-    <p>将触发后台重新抓取全部数据缓存。Token 只保存在本机浏览器，不会上传。</p>
+    <p>将触发后台重新抓取全部数据缓存。Token 仅本次使用，不会保存，刷新完成后自动清除。</p>
     <input type="password" id="rf-token" placeholder="GitHub Token（PAT）">
     <div class="modal-btns">
       <button onclick="doManualRefresh()">确定执行</button>
