@@ -15,4 +15,5 @@
 - 左侧悬浮标题列导航（桌面常驻，移动端默认收起、点 ☰ 展开）：
   - `index.html` — charaPage（巅峰使用率统计 & 当期卡池表）
   - `monsters.html` — 推图推关 · 怪物数值查询（主线 Quest 12 章 + 塔 Tower 5 座：无穷/蓝/红/黄/绿）
-- quest/tower 数据由 GitHub Actions 同一定时抓取并压缩到 `data/quest.json`、`data/tower.json`（只保留查询需要的列）。
+  - `openpvp.html` — 竞技场与巅峰开盒（Battle League 各世界 / Legend League 世界组排名：队伍出场统计、玩家名过滤、点角色头像开盒看数值·技能·装备·圣装·魔装·符石）
+- quest/tower 数据由 GitHub Actions 同一定时抓取并压缩到 `data/quest.json`、`data/tower.json`（只保留查询需要的列）；角色/技能/装备/符石开盒映射存于 `data/pvp_*.json`。

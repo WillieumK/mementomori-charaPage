@@ -16,7 +16,10 @@ h1 .logo{width:42px;height:42px;border-radius:10px;box-shadow:0 0 18px rgba(217,
 h1 .title-grad{background:linear-gradient(90deg,#f5e6c4,#d9b26a 45%,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
 header.top .subtitle{margin:0 0 12px;color:var(--muted);font-size:14px}
 .badge{display:inline-block;padding:5px 12px;border:1px solid rgba(217,178,106,.4);border-radius:999px;color:var(--gold);font-size:12px;background:rgba(217,178,106,.08);margin:3px}
-.toolbar{display:flex;justify-content:flex-end;gap:10px;margin:0 0 14px}
+.toolbar{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin:0 0 14px;align-items:center}
+.toolbar .search{display:flex;align-items:center;gap:6px;background:#1c1730;border:1px solid var(--panel-border);border-radius:999px;padding:4px 14px}
+.toolbar .search input{background:transparent;border:none;outline:none;color:var(--text);font-size:13px;width:170px}
+.toolbar .search .sicon{color:var(--muted);font-size:13px}
 .toolbar button,.mini{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;border:none;border-radius:999px;padding:8px 18px;font-size:13px;cursor:pointer;transition:filter .2s,transform .1s}
 .toolbar button:hover,.mini:hover{filter:brightness(1.12)}
 .mini{padding:6px 14px;font-size:12px}
@@ -24,39 +27,66 @@ section.card{background:var(--panel);border:1px solid var(--panel-border);border
 section.card h2{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-size:18px;color:#f1eef8}
 section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;background:linear-gradient(180deg,var(--gold),var(--accent))}
 .h2-note{color:var(--muted);font-size:12px;font-weight:400;margin-left:auto}
-.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
 .tabs button{background:rgba(255,255,255,.05);border:1px solid var(--panel-border);color:var(--text);border-radius:999px;padding:8px 18px;font-size:13px;cursor:pointer}
 .tabs button.active{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;border-color:transparent;font-weight:600}
 .qrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .qrow label{color:var(--muted);font-size:13px}
-.qrow select,.qrow input{background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:7px 10px;font-size:13px;outline:none}
+.qrow select,.qrow input{background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:7px 10px;font-size:13px;outline:none;max-width:100%}
 .table-wrap{overflow-x:auto;border:1px solid var(--panel-border);border-radius:10px;background:rgba(0,0,0,.18)}
 table{width:100%;border-collapse:collapse;font-size:13px}
-thead th{position:sticky;top:0;background:#1c1730;color:var(--gold);font-weight:600;text-align:left;white-space:nowrap;padding:9px 12px;border-bottom:1px solid rgba(217,178,106,.25)}
+thead th{position:sticky;top:0;background:#1c1730;color:var(--gold);font-weight:600;text-align:left;white-space:nowrap;padding:9px 12px;border-bottom:1px solid rgba(217,178,106,.25);z-index:2}
 tbody td{padding:8px 12px;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle}
 tbody tr:nth-child(even){background:rgba(255,255,255,.03)}
 tbody tr:hover{background:rgba(124,108,240,.14)}
-.rank{font-weight:700;color:var(--muted)}
+.rank{font-weight:700;color:var(--muted);width:44px;text-align:center}
 .rank.top1{color:#ffd76a}
 .rank.top2{color:#d7dbe8}
 .rank.top3{color:#d9a066}
 .pname{font-weight:600;color:#f1eef8}
 .pinfo{color:var(--muted);font-size:11px;margin-top:2px}
-.cslot{display:inline-block;width:52px;text-align:center;margin-right:8px}
+.pinfo .pworld{color:#a99fd9}
+.cslot{display:inline-block;width:52px;text-align:center;margin-right:6px;cursor:pointer;vertical-align:top}
 .cslot img{width:48px;height:48px;border-radius:9px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);object-fit:cover;display:block;margin:0 auto}
+.cslot:hover img{outline:1px solid var(--gold)}
 .cslot .clv{color:var(--muted);font-size:10px;margin-top:2px}
+.cslot .cname{display:none}
 .prow{cursor:pointer}
-.detail{display:none;background:rgba(0,0,0,.22);border-top:1px solid var(--panel-border);padding:12px}
-.detail.open{display:block}
-.detail .char{display:inline-block;width:150px;text-align:center;margin:6px;vertical-align:top}
-.detail .char img{width:64px;height:64px;border-radius:10px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);object-fit:cover}
-.detail .char .dn{color:var(--muted);font-size:11px;margin-top:3px}
 .loading,.error{color:var(--muted);padding:30px;text-align:center}
 .error{color:#ff9d9d}
 .spinner{display:inline-block;width:26px;height:26px;margin-bottom:10px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 footer{text-align:center;color:var(--muted);font-size:12px;margin-top:10px;line-height:1.9}
 footer a{color:#a99fd9}
+
+/* 队伍出场统计 */
+.stats-grid{display:flex;flex-wrap:wrap;gap:10px}
+.stat-item{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.2);border:1px solid var(--panel-border);border-radius:10px;padding:6px 12px 6px 8px;min-width:150px;flex:1 1 150px;max-width:220px}
+.stat-item img{width:40px;height:40px;border-radius:8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
+.stat-item .sinfo{flex:1;min-width:0}
+.stat-item .sname{font-size:12px;color:#f1eef8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-item .sbar{height:4px;border-radius:2px;background:rgba(255,255,255,.08);margin-top:4px;overflow:hidden}
+.stat-item .sbar i{display:block;height:100%;background:linear-gradient(90deg,#d9b26a,#7c6cf0);border-radius:2px}
+.stat-item .scount{font-size:11px;color:var(--gold);white-space:nowrap}
+.stats-empty{color:var(--muted);font-size:12px}
+
+/* 属性 / 职业 tag 颜色 */
+.tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;border:1px solid var(--panel-border);background:rgba(255,255,255,.06);margin-right:4px}
+.elem-blue{color:#6aa8ff;border-color:rgba(106,168,255,.5);background:rgba(106,168,255,.1)}
+.elem-red{color:#ff7a7a;border-color:rgba(255,122,122,.5);background:rgba(255,122,122,.1)}
+.elem-green{color:#62d98a;border-color:rgba(98,217,138,.5);background:rgba(98,217,138,.1)}
+.elem-yellow{color:#ffd76a;border-color:rgba(255,215,106,.5);background:rgba(255,215,106,.1)}
+.elem-light{color:#fff3c4;border-color:rgba(255,243,196,.5);background:rgba(255,243,196,.12)}
+.elem-dark{color:#b48ae8;border-color:rgba(180,138,232,.5);background:rgba(180,138,232,.12)}
+.job-tag{color:#9fe3c0;border-color:rgba(159,227,192,.4);background:rgba(159,227,192,.08)}
+
+/* 稀有度颜色 */
+.r-N,.r-R{color:#b8b4c4}
+.r-R\+,.r-SR,.r-SR\+{color:#7fb8ff}
+.r-SSR,.r-SSR\+{color:#b48ae8}
+.r-UR,.r-UR\+{color:#ffd76a}
+.r-LR,.r-LR\+{color:#ff9d9d}
+
 /* 侧栏 */
 .side{position:fixed;left:0;top:0;bottom:0;width:345px;background:rgba(16,13,26,.97);border-right:1px solid var(--panel-border);padding:22px 14px;z-index:80;transform:translateX(-100%);transition:transform .25s ease;overflow-y:auto}
 .side.open{transform:translateX(0)}
@@ -66,28 +96,38 @@ footer a{color:#a99fd9}
 .side .side-link:hover{background:rgba(124,108,240,.18)}
 .side .side-link.active{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;font-weight:600}
 .side .side-link .sub{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.side .side-link.active .sub{color:rgba(255,255,255,.75)}
 .side-open{position:fixed;left:10px;top:10px;z-index:90;width:40px;height:40px;border-radius:10px;border:1px solid var(--panel-border);background:rgba(20,17,32,.9);color:var(--gold);font-size:18px;cursor:pointer;display:block}
 body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
 .side-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:70;display:none}
 .side-mask.show{display:block}
 @media (min-width:769px){body:not(.side-collapsed){padding-left:345px}}
-@media (max-width:768px){.side-open{display:block}header.top{padding-top:52px}.wrap{padding:16px 10px 40px}header.top h1{font-size:22px;flex-wrap:wrap}section.card{padding:14px 12px 18px}.cslot img{width:40px;height:40px}.cslot{width:44px}}
+@media (max-width:768px){.side-open{display:block}header.top{padding-top:52px}.wrap{padding:16px 10px 40px}header.top h1{font-size:22px;flex-wrap:wrap}section.card{padding:14px 12px 18px}.cslot img{width:40px;height:40px}.cslot{width:44px;margin-right:4px}.toolbar{justify-content:flex-start}.toolbar .search input{width:110px}.stat-item{min-width:130px;max-width:none;flex:1 1 130px}}
+
+/* 角色开盒弹窗 */
 .pvp-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:24px 10px;overflow:auto}
 .pvp-modal.open{display:flex}
-.pvp-modal .box{background:#151223;border:1px solid var(--panel-border);border-radius:14px;max-width:1000px;width:100%;padding:16px 18px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
-.pvp-modal .mhead{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.pvp-modal .box{background:#151223;border:1px solid var(--panel-border);border-radius:14px;max-width:1020px;width:100%;padding:16px 18px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.pvp-modal .mhead{display:flex;align-items:center;gap:12px;margin-bottom:8px}
 .pvp-modal .mhead img{width:64px;height:64px;border-radius:12px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
 .pvp-modal .mname{font-size:20px;font-weight:700}
+.pvp-modal .mtags{margin-top:4px}
 .pvp-modal .mmeta{color:var(--muted);font-size:12px;margin-top:2px}
-.pvp-modal .mclose{margin-left:auto;width:34px;height:34px;border-radius:8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);color:var(--gold);font-size:18px;cursor:pointer}
-.pvp-modal .tag{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11px;border:1px solid var(--panel-border);background:rgba(255,255,255,.06);margin-right:4px}
+.pvp-modal .mclose{margin-left:auto;width:34px;height:34px;border-radius:8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);color:var(--gold);font-size:18px;cursor:pointer;flex:none}
+.team-tabs{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.team-tabs .ttab{width:48px;text-align:center;cursor:pointer;opacity:.55;transition:opacity .15s}
+.team-tabs .ttab:hover{opacity:.85}
+.team-tabs .ttab.on{opacity:1}
+.team-tabs .ttab img{width:44px;height:44px;border-radius:9px;border:2px solid transparent;background:rgba(0,0,0,.3)}
+.team-tabs .ttab.on img{border-color:var(--gold);outline:1px solid rgba(217,178,106,.5)}
+.team-tabs .ttab .tlv{font-size:10px;color:var(--muted)}
 .regions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
 @media(max-width:920px){.regions{grid-template-columns:1fr}}
 .region{background:rgba(0,0,0,.2);border:1px solid var(--panel-border);border-radius:10px;padding:8px 10px;min-width:0}
 .region h3{margin:0 0 6px;font-size:13px;color:var(--gold);border-bottom:1px solid var(--panel-border);padding-bottom:4px;letter-spacing:.5px}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
-.stat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:4px 6px;line-height:1.35}
+.stat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:4px 6px;line-height:1.35;min-width:0}
 .stat .sk{color:var(--muted);font-size:10px}
 .stat .sv{font-size:12px;color:#f1eef8}
 .skill{padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.06)}
@@ -98,14 +138,15 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
 .eqslot:last-child{border-bottom:none}
 .eqslot .en{font-weight:600;font-size:12px;color:#f1eef8}
 .eqslot .em{color:var(--muted);font-size:10px;margin-top:1px;line-height:1.4}
-.eqslot .spheres{margin-left:auto;display:flex;gap:4px}
-.eqslot .sphere{width:44px;text-align:center;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25);padding:2px;font-size:9px;color:var(--muted);line-height:1.3}
+.eqslot .ex{font-size:10px;margin-top:1px;line-height:1.4}
+.eqslot .spheres{margin-left:auto;display:flex;gap:4px;flex:none}
+.eqslot .sphere{width:46px;text-align:center;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25);padding:2px;font-size:9px;color:var(--muted);line-height:1.3;cursor:help}
 .eqslot .sphere .sv{color:#ffe9a8;font-size:10px;font-weight:600}
-.cslot{cursor:pointer}
-.cslot:hover img{outline:1px solid var(--gold)}
+.eqslot .sphere.empty{opacity:.35}
+.sync-mark{display:inline-block;font-size:10px;color:#9fe3c0;border:1px solid rgba(159,227,192,.35);border-radius:4px;padding:0 4px;margin-left:4px}
 
-
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:100}
+/* 通用 modal（action 刷新） */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:110}
 .modal-box{background:#1c1730;border:1px solid var(--panel-border);border-radius:14px;padding:22px;width:min(360px,92vw);box-shadow:0 10px 40px rgba(0,0,0,.5)}
 .modal-box h3{margin:0 0 8px;font-size:16px;color:var(--gold)}
 .modal-box p{margin:0 0 12px;font-size:12px;color:var(--muted);line-height:1.6}
@@ -123,21 +164,23 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
   <a class="side-link" href="index.html#sec-overview">当期卡池记录<span class="sub">新角色 · 新复刻 · 新星辰</span></a>
   <a class="side-link" href="index.html#sec-elements">属性轮档记录<span class="sub">天光 · 幽冥 · 忧蓝 · 业红 · 苍翠 · 流金</span></a>
   <a class="side-link" href="monsters.html">怪物数值查询<span class="sub">主线 Quest / 塔 Tower</span></a>
-  <a class="side-link active" href="openpvp.html">竞技场与巅峰开盒（毛坯待完善）<span class="sub">Arena / Legend 排名开盒</span></a>
+  <a class="side-link active" href="openpvp.html">竞技场与巅峰开盒<span class="sub">Arena / Legend 排名 · 队伍角色数值与装备</span></a>
 </nav>
 <button class="side-open" id="side-open" onclick="toggleSide()">☰</button>
 
 <div class="wrap">
   <header class="top">
     <h1><img class="logo" src="icon.png" alt="icon"><span class="title-grad">竞技场与巅峰开盒</span></h1>
-    <p class="subtitle">竞技场 Arena / 巅峰 Legend · 排名与队伍开盒</p>
+    <p class="subtitle">竞技场 Battle League / 巅峰 Legend League · 排名、队伍统计与角色开盒（数值 · 技能 · 装备 · 符石）</p>
     <p>
-      <span class="badge"><span class="dot"></span>在线读取 mentemori.icu API</span>
+      <span class="badge">在线读取 mentemori.icu API</span>
+      <span class="badge" id="upd-time">数据时间：—</span>
       <span class="badge" id="device">💻 desktop 端</span>
     </p>
   </header>
 
   <div class="toolbar">
+    <span class="search"><span class="sicon">🔍</span><input id="q-name" type="text" placeholder="按玩家名过滤…" oninput="renderTable()"></span>
     <button id="btn-refresh" onclick="load(true)">🔄 刷新数据</button>
     <button id="btn-manual" onclick="openRefresh()">action刷新</button>
   </div>
@@ -149,11 +192,16 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
       <button id="tab-legend" onclick="setMode('legend')">Legend League 巅峰</button>
     </div>
     <div class="qrow" id="q-arena">
-      <label>服务器</label><select id="sel-world" onchange="load(true)"></select>
+      <label>服务器 / 世界</label><select id="sel-world" onchange="onSelect('world', this.value)"></select>
     </div>
     <div class="qrow" id="q-legend" style="display:none">
-      <label>世界组</label><select id="sel-group" onchange="load(true)"></select>
+      <label>世界组</label><select id="sel-group" onchange="onSelect('group', this.value)"></select>
     </div>
+  </section>
+
+  <section class="card">
+    <h2>队伍出场统计<span class="h2-note">当前榜单全员队伍 · 按出场次数</span></h2>
+    <div class="stats-grid" id="tbl-stats"><div class="loading"><span class="spinner"></span><br>等待数据…</div></div>
   </section>
 
   <section class="card">
@@ -162,7 +210,7 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
   </section>
 
   <footer>
-    原始数据来自 <a href="https://mentemori.icu" target="_blank" rel="noopener">mentemori.icu API</a> · 网页数据存于 <a href="https://github.com/WillieumK/mementomori-charaPage" target="_blank" rel="noopener">GitHub</a>
+    原始数据来自 <a href="https://mentemori.icu" target="_blank" rel="noopener">mentemori.icu API</a> · 主数据映射（角色/技能/装备/符石）由 GitHub Actions 定时生成 · 网页数据存于 <a href="https://github.com/WillieumK/mementomori-charaPage" target="_blank" rel="noopener">GitHub</a>
   </footer>
 </div>
 
@@ -171,57 +219,318 @@ body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
 const API = "https://api.mentemori.icu";
 const ICON_BASE = "https://mentemori.icu/assets/CHR_";
 const RAR = {0:"无",1:"N",2:"R",4:"R+",8:"SR",16:"SR+",32:"SSR",64:"SSR+",128:"UR",256:"UR+",512:"LR",1024:"LR+",2048:"LR+2",4096:"LR+3",8192:"LR+4",16384:"LR+5",32768:"LR+6",65536:"LR+7",131072:"LR+8",262144:"LR+9",524288:"LR+10"};
+/* pvp_char.json 的 e 字段为数字：1蓝 2红 3绿 4黄 5光 6暗 */
+const ELEM = {1:"蓝",2:"红",3:"绿",4:"黄",5:"光",6:"暗"};
+const ELEM_CLASS = {1:"elem-blue",2:"elem-red",3:"elem-green",4:"elem-yellow",5:"elem-light",6:"elem-dark"};
+const JOB = {1:"战士",2:"狙击手",4:"术士"};
+const SERVER_CN = {jp:"日服",kr:"韩服",as:"亚服",na:"北美",eu:"欧服",gl:"国际"};
+const SERVER_ORDER = ["jp","kr","as","na","eu","gl"];
+/* 装备 SlotType -> 槽位名（s:1武器 2副手 3手套 4头盔 5护甲 6鞋） */
+const SLOT_NAMES = {1:"武器",2:"副手",3:"手套",4:"头盔",5:"护甲",6:"鞋"};
+/* 圣装（Legend）按槽位序号取字段 */
+const LEGEND_FIELDS = [
+  ["WeaponAttackPowerPercent","攻击力"],["SubHitPercent","命中率"],["GauntletCriticalDamagePercent","暴击伤害"],
+  ["HelmetPhysicalCriticalDamageRelaxPercent","物暴伤减免"],["ArmorMagicCriticalDamageRelaxPercent","魔暴伤减免"],["ShoesHpDrainPercent","吸血率"]
+];
+/* 魔装（Matchless）按槽位序号取字段 */
+const MATCHLESS_FIELDS = [
+  ["WeaponAttackPower","攻击力"],["SubPhysicalDamageRelax","物防"],["GauntletMagicDamageRelax","魔防"],
+  ["HelmetCritical","暴击"],["ArmorDefensePenetration","物穿"],["ShoesHp","血量"]
+];
+/* 战斗参数展示字段：[字段名, 中文名, 是否为百分比(原始值÷100)] */
+const BP_FIELDS = [
+  ["AttackPower","攻击力",0],["Defense","防御力",0],["HP","血量",0],["Speed","速度",0],
+  ["Hit","命中",0],["Avoidance","闪避",0],["Critical","暴击",0],["CriticalResist","暴击抵抗",0],
+  ["MagicDamageRelax","魔防",0],["PhysicalDamageRelax","物防",0],["DebuffHit","弱体命中",0],["DebuffResist","弱体耐性",0],
+  ["CriticalDamageEnhance","暴伤增强",1],["DamageEnhance","增伤",1],["DamageReflect","反伤",1],
+  ["DefensePenetration","物穿",1],["HpDrain","吸血",1],
+  ["MagicCriticalDamageRelax","魔暴伤减免",1],["PhysicalCriticalDamageRelax","物暴伤减免",1]
+];
 let mode = "arena";
 let worlds = [], groups = [];
+let lastList = [];
+let lastTs = null;
+let cache = {};           /* 会话内缓存：url -> {data, ts} */
+let P = { char:null, skill:null, equip:null, legend:null, matchless:null, sphere:null };
 
 function esc(v){ return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function fmtNum(v){
   if (v == null) return "—";
   const val = Number(v);
+  if (!isFinite(val)) return "—";
   if (val >= 1e8) return (val/1e8).toFixed(2) + "亿";
   if (val >= 1e4) return (val/1e4).toFixed(1) + "万";
-  return String(Math.round(val));
+  return val.toLocaleString();
+}
+function fmtPct(v){ /* 游戏内百分比按 ×100 存：4000 = 40% */
+  if (v == null) return "—";
+  const n = Number(v);
+  if (!isFinite(n)) return "—";
+  return (n/100).toFixed(1).replace(/\.0$/,"") + "%";
 }
 function padId(id){ return String(id).padStart(6, "0"); }
 function rarityLabel(flags){
   const f = Number(flags);
   return RAR[f] || (f > 524288 ? "LR+" + Math.round(Math.log2(f / 512)) : String(f));
 }
-
-async function fetchJson(url){
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error("HTTP " + resp.status);
-  return await resp.json();
+function rarityClass(label){
+  const base = label.replace(/\+\d+$/,"");
+  const m = (base || "").match(/^(N|R|SR|SSR|UR|LR)/);
+  if (!m) return "";
+  const r = m[1];
+  return (r === "N" || r === "R") ? "r-N" : "r-" + r;
+}
+function elemTag(e){
+  const key = String(e);
+  const cls = ELEM_CLASS[key] || "";
+  const name = ELEM[key] || ("属性" + key);
+  return '<span class="tag ' + cls + '">' + esc(name) + "</span>";
+}
+function fmtTime(ts){
+  if (!ts) return "—";
+  const d = new Date(Number(ts) * 1000);
+  if (isNaN(d.getTime())) return "—";
+  const p = n => String(n).padStart(2,"0");
+  return d.getFullYear() + "-" + p(d.getMonth()+1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+function iconOnError(img){
+  img.onerror = null;
+  img.src = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" rx="8" fill="#241f38"/><text x="24" y="30" font-size="16" fill="#9a94ad" text-anchor="middle">?</text></svg>');
 }
 
+async function fetchJson(url){
+  const ctrl = new AbortController();
+  const timer = setTimeout(function(){ ctrl.abort(); }, 25000);
+  try{
+    const resp = await fetch(url, { signal: ctrl.signal });
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    return await resp.json();
+  }finally{ clearTimeout(timer); }
+}
+
+/* ---------- 初始化 ---------- */
 async function init(){
+  const el = document.getElementById("tbl-res");
+  el.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在读取世界列表…</div>';
   try{
     const [w, g] = await Promise.all([fetchJson(API + "/worlds"), fetchJson(API + "/wgroups")]);
     worlds = w.data || [];
     groups = g.data || [];
-    const selW = document.getElementById("sel-world");
-    selW.innerHTML = worlds.map(x => '<option value="' + x.world_id + '">W' + x.world_id + (x.server ? " · " + x.server : "") + '</option>').join("");
-    if (selW.options.length) selW.value = "1001";
-    const selG = document.getElementById("sel-group");
-    selG.innerHTML = groups.map((x, i) => '<option value="' + i + '">世界组 ' + x.group_id + '</option>').join("");
-    if (selG.options.length) selG.value = "0";
-    await load(true);
+    buildWorldSelect();
+    buildGroupSelect();
+    restoreSelects();
+    await load(false);
+    /* 后台预加载角色/装备映射，完成后刷新统计区与头像提示（显示中文角色名） */
+    ensurePvpData().then(() => { if (lastList.length){ renderStats(); renderTable(); } }).catch(() => {});
   }catch(e){
-    document.getElementById("tbl-res").innerHTML = '<div class="error">❌ 初始化失败：' + esc(e.message) + '</div>';
+    el.innerHTML = '<div class="error">❌ 初始化失败：' + esc(e.message) + '</div>';
+    document.getElementById("tbl-stats").innerHTML = '<div class="error">❌ 世界列表读取失败</div>';
   }
 }
 
-function setMode(m){
+function buildWorldSelect(){
+  const selW = document.getElementById("sel-world");
+  const byServer = {};
+  worlds.forEach(x => { (byServer[x.server] = byServer[x.server] || []).push(x); });
+  let html = "";
+  SERVER_ORDER.forEach(s => {
+    const list = byServer[s];
+    if (!list || !list.length) return;
+    html += '<optgroup label="' + (SERVER_CN[s] || s) + " " + s.toUpperCase() + '">';
+    list.forEach(x => { html += '<option value="' + x.world_id + '">W' + x.world_id + '</option>'; });
+    html += "</optgroup>";
+  });
+  /* 未知服务器兜底 */
+  Object.keys(byServer).filter(s => SERVER_ORDER.indexOf(s) < 0).forEach(s => {
+    html += '<optgroup label="' + esc(s) + '">';
+    byServer[s].forEach(x => { html += '<option value="' + x.world_id + '">W' + x.world_id + '</option>'; });
+    html += "</optgroup>";
+  });
+  selW.innerHTML = html;
+}
+
+function fmtWorlds(list){
+  if (!list || !list.length) return "";
+  const arr = list.slice().sort((a,b)=>a-b);
+  const parts = [];
+  let start = arr[0], prev = arr[0];
+  for (let i = 1; i <= arr.length; i++){
+    const cur = arr[i];
+    if (cur === prev + 1){ prev = cur; continue; }
+    parts.push(start === prev ? "W" + start : "W" + start + "~" + prev);
+    start = prev = cur;
+  }
+  return parts.join("、");
+}
+
+function buildGroupSelect(){
+  const selG = document.getElementById("sel-group");
+  selG.innerHTML = groups.map((x, i) =>
+    '<option value="' + i + '">世界组 ' + x.group_id + "（" + fmtWorlds(x.worlds) + "）</option>"
+  ).join("");
+}
+
+function restoreSelects(){
+  let saved;
+  try{ saved = JSON.parse(localStorage.getItem("mmt_pvp_sel") || "null"); }catch(e){ saved = null; }
+  if (saved && saved.mode) setMode(saved.mode, true);
+  const selW = document.getElementById("sel-world");
+  const selG = document.getElementById("sel-group");
+  if (saved && saved.world && selW.querySelector('option[value="' + saved.world + '"]')) selW.value = String(saved.world);
+  else if (selW.options.length) selW.value = selW.options[0].value;
+  if (saved && saved.group && selG.options[Number(saved.group)]) selG.value = String(saved.group);
+  else if (selG.options.length) selG.value = "0";
+  saveSelects();
+}
+function saveSelects(){
+  const selW = document.getElementById("sel-world");
+  const selG = document.getElementById("sel-group");
+  try{ localStorage.setItem("mmt_pvp_sel", JSON.stringify({ mode: mode, world: selW.value, group: selG.value })); }catch(e){}
+}
+
+function setMode(m, keep){
   mode = m;
   document.getElementById("tab-arena").classList.toggle("active", m === "arena");
   document.getElementById("tab-legend").classList.toggle("active", m === "legend");
   document.getElementById("q-arena").style.display = m === "arena" ? "flex" : "none";
   document.getElementById("q-legend").style.display = m === "legend" ? "flex" : "none";
-  load(true);
+  saveSelects();
+  if (!keep) load(false);
+}
+function onSelect(kind, v){
+  saveSelects();
+  load(false);
 }
 
-let lastList = [];
-let P = { char:null, skill:null, equip:null, legend:null, matchless:null, sphere:null };
+/* ---------- 数据加载 ---------- */
+function apiTarget(){
+  if (mode === "arena"){
+    const world = document.getElementById("sel-world").value;
+    return { url: API + "/" + world + "/arena/latest", label: "W" + world + " 竞技场" };
+  }
+  const gi = parseInt(document.getElementById("sel-group").value, 10) || 0;
+  const g = groups[gi];
+  if (!g) throw new Error("世界组不存在");
+  return { url: API + "/wg/" + g.group_id + "/legend/latest", label: "世界组 " + g.group_id + " 巅峰" };
+}
+
+/* 巅峰榜玩家所属组内世界：PlayerId 后4位=服务器号+组内世界序号（如 1005 → 组内 W5005） */
+function legendWorldOf(g, pid){
+  const gws = (g && g.worlds || []).slice();
+  if (!gws.length) return "";
+  const base = gws[0] - (gws[0] % 1000);
+  const seq = Number(String(pid).slice(-4)) % 1000;
+  const w = base + seq;
+  if (gws.indexOf(w) >= 0) return "W" + w;
+  return "W" + String(pid).slice(-4);
+}
+
+async function load(force){
+  const el = document.getElementById("tbl-res");
+  const sel = document.getElementById("tbl-stats");
+  el.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在在线读取…</div>';
+  sel.innerHTML = '<div class="loading"><span class="spinner"></span><br>等待数据…</div>';
+  let target;
+  try{ target = apiTarget(); }catch(e){ el.innerHTML = '<div class="error">❌ ' + esc(e.message) + "</div>"; return; }
+  try{
+    const key = target.url;
+    let data, fromCache = false;
+    if (!force && cache[key]){ data = cache[key]; fromCache = true; }
+    else {
+      const r = await fetchJson(key);
+      data = { data: r.data || [], ts: r.timestamp };
+      cache[key] = data;
+    }
+    lastList = data.data;
+    lastTs = data.ts;
+    document.getElementById("upd-time").textContent = "数据时间：" + fmtTime(data.ts);
+    const note = target.label + " · 共 " + lastList.length + " 名 · 点角色头像开盒" + (fromCache ? "（会话缓存）" : "");
+    document.getElementById("res-note").textContent = note;
+    renderStats();
+    renderTable();
+  }catch(err){
+    el.innerHTML = '<div class="error">❌ 读取失败：' + esc(err.message) + "<br>请稍后再试。</div>";
+    sel.innerHTML = '<div class="stats-empty">读取失败，无统计。</div>';
+  }
+}
+
+/* ---------- 出场统计 ---------- */
+function renderStats(){
+  const el = document.getElementById("tbl-stats");
+  const cnt = {};
+  lastList.forEach(p => {
+    (p.UserCharacterInfoList || []).forEach(c => {
+      const id = c.CharacterId;
+      cnt[id] = (cnt[id] || 0) + 1;
+    });
+  });
+  const total = (lastList.length || 1);
+  const top = Object.keys(cnt).map(id => ({ id, n: cnt[id] })).sort((a,b) => b.n - a.n).slice(0, 8);
+  if (!top.length){ el.innerHTML = '<div class="stats-empty">暂无数据</div>'; return; }
+  const max = top[0].n;
+  el.innerHTML = top.map(t => {
+    const cm = P.char && P.char[String(t.id)];
+    const name = cm ? cm.n : ("角色 " + t.id);
+    const pct = (t.n / total * 100);
+    return '<div class="stat-item">'
+      + '<img src="' + ICON_BASE + padId(t.id) + '_00_s.png" loading="lazy" onerror="iconOnError(this)" alt="">'
+      + '<div class="sinfo"><div class="sname" title="' + esc(name) + '">' + esc(name) + '</div>'
+      + '<div class="sbar"><i style="width:' + Math.max(6, pct) + '%"></i></div></div>'
+      + '<div class="scount">' + t.n + "次 · " + pct.toFixed(0) + "%</div>"
+      + "</div>";
+  }).join("");
+}
+
+/* ---------- 排名表 ---------- */
+function charSlots(pi, list){
+  let h = "";
+  (list || []).slice(0, 5).forEach((c, j) => {
+    const id = padId(c.CharacterId);
+    const cm = P.char && P.char[String(c.CharacterId)];
+    const name = cm ? cm.n : "";
+    h += '<span class="cslot" title="' + esc(name || ("角色 " + c.CharacterId)) + '" onclick="event.stopPropagation();openChar(' + pi + ',' + j + ')">'
+      + '<img src="' + ICON_BASE + id + '_00_s.png" loading="lazy" onerror="iconOnError(this)" alt="' + esc(c.CharacterId) + '">'
+      + '<span class="clv">Lv' + esc(c.Level) + "</span></span>";
+  });
+  return h;
+}
+
+function renderTable(){
+  const el = document.getElementById("tbl-res");
+  if (!lastList.length){ el.innerHTML = '<table><thead><tr><th>排名</th><th>玩家</th><th>队伍（点角色开盒）</th></tr></thead><tbody><tr><td colspan="3" style="color:var(--muted)">暂无数据</td></tr></tbody></table>'; return; }
+  const q = document.getElementById("q-name").value.trim().toLowerCase();
+  const gi = mode === "legend" ? (parseInt(document.getElementById("sel-group").value, 10) || 0) : -1;
+  const g = mode === "legend" ? groups[gi] : null;
+  const filtered = [];
+  lastList.forEach((p, i) => {
+    if (q && String(p.PlayerName || "").toLowerCase().indexOf(q) < 0) return;
+    filtered.push({ p, i });
+  });
+  let body = "";
+  filtered.forEach(row => {
+    const p = row.p, i = row.i;
+    const rank = i + 1;
+    const rc = rank === 1 ? "top1" : rank === 2 ? "top2" : rank === 3 ? "top3" : "";
+    let info;
+    if (mode === "legend"){
+      info = "积分 " + fmtNum(p.CurrentPoint) + " · 连胜 " + (p.ConsecutiveVictoryCount || 0);
+      const w = legendWorldOf(g, p.PlayerId);
+      if (w) info += ' · <span class="pworld">' + esc(w) + "</span>";
+    } else {
+      info = "战力 " + fmtNum(p.BattlePower);
+    }
+    body += '<tr class="prow" onclick="openChar(' + i + ',0)">'
+      + '<td class="rank ' + rc + '">' + rank + "</td>"
+      + '<td><div class="pname">' + esc(p.PlayerName) + "</div><div class=\"pinfo\">Lv" + esc(p.PlayerLevel) + " · " + info + "</div></td>"
+      + "<td>" + charSlots(i, p.UserCharacterInfoList) + "</td>"
+      + "</tr>";
+  });
+  el.innerHTML = '<table><thead><tr><th>排名</th><th>玩家</th><th>队伍（点角色开盒）</th></tr></thead><tbody>'
+    + (body || '<tr><td colspan="3" style="color:var(--muted)">无匹配玩家</td></tr>')
+    + "</tbody></table>";
+}
+
+/* ---------- 主数据映射（懒加载） ---------- */
 async function ensurePvpData(){
   if (P.char) return;
   const [ch, sk, eq, lg, mc, sp] = await Promise.all([
@@ -230,157 +539,152 @@ async function ensurePvpData(){
   ]);
   P = { char: ch, skill: sk, equip: eq, legend: lg, matchless: mc, sphere: sp };
 }
-function charSlots(pi, list){
-  let h = "";
-  for (let j = 0; j < (list || []).length && j < 5; j++){
-    const c = list[j];
-    const id = padId(c.CharacterId);
-    h += '<span class="cslot" onclick="event.stopPropagation();openChar(' + pi + ',' + j + ')"><img src="' + ICON_BASE + id + '_00_s.png" loading="lazy" alt="' + esc(c.CharacterId) + '"><span class="clv">Lv' + esc(c.Level) + "</span></span>";
-  }
-  return h;
-}
-const SLOT_NAMES = ["武器","副手","手套","头盔","护甲","鞋"];
-const SLOT_FIELDS = ["WeaponAttackPowerPercent","SubHitPercent","GauntletCriticalDamagePercent","HelmetPhysicalCriticalDamageRelaxPercent","ArmorMagicCriticalDamageRelaxPercent","ShoesHpDrainPercent"];
-const SLOT_FIELDS2 = ["WeaponAttackPower","SubPhysicalDamageRelax","GauntletMagicDamageRelax","HelmetCritical","ArmorDefensePenetration","ShoesHp"];
-function fmtBig(v){
-  const n = Number(v);
-  if (!isFinite(n)) return "—";
-  if (n >= 1e8) return (n/1e8).toFixed(2) + "亿";
-  if (n >= 1e4) return (n/1e4).toFixed(1) + "万";
-  return n.toLocaleString();
-}
-function statCell(k, v){
-  return '<div class="stat"><div class="sk">' + k + '</div><div class="sv">' + (v == null ? "—" : fmtBig(v)) + "</div></div>";
+
+/* ---------- 角色开盒弹窗 ---------- */
+function statCell(k, v, pct){
+  const val = pct ? fmtPct(v) : fmtNum(v);
+  return '<div class="stat"><div class="sk">' + k + '</div><div class="sv">' + val + "</div></div>";
 }
 function skillHtml(sid, prefix, label){
   const s = P.skill && P.skill[prefix + "_" + sid];
   if (!s) return "";
-  return '<div class="skill"><div class="skn">[' + label + '] ' + esc(s.n) + '</div><div class="skd">' + esc(s.d || "（无描述）") + "</div></div>";
+  return '<div class="skill"><div class="skn">[' + label + '] ' + esc(s.n || "") + '</div><div class="skd">' + esc(s.d || "（无描述）") + "</div></div>";
 }
 function charPanel(c){
   const cm = P.char && P.char[String(c.CharacterId)];
   const name = cm ? cm.n : ("角色 " + c.CharacterId);
   const elem = cm ? cm.e : "";
-  const eTag = elem ? '<span class="tag">' + esc(elem) + "</span>" : "";
+  const job = cm ? cm.j : 0;
+  const eTag = elem != null && elem !== "" ? elemTag(elem) : "";
+  const jTag = JOB[job] ? '<span class="tag job-tag">' + JOB[job] + "</span>" : "";
   const b = c.BaseParameter || {};
   const bp = c.BattleParameter || {};
   let stats = "";
-  stats += statCell("力量", b.Muscle) + statCell("智力", b.Intelligence) + statCell("战技", b.Energy) + statCell("耐力", b.Health);
-  stats += statCell("攻击力", bp.AttackPower) + statCell("防御力", bp.Defense) + statCell("血量", bp.HP) + statCell("速度", bp.Speed);
-  stats += statCell("魔防", bp.MagicDamageRelax) + statCell("物防", bp.PhysicalDamageRelax) + statCell("暴击", bp.Critical) + statCell("命中", bp.Hit);
+  stats += statCell("力量", b.Muscle) + statCell("战技", b.Energy) + statCell("魔力", b.Intelligence) + statCell("耐力", b.Health);
+  BP_FIELDS.forEach(f => { stats += statCell(f[1], bp[f[0]], f[2]); });
   let skills = "";
   if (cm){
     if (cm.nor) skills += skillHtml(cm.nor, "a", "普攻");
     (cm.act || []).forEach(sid => skills += skillHtml(sid, "a", "主动"));
     (cm.pas || []).forEach(sid => skills += skillHtml(sid, "p", "被动"));
   }
-  return '<div class="region"><h3>角色 ' + esc(rarityLabel(c.RarityFlags)) + " " + eTag + " · Lv" + esc(c.Level) + "</h3>"
+  return '<div class="region"><h3>' + esc(name) + " · " + esc(rarityLabel(c.RarityFlags)) + " " + eTag + jTag + " · Lv" + esc(c.Level) + "</h3>"
     + '<div class="stats">' + stats + "</div>"
     + '<div style="margin-top:8px">' + (skills || '<div class="skd">无技能数据</div>') + "</div></div>";
 }
 function equipPanel(c){
-  const eqs = c.UserEquipmentDtoInfos || [];
+  const eqs = (c.UserEquipmentDtoInfos || []).slice();
+  /* 按槽位类型排序（通过主数据 SlotType），缺失时保持原顺序 */
+  eqs.sort((a, b) => {
+    const sa = P.equip && P.equip[String(a.EquipmentId)] ? Number(P.equip[String(a.EquipmentId)].s) : 0;
+    const sb = P.equip && P.equip[String(b.EquipmentId)] ? Number(P.equip[String(b.EquipmentId)].s) : 0;
+    return (sa || 99) - (sb || 99);
+  });
   let html = "";
   eqs.slice(0, 6).forEach((e, i) => {
     const em = P.equip && P.equip[String(e.EquipmentId)];
     const name = em ? em.n : ("装备 " + e.EquipmentId);
     const rarity = em ? em.r : "";
     const lv = em ? em.lv : "—";
+    const slotName = em && SLOT_NAMES[em.s] ? SLOT_NAMES[em.s] : SLOT_NAMES[i + 1] || ("槽" + (i + 1));
+    const slotIdx = em && em.s ? Number(em.s) - 1 : i;
     const lg = P.legend && P.legend[String(e.LegendSacredTreasureLv)];
     const mc = P.matchless && P.matchless[String(e.MatchlessSacredTreasureLv)];
-    const lgv = lg ? lg[SLOT_FIELDS[i]] : null;
-    const mcv = mc ? mc[SLOT_FIELDS2[i]] : null;
     let lines = "";
-    if (e.LegendSacredTreasureLv > 0 && lgv != null){
-      lines += '<div class="em" style="color:#ffe9a8">圣装 Lv' + e.LegendSacredTreasureLv + " " + (SLOT_FIELDS[i] === "WeaponAttackPowerPercent" ? "攻击力 " : "") + (lgv/100) + "%</div>";
+    if (e.LegendSacredTreasureLv > 0 && lg && LEGEND_FIELDS[slotIdx]){
+      const v = lg[LEGEND_FIELDS[slotIdx][0]];
+      if (v != null) lines += '<div class="ex" style="color:#ffe9a8">圣装 Lv' + e.LegendSacredTreasureLv + " · " + LEGEND_FIELDS[slotIdx][1] + " " + fmtPct(v) + "</div>";
     }
-    if (e.MatchlessSacredTreasureLv > 0 && mcv != null){
-      lines += '<div class="em" style="color:#b5f0c3">魔装 Lv' + e.MatchlessSacredTreasureLv + " " + (SLOT_FIELDS2[i] === "WeaponAttackPower" ? "攻击力 " : "") + Number(mcv).toLocaleString() + "</div>";
+    if (e.MatchlessSacredTreasureLv > 0 && mc && MATCHLESS_FIELDS[slotIdx]){
+      const v = mc[MATCHLESS_FIELDS[slotIdx][0]];
+      if (v != null) lines += '<div class="ex" style="color:#b5f0c3">魔装 Lv' + e.MatchlessSacredTreasureLv + " · " + MATCHLESS_FIELDS[slotIdx][1] + " " + fmtNum(v) + "</div>";
     }
+    const add = [];
+    if (e.AdditionalParameterMuscle) add.push("力量+" + fmtNum(e.AdditionalParameterMuscle));
+    if (e.AdditionalParameterEnergy) add.push("战技+" + fmtNum(e.AdditionalParameterEnergy));
+    if (e.AdditionalParameterIntelligence) add.push("魔力+" + fmtNum(e.AdditionalParameterIntelligence));
+    if (e.AdditionalParameterHealth) add.push("耐力+" + fmtNum(e.AdditionalParameterHealth));
+    if (add.length) lines += '<div class="ex">附加 ' + add.join(" ") + "</div>";
+    const sync = e.SetBaseSynchroGroupId > 0 ? '<span class="sync-mark">同步组' + e.SetBaseSynchroGroupId + "</span>" : "";
     let spheres = "";
     for (let s = 1; s <= 4; s++){
       const sid = e["SphereId" + s];
       const sp = sid && P.sphere ? P.sphere[String(sid)] : null;
       if (sp){
-        spheres += '<span class="sphere">' + esc(sp.n) + '<div class="sv">' + (sp.v != null ? fmtBig(sp.v) : "—") + "</div></span>";
+        spheres += '<span class="sphere" title="' + esc(sp.n) + " · " + esc(sp.r || "") + "\n" + esc(sp.d || "") + '">' + esc(sp.n) + '<div class="sv">' + (sp.v != null ? fmtNum(sp.v) : "—") + "</div></span>";
       } else {
-        spheres += '<span class="sphere">空</span>';
+        spheres += '<span class="sphere empty">空</span>';
       }
     }
     html += '<div class="eqslot">'
-      + '<div><div class="en">' + SLOT_NAMES[i] + " · " + esc(name) + "</div>"
-      + '<div class="em">' + esc(rarity) + " · 装备等级 " + esc(lv) + " · 强化 " + esc(e.ReinforcementLv) + "</div>"
+      + '<div style="min-width:0"><div class="en">' + slotName + " · " + esc(name) + sync + "</div>"
+      + '<div class="em"><span class="' + rarityClass(rarity) + '">' + esc(rarity) + "</span> · 装备等级 " + esc(lv) + " · 强化 +" + esc(e.ReinforcementLv) + "</div>"
       + lines
       + "</div>"
       + '<div class="spheres">' + spheres + "</div>"
       + "</div>";
   });
-  return '<div class="region"><h3>装备（6槽）</h3>' + (html || '<div class="skd">无装备</div>') + "</div>";
+  return '<div class="region"><h3>装备（' + eqs.slice(0, 6).length + "件）</h3>" + (html || '<div class="skd">无装备</div>') + "</div>";
 }
-async function openChar(pi, j){
+
+let curModal = null;  /* { pi, j } */
+function openChar(pi, j){
   const pl = lastList[pi];
   const c = pl && pl.UserCharacterInfoList ? pl.UserCharacterInfoList[j] : null;
   if (!c) return;
-  const el = document.getElementById("tbl-res");
-  el.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在加载角色/装备数据…</div>';
-  try{ await ensurePvpData(); }catch(e){ el.innerHTML = '<div class="error">❌ 角色数据加载失败：' + esc(e.message) + "</div>"; return; }
+  closeCharModal(); /* 移除旧弹窗（内部会清空 curModal） */
+  curModal = { pi: pi, j: j };
+  const modal = document.createElement("div");
+  modal.className = "pvp-modal open";
+  modal.id = "char-modal";
+  modal.onclick = e => { if (e.target === modal) closeCharModal(); };
+  modal.innerHTML = '<div class="box" id="char-box"><div class="loading"><span class="spinner"></span><br>正在加载角色/装备数据…</div></div>';
+  document.body.appendChild(modal);
+  renderCharBody();
+}
+async function renderCharBody(){
+  const box = document.getElementById("char-box");
+  if (!curModal) return;
+  const pl = lastList[curModal.pi];
+  const list = pl && pl.UserCharacterInfoList || [];
+  if (!box || !list.length) return;
+  try{ await ensurePvpData(); }catch(e){ /* 映射加载失败则降级显示 */ }
+  const c = list[curModal.j];
   const cm = P.char && P.char[String(c.CharacterId)];
   const name = cm ? cm.n : ("角色 " + c.CharacterId);
   const id = padId(c.CharacterId);
-  const modal = document.createElement("div");
-  modal.className = "pvp-modal open";
-  modal.onclick = e => { if (e.target === modal) closeModal(); };
-  modal.innerHTML = '<div class="box">'
-    + '<div class="mhead"><img src="' + ICON_BASE + id + '_00_s.png" alt=""><div><div class="mname">' + esc(name) + "</div><div class=\"mmeta\">" + esc(rarityLabel(c.RarityFlags)) + " · Lv" + esc(c.Level) + " · 战力 " + fmtNum(c.BattlePower) + "</div></div>"
-    + '<button class="mclose" onclick="closeModal()">×</button></div>'
-    + '<div class="regions">' + charPanel(c) + equipPanel(c) + "</div>"
-    + "</div>";
-  document.body.appendChild(modal);
+  const elem = cm ? cm.e : "";
+  const job = cm ? cm.j : 0;
+  let tabs = "";
+  list.slice(0, 5).forEach((ch, j) => {
+    const cm2 = P.char && P.char[String(ch.CharacterId)];
+    tabs += '<span class="ttab' + (j === curModal.j ? " on" : "") + '" onclick="switchChar(' + j + ')"><img src="' + ICON_BASE + padId(ch.CharacterId) + '_00_s.png" loading="lazy" onerror="iconOnError(this)" alt=""><span class="tlv">Lv' + esc(ch.Level) + "</span></span>";
+  });
+  box.innerHTML = '<div class="mhead"><img src="' + ICON_BASE + id + '_00_s.png" onerror="iconOnError(this)" alt="">'
+    + '<div><div class="mname">' + esc(name) + "</div>"
+    + '<div class="mtags">' + (elem != null && elem !== "" ? elemTag(elem) : "") + (JOB[job] ? '<span class="tag job-tag">' + JOB[job] + "</span>" : "") + '<span class="tag">' + esc(rarityLabel(c.RarityFlags)) + "</span></div>"
+    + '<div class="mmeta">Lv' + esc(c.Level) + (c.SubLevel ? " · 副等级 " + esc(c.SubLevel) : "") + " · 战力 " + fmtNum(c.BattlePower) + " · 队伍第" + (curModal.j + 1) + "位</div></div>"
+    + '<button class="mclose" onclick="closeCharModal()">×</button></div>'
+    + '<div class="team-tabs">' + tabs + "</div>"
+    + '<div class="regions">' + charPanel(c) + equipPanel(c) + "</div>";
 }
-function closeModal(){
-  document.querySelectorAll(".pvp-modal").forEach(m => m.remove());
+function switchChar(j){
+  if (!curModal || !lastList[curModal.pi]) return;
+  curModal.j = j;
+  const box = document.getElementById("char-box");
+  if (box) box.innerHTML = '<div class="loading"><span class="spinner"></span><br>切换角色…</div>';
+  renderCharBody();
 }
+function closeCharModal(){
+  const m = document.getElementById("char-modal");
+  if (m) m.remove();
+  curModal = null;
+}
+document.addEventListener("keydown", function(e){
+  if (e.key === "Escape"){ closeCharModal(); closeRefreshModal(); }
+});
 
-async function load(force){
-  const el = document.getElementById("tbl-res");
-  el.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在在线读取…</div>';
-  try{
-    let url, label;
-    if (mode === "arena"){
-      const world = document.getElementById("sel-world").value;
-      url = API + "/" + world + "/arena/latest";
-      label = "W" + world + " 竞技场";
-    } else {
-      const gi = parseInt(document.getElementById("sel-group").value, 10) || 0;
-      const g = groups[gi];
-      url = API + "/wg/" + g.group_id + "/legend/latest";
-      label = "世界组 " + g.group_id + " 巅峰";
-    }
-    const data = await fetchJson(url);
-    const list = data.data || [];
-    lastList = list;
-    document.getElementById("res-note").textContent = label + " · 共 " + list.length + " 名 · 点角色开盒";
-    let body = "";
-    list.forEach((p, i) => {
-      const rank = i + 1;
-      const rc = rank === 1 ? "top1" : rank === 2 ? "top2" : rank === 3 ? "top3" : "";
-      const world = mode === "legend" && p.PlayerId ? "W" + String(p.PlayerId).slice(-2) : "";
-      const pointLine = mode === "legend"
-        ? "积分 " + fmtNum(p.CurrentPoint) + " · 连胜 " + p.ConsecutiveVictoryCount + (world ? " · " + world : "")
-        : "战力 " + fmtNum(p.BattlePower);
-      body += "<tr>"
-        + '<td class="rank ' + rc + '">' + rank + "</td>"
-        + '<td><div class="pname">' + esc(p.PlayerName) + "</div><div class=\"pinfo\">Lv" + esc(p.PlayerLevel) + " · " + pointLine + "</div></td>"
-        + "<td>" + charSlots(i, p.UserCharacterInfoList) + "</td>"
-        + "</tr>";
-    });
-    el.innerHTML = '<table><thead><tr><th>排名</th><th>玩家</th><th>队伍（点角色开盒）</th></tr></thead><tbody>'
-      + (body || '<tr><td colspan="3" style="color:var(--muted)">暂无数据</td></tr>')
-      + "</tbody></table>";
-  }catch(err){
-    el.innerHTML = '<div class="error">❌ 读取失败：' + esc(err.message) + "<br>请稍后再试。</div>";
-  }
-}
+/* ---------- 侧栏 / 设备 ---------- */
 function toggleSide(force){
   const s = document.getElementById("side");
   const m = document.getElementById("side-mask");
@@ -408,11 +712,7 @@ detectDevice();
 toggleSide(window.matchMedia("(min-width: 769px)").matches);
 init();
 
-// ---------- action 刷新（Token 触发 GitHub Actions，每天限 5 次） ----------
-
-// ---------- action 刷新（Token 触发 GitHub Actions） ----------
-
-// ---------- action 刷新（Token 触发 GitHub Actions，不保存、完成后自动清除） ----------
+/* ---------- action 刷新（Token 触发 GitHub Actions，不保存、完成后自动清除） ---------- */
 const REPO_FULL = "WillieumK/mementomori-charaPage";
 const REFRESH_WF = "fetch.yml";
 function clearToken(){
@@ -425,7 +725,7 @@ function openRefresh(){
   if (m) m.style.display = "flex";
   clearToken();
 }
-function closeModal(){
+function closeRefreshModal(){
   const m = document.getElementById("refresh-modal");
   if (m) m.style.display = "none";
   clearToken();
@@ -439,7 +739,7 @@ async function fetchWithTimeout(url, opts, ms){
 async function doManualRefresh(){
   const token = document.getElementById("rf-token").value.trim();
   if (!token){ alert("请填写 GitHub Token"); return; }
-  closeModal(); // 点击后立即关闭弹窗，结果后续提示
+  closeRefreshModal(); /* 点击后立即关闭弹窗，结果后续提示 */
   const url = "https://api.github.com/repos/" + REPO_FULL + "/actions/workflows/" + REFRESH_WF + "/dispatches";
   try{
     const r = await fetchWithTimeout(url, {
@@ -477,14 +777,14 @@ async function waitWorkflowDone(token, timeoutMs){
   return null;
 }
 </script>
-<div class="modal" id="refresh-modal" onclick="if(event.target===this)closeModal()">
+<div class="modal" id="refresh-modal" onclick="if(event.target===this)closeRefreshModal()">
   <div class="modal-box">
     <h3>action 刷新</h3>
     <p>将触发后台重新抓取全部数据缓存。Token 仅本次使用，不会保存，刷新完成后自动清除。</p>
     <input type="password" id="rf-token" placeholder="GitHub Token（PAT）">
     <div class="modal-btns">
       <button onclick="doManualRefresh()">确定执行</button>
-      <button class="ghost" onclick="closeModal()">取消</button>
+      <button class="ghost" onclick="closeRefreshModal()">取消</button>
     </div>
   </div>
 </div>
