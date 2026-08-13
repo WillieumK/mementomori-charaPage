@@ -278,7 +278,7 @@ section[id]{scroll-margin-top:16px}
     <p class="subtitle" id="page-title">《每日60秒，读懂Mmt》</p>
     <p>
       <span class="badge"><span class="dot"></span>数据访问：GitHub（需配置网络环境）</span>
-      <span class="badge" id="fetch-time">页面读取：—</span>
+      <span class="badge" id="fetch-time">当前缓存：—</span>
       <span class="badge" id="device">💻 desktop 端</span>
     </p>
   </header>
@@ -776,7 +776,7 @@ async function load(force){
         applyAll(cache.card0, cache.usage);
         const mins = Math.max(1, Math.round((Date.now() - cache.ts) / 60000));
         setCacheBadge("缓存：" + fmtClock(cache.ts) + " 读取，已用 " + mins + " 分钟", "cache-ok");
-        document.getElementById("fetch-time").textContent = "页面读取：缓存（" + fmtClock(cache.ts) + "）";
+        // 页面读取时间已改为显示 actions 缓存时间
         return;
       }catch(e){ /* 缓存损坏则重新在线读取 */ }
     }
@@ -799,7 +799,7 @@ async function load(force){
       applyAll(card0Text, usageText);
       writeCache(card0Text, usageText);
       setCacheBadge(fromGithub ? "缓存：GitHub 服务器（刚刚更新）" : "缓存：直接读取 Google（GitHub 缓存未就绪）", "cache-ok");
-      document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
+      // 页面读取时间已改为显示 actions 缓存时间
       return;
     }catch(err){
       lastErr = err;
@@ -815,7 +815,7 @@ async function load(force){
     try{
       applyAll(cache.card0, cache.usage);
       setCacheBadge("在线读取失败，显示缓存（" + fmtClock(cache.ts) + "）", "cache-warn");
-      document.getElementById("fetch-time").textContent = "页面读取：失败，用缓存（" + fmtNow() + "）";
+      // 页面读取时间已改为显示 actions 缓存时间
       return;
     }catch(e){ /* 缓存也无法用，走报错 */ }
   }
@@ -825,10 +825,28 @@ async function load(force){
   document.getElementById("tbl-overview").innerHTML = "";
   document.getElementById("tbl-elements").innerHTML = "";
   setCacheBadge("缓存：无", "");
-  document.getElementById("fetch-time").textContent = "页面读取：失败（" + fmtNow() + "）";
+  // 页面读取时间已改为显示 actions 缓存时间
 }
 
-document.getElementById("fetch-time").textContent = "页面读取：" + fmtNow();
+// 页面读取时间已改为显示 actions 缓存时间
+const DATA_CACHE_TIME = "data/cache_time.json";
+async function loadCacheTime(){
+  const el = document.getElementById("fetch-time");
+  if (!el) return;
+  try{
+    const r = await fetch(DATA_CACHE_TIME);
+    if (!r.ok) throw new Error("no cache time");
+    const d = await r.json();
+    const t = d && d.time ? new Date(d.time) : null;
+    if (t && !isNaN(t.getTime())){
+      const p = n => String(n).padStart(2, "0");
+      el.textContent = "当前缓存：" + t.getFullYear() + "-" + p(t.getMonth() + 1) + "-" + p(t.getDate()) + " " + p(t.getHours()) + ":" + p(t.getMinutes()) + ":" + p(t.getSeconds());
+      return;
+    }
+  }catch(e){}
+  el.textContent = "当前缓存：—";
+}
+loadCacheTime();
 detectDevice();
 toggleSide(window.matchMedia("(min-width: 769px)").matches);
 initScrollSpy();
