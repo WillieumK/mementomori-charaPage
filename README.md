@@ -16,4 +16,5 @@
   - `index.html` — charaPage（巅峰使用率统计 & 当期卡池表）
   - `monsters.html` — 推图推关 · 怪物数值查询（主线 Quest 12 章 + 塔 Tower 5 座：无穷/蓝/红/黄/绿）
   - `openpvp.html` — 竞技场与巅峰开盒（Battle League 各世界 / Legend League 世界组排名：队伍出场统计、玩家名过滤、点角色头像开盒看数值·技能·装备·圣装·魔装·符石；默认实时在线加载，可选「预载资源」把图标与主数据文本缓存到浏览器本地）
-- quest/tower 数据由 GitHub Actions 同一定时抓取并压缩到 `data/quest.json`、`data/tower.json`（只保留查询需要的列）；角色/技能/装备/符石开盒映射存于 `data/pvp_*.json`。
+  - `skill.html` — 角色技能页（点选角色查看：普攻/主动/被动技能、秘仪加成、专属武器、初始数值面板；数据来自官方主数据压缩 `data/skill_*.json`）
+- quest/tower 数据由 GitHub Actions 同一定时抓取并压缩到 `data/quest.json`、`data/tower.json`（只保留查询需要的列）；角色/技能/装备/符石开盒映射存于 `data/pvp_*.json`；角色技能页数据存于 `data/skill_*.json`（由 `skill_gen.py` 读取本地主数据生成）。

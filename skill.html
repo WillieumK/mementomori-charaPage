@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>角色技能页 · MementoMori 数据</title>
+<link rel="icon" href="icon.png">
+<style>
+:root{
+  --bg:#0d0b14;
+  --panel:rgba(255,255,255,.045);
+  --panel-border:rgba(255,255,255,.09);
+  --gold:#d9b26a;
+  --accent:#7c6cf0;
+  --text:#e8e6f0;
+  --muted:#9a94ad;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;color:var(--text);
+  font-family:"Segoe UI","Microsoft YaHei","PingFang SC",Arial,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(124,108,240,.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(217,178,106,.10), transparent 60%),
+    linear-gradient(180deg,#0d0b14 0%,#12101c 55%,#0a0910 100%);
+  background-attachment:fixed;
+}
+.wrap{max-width:1200px;margin:0 auto;padding:36px 20px 60px}
+header.top{text-align:center;padding:34px 20px 26px;border-bottom:1px solid var(--panel-border);margin-bottom:26px}
+header.top h1{display:flex;align-items:center;justify-content:center;gap:14px;margin:0 0 12px;font-size:30px;letter-spacing:1px}
+h1 .logo{width:44px;height:44px;border-radius:10px;display:inline-block;vertical-align:middle;box-shadow:0 0 18px rgba(217,178,106,.35)}
+h1 .title-grad{background:linear-gradient(90deg,#f5e6c4,#d9b26a 45%,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+header.top .subtitle{margin:0 0 14px;color:var(--muted);font-size:15px}
+.badge{display:inline-block;padding:6px 14px;border:1px solid rgba(217,178,106,.4);border-radius:999px;color:var(--gold);font-size:13px;background:rgba(217,178,106,.08);margin:3px}
+.badge .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:7px;vertical-align:1px;box-shadow:0 0 8px #4ade80}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 16px}
+.toolbar label{font-size:13px;color:var(--muted);margin-right:2px}
+.toolbar select,.toolbar input{
+  background:#1c1730;color:var(--text);border:1px solid rgba(217,178,106,.35);
+  border-radius:8px;padding:7px 10px;font-size:13px;outline:none;
+}
+.toolbar input.search{flex:1 1 160px;min-width:140px}
+.toolbar button{
+  background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;border:none;border-radius:999px;
+  padding:8px 18px;font-size:13px;cursor:pointer;transition:filter .2s,transform .1s;
+}
+.toolbar button:hover{filter:brightness(1.12)}
+.toolbar button:active{transform:scale(.97)}
+section.card{background:var(--panel);border:1px solid var(--panel-border);border-radius:16px;padding:20px 22px 24px;margin:0 0 24px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+section.card h2{display:flex;align-items:center;gap:10px;margin:0 0 16px;font-size:19px;color:#f1eef8}
+section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;background:linear-gradient(180deg,var(--gold),var(--accent))}
+.h2-note{color:var(--muted);font-size:12px;font-weight:400;margin-left:auto}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;border:1px solid var(--panel-border);background:rgba(255,255,255,.05);vertical-align:1px}
+.tag.light{color:#ffe9a8;border-color:rgba(255,233,168,.45);background:rgba(255,233,168,.08)}
+.tag.dark{color:#c9b8ff;border-color:rgba(201,184,255,.45);background:rgba(201,184,255,.08)}
+.tag.blue{color:#9ecfff;border-color:rgba(158,207,255,.45);background:rgba(158,207,255,.08)}
+.tag.red{color:#ffb4a8;border-color:rgba(255,180,168,.45);background:rgba(255,180,168,.08)}
+.tag.green{color:#b5f0c3;border-color:rgba(181,240,195,.45);background:rgba(181,240,195,.08)}
+.tag.gold{color:#ffe9a8;border-color:rgba(255,233,168,.45);background:rgba(255,233,168,.08)}
+.tag.job{color:#b9d6ff;border-color:rgba(185,214,255,.4);background:rgba(185,214,255,.08)}
+.tag.rar{color:#f3d9ff;border-color:rgba(243,217,255,.4);background:rgba(243,217,255,.08)}
+.tag.type{color:#d5ffe2;border-color:rgba(213,255,226,.4);background:rgba(213,255,226,.08)}
+/* ---------- 角色网格 ---------- */
+.char-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.char-cell{
+  background:rgba(0,0,0,.25);border:1px solid var(--panel-border);border-radius:12px;
+  padding:10px 6px 8px;cursor:pointer;text-align:center;transition:border-color .15s,background .15s,transform .1s;
+}
+.char-cell:hover{border-color:rgba(124,108,240,.6);background:rgba(124,108,240,.12)}
+.char-cell.sel{border-color:var(--gold);background:rgba(217,178,106,.12);box-shadow:0 0 14px rgba(217,178,106,.25)}
+.char-cell .cico{display:block;width:56px;height:56px;margin:0 auto 6px;border-radius:10px;overflow:hidden;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
+.char-cell .cico img{width:100%;height:100%;object-fit:cover;display:block}
+.char-cell .cico .fallback{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--muted);font-size:11px}
+.char-cell .cname{display:block;font-size:12px;color:#f1eef8;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.char-cell .tags{display:flex;justify-content:center;gap:4px;flex-wrap:wrap}
+/* ---------- 详情 ---------- */
+#detail{display:none}
+.d-head{display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.d-head .big-ico{width:84px;height:84px;border-radius:14px;overflow:hidden;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);flex:0 0 84px}
+.d-head .big-ico img{width:100%;height:100%;object-fit:cover;display:block}
+.d-head .big-ico .fallback{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--muted);font-size:12px}
+.d-head .d-name{font-size:24px;color:#f5e6c4;font-weight:700}
+.d-head .d-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.d-head .d-meta{color:var(--muted);font-size:12px;margin-top:8px;line-height:1.6}
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tabs button{
+  background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--panel-border);
+  border-radius:999px;padding:8px 18px;font-size:13px;cursor:pointer;transition:all .15s;
+}
+.tabs button:hover{filter:brightness(1.15)}
+.tabs button.active{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);border-color:transparent;color:#fff;font-weight:600}
+.tab-pane{display:none}
+.tab-pane.on{display:block}
+.skill-block{margin-bottom:20px}
+.skill-block>h3{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--gold);margin:0 0 10px}
+.skill-block>h3::before{content:"";width:4px;height:16px;border-radius:2px;background:var(--gold)}
+.skill-card{
+  background:rgba(0,0,0,.22);border:1px solid var(--panel-border);border-radius:12px;
+  padding:14px 16px;margin-bottom:10px;
+}
+.skill-card .sk-head{display:flex;align-items:flex-start;gap:12px}
+.skill-card .sk-ico{width:46px;height:46px;border-radius:10px;overflow:hidden;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);flex:0 0 46px}
+.skill-card .sk-ico img{width:100%;height:100%;object-fit:cover;display:block}
+.skill-card .sk-ico .fallback{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--muted);font-size:10px}
+.skill-card .sk-name{font-size:15px;color:#f1eef8;font-weight:600;margin:0 0 4px}
+.skill-card .sk-meta{color:var(--muted);font-size:12px;margin:0 0 8px}
+.skill-card .sk-lv{border-top:1px dashed rgba(255,255,255,.08);padding-top:8px;margin-top:8px}
+.skill-card .sk-lv .lv-tag{display:inline-block;font-size:11px;color:#ffd76a;background:rgba(255,215,106,.1);border:1px solid rgba(255,215,106,.3);border-radius:6px;padding:1px 7px;margin-bottom:4px}
+.skill-card .sk-lv p{white-space:pre-wrap;margin:0;font-size:13px;line-height:1.75;color:#dcd9e8}
+/* 秘仪 / 专武 表格 */
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:#1c1730;color:var(--gold);font-weight:600;text-align:left;white-space:nowrap;padding:9px 12px;border-bottom:1px solid rgba(217,178,106,.25)}
+tbody td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top;line-height:1.6}
+tbody tr:nth-child(even){background:rgba(255,255,255,.03)}
+tbody tr:hover{background:rgba(124,108,240,.1)}
+tbody tr:last-child td{border-bottom:none}
+.table-wrap{overflow-x:auto;border:1px solid var(--panel-border);border-radius:10px;background:rgba(0,0,0,.18)}
+.cell-name{font-weight:600;color:#f1eef8}
+.cell-ico{min-width:44px}
+.cell-ico .ico{display:inline-block;width:38px;height:38px;border-radius:8px;overflow:hidden;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);vertical-align:middle}
+.cell-ico img{width:100%;height:100%;object-fit:cover;display:block}
+.cell-ico .fallback{display:flex;align-items:center;justify-content:center;width:38px;height:38px;color:var(--muted);font-size:10px}
+.empty{color:var(--muted);opacity:.6;padding:12px 0}
+.add-line{display:block;font-size:13px;color:#dcd9e8}
+.coll-req{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:10px}
+.req-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid var(--panel-border);border-radius:999px;padding:3px 10px 3px 4px;font-size:12px;color:#f1eef8}
+.req-chip .ico{width:24px;height:24px;border-radius:50%;overflow:hidden;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
+.req-chip img{width:100%;height:100%;object-fit:cover;display:block}
+.req-chip .fallback{display:flex;align-items:center;justify-content:center;width:24px;height:24px;color:var(--muted);font-size:9px}
+/* ---------- 数值面板 ---------- */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.stat-box{background:rgba(0,0,0,.22);border:1px solid var(--panel-border);border-radius:12px;padding:14px 16px}
+.stat-box h4{font-size:13px;color:var(--gold);margin:0 0 12px}
+.four-bar{margin-bottom:10px}
+.four-bar .fb-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:3px}
+.four-bar .fb-label b{color:#f1eef8;font-weight:600}
+.four-bar .fb-track{height:10px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden}
+.four-bar .fb-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#7c6cf0,#a78bfa)}
+.calc-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.calc-row label{font-size:12px;color:var(--muted)}
+.calc-row select{background:#1c1730;color:var(--text);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:6px 8px;font-size:12px;outline:none}
+.big-val{font-size:26px;color:#ffe9a8;font-weight:700;margin:6px 0 2px}
+.big-val small{font-size:12px;color:var(--muted);font-weight:400;margin-left:6px}
+.ibp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.ibp-item{display:flex;justify-content:space-between;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:7px 10px;font-size:12px}
+.ibp-item .k{color:var(--muted)}
+.ibp-item .v{color:#f1eef8;font-weight:600}
+.loading,.error{color:var(--muted);padding:30px;text-align:center}
+.error{color:#ff9d9d}
+.spinner{display:inline-block;width:28px;height:28px;margin-bottom:10px;border:3px solid rgba(255,255,255,.12);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:10px;line-height:1.9}
+footer a{color:#a99fd9}
+.side{position:fixed;left:0;top:0;bottom:0;width:345px;background:rgba(16,13,26,.97);border-right:1px solid var(--panel-border);padding:22px 14px;z-index:80;transform:translateX(-100%);transition:transform .25s ease;overflow-y:auto}
+.side.open{transform:translateX(0)}
+.side .side-title{color:var(--gold);font-weight:700;font-size:19px;margin:0 0 16px;padding:0 6px;letter-spacing:1px}
+.side .side-title .cyl{display:inline-block;width:18px;height:18px;background:var(--gold);-webkit-mask:url("cyl.png") center/contain no-repeat;mask:url("cyl.png") center/contain no-repeat;vertical-align:-3px;margin-right:6px}
+.side .side-link{display:block;color:var(--text);text-decoration:none;padding:14px 16px;border-radius:10px;margin-bottom:8px;font-size:17px;line-height:1.4}
+.side .side-link:hover{background:rgba(124,108,240,.18)}
+.side .side-link.active{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;font-weight:600}
+.side .side-link .sub{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.side .side-link .side-ico{width:20px;height:20px;border-radius:4px;vertical-align:-4px;margin-right:6px}
+.side-open{position:fixed;left:10px;top:10px;z-index:90;width:40px;height:40px;border-radius:10px;border:1px solid var(--panel-border);background:rgba(20,17,32,.9);color:var(--gold);font-size:18px;cursor:pointer;display:block}
+body:not(.side-collapsed) .side-open{left:calc(345px - 52px)}
+.side-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:70;display:none}
+.side-mask.show{display:block}
+@media (min-width:769px){body:not(.side-collapsed) .side{transform:translateX(0)}body:not(.side-collapsed){padding-left:345px}}
+@media (max-width:768px){header.top{padding-top:52px}.wrap{padding:16px 10px 40px}header.top h1{font-size:20px;flex-wrap:wrap}h1 .logo{width:32px;height:32px}header.top .subtitle{font-size:13px}.toolbar{justify-content:flex-start}.char-grid{grid-template-columns:repeat(auto-fill,minmax(74px,1fr))}.char-cell .cico{width:44px;height:44px}section.card{padding:14px 12px 18px}section.card h2{font-size:15px}.d-head .big-ico{width:64px;height:64px;flex:0 0 64px}.d-head .d-name{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="side-mask" id="side-mask" onclick="toggleSide(false)"></div>
+<nav class="side" id="side">
+  <div class="side-title"><span class="cyl"></span>MementoMori 数据</div>
+  <a class="side-link" href="index.html#sec-usage">巅峰使用率<span class="sub">18%+ / 13%+ / 3%+ 分组</span></a>
+  <a class="side-link" href="index.html#sec-overview">当期卡池记录<span class="sub">新角色 · 新复刻 · 新星辰</span></a>
+  <a class="side-link" href="index.html#sec-elements">属性轮档记录<span class="sub">天光 · 幽冥 · 忧蓝 · 业红 · 苍翠 · 流金</span></a>
+  <a class="side-link" href="monsters.html">怪物数值查询<span class="sub">主线 Quest / 塔 Tower</span></a>
+  <a class="side-link" href="openpvp.html">竞技场与巅峰开盒<span class="sub">Arena / Legend 排名 · 队伍角色数值与装备</span></a>
+  <a class="side-link active" href="skill.html">角色技能页<span class="sub">技能 · 秘仪 · 专武 · 数值</span></a>
+  <div class="side-split">
+    <a class="side-link" href="art.html" title="进入完整音乐室"><img class="side-ico" src="icon.png" alt="">音乐室<span class="sub">完整播放器页</span></a>
+    <button type="button" class="side-link side-quick" onclick="MMPlayer.startFirst()" title="在当前页打开迷你播放器，播放第一首">▶ 快速播放<span class="sub">顶栏小播放器</span></button>
+  </div>
+</nav>
+<button class="side-open" id="side-open" onclick="toggleSide()">☰</button>
+
+<div class="wrap">
+  <header class="top">
+    <h1><img class="logo" src="icon.png" alt="icon"><span class="title-grad">角色技能页</span></h1>
+    <p class="subtitle">点选角色查看：普攻/主动/被动技能 · 秘仪加成 · 专属武器 · 初始数值面板</p>
+    <p><span class="badge"><span class="dot"></span>数据来源：官方主数据（本地压缩）</span></p>
+  </header>
+
+  <div class="toolbar">
+    <label>属性</label>
+    <select id="f-element" onchange="renderGrid()">
+      <option value="0">全部</option>
+      <option value="1">蓝</option>
+      <option value="2">红</option>
+      <option value="3">绿</option>
+      <option value="4">金</option>
+      <option value="5">光</option>
+      <option value="6">暗</option>
+    </select>
+    <label>职业</label>
+    <select id="f-job" onchange="renderGrid()">
+      <option value="0">全部</option>
+      <option value="1">战士</option>
+      <option value="2">射手</option>
+      <option value="4">法师</option>
+    </select>
+    <label>初始稀有度</label>
+    <select id="f-rarity" onchange="renderGrid()"></select>
+    <input class="search" id="f-name" type="text" placeholder="搜索中文名…" oninput="renderGrid()">
+    <button onclick="clearFilter()">清除筛选</button>
+    <button onclick="load(true)">🔄 刷新数据</button>
+  </div>
+
+  <section class="card">
+    <h2>角色选择<span class="h2-note" id="char-count"></span></h2>
+    <div class="char-grid" id="char-grid"></div>
+  </section>
+
+  <section class="card" id="detail">
+    <div class="d-head" id="d-head"></div>
+    <div class="tabs">
+      <button class="active" data-tab="skills" onclick="setTab('skills', this)">角色技能</button>
+      <button data-tab="coll" onclick="setTab('coll', this)">秘仪</button>
+      <button data-tab="weapon" onclick="setTab('weapon', this)">专武</button>
+      <button data-tab="stat" onclick="setTab('stat', this)">初始数值面板</button>
+    </div>
+    <div class="tab-pane on" id="pane-skills"></div>
+    <div class="tab-pane" id="pane-coll"></div>
+    <div class="tab-pane" id="pane-weapon"></div>
+    <div class="tab-pane" id="pane-stat"></div>
+  </section>
+
+  <footer>
+    原始数据来自 <a href="https://mentemori.icu/" target="_blank" rel="noopener">mentemori.icu</a> · 网页数据存于 <a href="https://github.com/WillieumK/mementomori-charaPage" target="_blank" rel="noopener">GitHub</a>
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+const DATA_FILES = {
+  chars: "data/skill_char.json",
+  skills: "data/skill_skill.json",
+  colls: "data/skill_coll.json",
+  weapons: "data/skill_weapon.json",
+  stats: "data/skill_stat.json"
+};
+const ICON_BASE = "https://mentemori.icu/assets/CHR_";
+const ICON_SUFFIX = "_00_s.png";
+const SKILL_ICO = "https://raw.githubusercontent.com/rainsillwood/mementomori-Assets/refs/heads/main/Icon/Skill/CSK_";
+
+const ELEM_CLS = { 1:"blue", 2:"red", 3:"green", 4:"gold", 5:"light", 6:"dark" };
+const ELEM_NAME = { 1:"蓝", 2:"红", 3:"绿", 4:"金", 5:"光", 6:"暗" };
+const JOB_NAME = { 1:"战士", 2:"射手", 4:"法师" };
+const BATTLE_NAME = ["","生命","攻击力","物理防御","魔法防御","命中","闪避","暴击","暴击抗性",
+  "暴击伤害强化","物暴降低","魔暴降低","防御穿透","防御力","物魔防御穿透",
+  "弱化效果命中","弱化效果抗性","伤害反弹","吸血","速度"];
+
+let S = { chars:null, skills:null, colls:null, weapons:null, stats:null };
+let selChar = null;
+let curTab = "skills";
+
+function esc(v){
+  return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function iconErr(el){
+  if (el && el.dataset && el.dataset.b) return;
+  if (el) el.dataset.b = 1;
+  const span = document.createElement("span");
+  span.className = "fallback";
+  span.textContent = (el && el.alt) ? el.alt : "";
+  if (el && el.parentNode) el.parentNode.replaceChild(span, el);
+}
+function charIcon(id, cls){
+  const p = String(id).padStart(6, "0");
+  return '<span class="' + cls + '"><img src="' + ICON_BASE + p + ICON_SUFFIX + '" alt="ID ' + id + '" loading="lazy" onerror="iconErr(this)"></span>';
+}
+function skillIcon(sid){
+  const p = String(sid).padStart(9, "0");
+  return '<span class="sk-ico"><img src="' + SKILL_ICO + p + '.png" alt="' + sid + '" loading="lazy" onerror="iconErr(this)"></span>';
+}
+function rarityName(flags){
+  const s = S.stats && S.stats.rname ? S.stats.rname[String(flags)] : null;
+  return s || ("R" + flags);
+}
+
+// ---------- 加载 ----------
+async function load(force){
+  const grid = document.getElementById("char-grid");
+  grid.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在读取数据…</div>';
+  try{
+    const [chars, skills, colls, weapons, stats] = await Promise.all([
+      fetch(DATA_FILES.chars).then(r => r.json()),
+      fetch(DATA_FILES.skills).then(r => r.json()),
+      fetch(DATA_FILES.colls).then(r => r.json()),
+      fetch(DATA_FILES.weapons).then(r => r.json()),
+      fetch(DATA_FILES.stats).then(r => r.json())
+    ]);
+    S = { chars, skills, colls, weapons, stats };
+    buildRarityOptions();
+    renderGrid();
+    if (selChar && S.chars[selChar]) renderAll();
+    else selectChar(Object.keys(S.chars)[0]);
+  }catch(e){
+    grid.innerHTML = '<div class="error">❌ 读取数据失败：' + esc(e.message)
+      + '<br>请通过 http(s) 访问（如 GitHub Pages 或本地服务器 python -m http.server），不能直接用 file:// 打开。</div>';
+  }
+}
+function buildRarityOptions(){
+  const sel = document.getElementById("f-rarity");
+  const seen = [];
+  for (const cid in S.chars){
+    const r = String(S.chars[cid].r);
+    if (r && seen.indexOf(r) < 0) seen.push(r);
+  }
+  const names = {};
+  for (const f in S.stats.rname) names[f] = S.stats.rname[f];
+  const order = { 1:1, 2:2, 4:3, 8:4, 16:5, 32:6, 64:7, 128:8, 256:9, 512:10 };
+  seen.sort((a, b) => (order[a] || 99) - (order[b] || 99));
+  sel.innerHTML = '<option value="0">全部</option>' + seen.map(r =>
+    '<option value="' + r + '">' + esc(names[r] || r) + "</option>").join("");
+}
+function clearFilter(){
+  document.getElementById("f-element").value = "0";
+  document.getElementById("f-job").value = "0";
+  document.getElementById("f-rarity").value = "0";
+  document.getElementById("f-name").value = "";
+  renderGrid();
+}
+
+// ---------- 角色网格 ----------
+function renderGrid(){
+  const fe = document.getElementById("f-element").value;
+  const fj = document.getElementById("f-job").value;
+  const fr = document.getElementById("f-rarity").value;
+  const fn = document.getElementById("f-name").value.trim().toLowerCase();
+  const list = [];
+  for (const cid in S.chars){
+    const c = S.chars[cid];
+    if (fe !== "0" && String(c.e) !== fe) continue;
+    if (fj !== "0" && String(c.j) !== fj) continue;
+    if (fr !== "0" && String(c.r) !== fr) continue;
+    if (fn && c.n.toLowerCase().indexOf(fn) < 0) continue;
+    list.push(cid);
+  }
+  list.sort((a, b) => Number(a) - Number(b));
+  document.getElementById("char-count").textContent = "共 " + list.length + " / " + Object.keys(S.chars).length + " 名";
+  const grid = document.getElementById("char-grid");
+  grid.innerHTML = list.map(cid => {
+    const c = S.chars[cid];
+    const cls = ELEM_CLS[c.e] || "";
+    const eName = ELEM_NAME[c.e] || c.e;
+    const jobN = JOB_NAME[c.j] || ("职业" + c.j);
+    const rN = rarityName(c.r);
+    return '<div class="char-cell' + (String(cid) === String(selChar) ? " sel" : "") + '" onclick="selectChar(\'' + cid + '\')">'
+      + charIcon(cid, "cico")
+      + '<span class="cname">' + esc(c.n) + '</span>'
+      + '<span class="tags"><span class="tag ' + cls + '">' + esc(eName) + '</span><span class="tag job">' + esc(jobN) + '</span>'
+      + (rN ? '<span class="tag rar">' + esc(rN) + '</span>' : "")
+      + "</span></div>";
+  }).join("");
+  if (!list.length) grid.innerHTML = '<div class="empty">没有符合筛选条件的角色</div>';
+}
+
+// ---------- 选中角色 ----------
+function selectChar(cid){
+  selChar = cid;
+  renderGrid();
+  document.getElementById("detail").style.display = "block";
+  renderAll();
+  const d = document.getElementById("detail");
+  d.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function renderAll(){
+  renderHead();
+  renderSkills();
+  renderColl();
+  renderWeapon();
+  renderStat();
+}
+function renderHead(){
+  const c = S.chars[selChar];
+  const cls = ELEM_CLS[c.e] || "";
+  document.getElementById("d-head").innerHTML =
+    charIcon(selChar, "big-ico")
+    + '<div><div class="d-name">' + esc(c.n) + '</div>'
+    + '<div class="d-tags">'
+    + '<span class="tag ' + cls + '">' + esc(ELEM_NAME[c.e] || c.e) + '属性</span>'
+    + '<span class="tag job">' + esc(JOB_NAME[c.j] || ("职业" + c.j)) + '</span>'
+    + '<span class="tag rar">初始 ' + esc(rarityName(c.r)) + '</span>'
+    + '</div>'
+    + '<div class="d-meta">角色 ID ' + selChar + ' · 速度 ' + c.spd + '</div>'
+    + '</div>';
+}
+
+// ---------- 技能 ----------
+function skillCard(sid, typeLabel){
+  const key = "a_" + sid;
+  const keyP = "p_" + sid;
+  const sk = S.skills[key] || S.skills[keyP];
+  if (!sk) return "";
+  const lvs = (sk.d || []).map((d, i) => {
+    const [lv, desc] = d;
+    return '<div class="sk-lv"><span class="lv-tag">Lv ' + lv + ' 解锁</span><p>' + esc(desc) + '</p></div>';
+  }).join("");
+  return '<div class="skill-card">'
+    + '<div class="sk-head">' + skillIcon(sid)
+    + '<div><div class="sk-name">' + esc(sk.n) + ' <span class="tag type">' + esc(typeLabel) + '</span>'
+    + (sk.cd ? ' <span class="tag">冷却 ' + sk.cd + '</span>' : "")
+    + '</div><div class="sk-meta">技能ID ' + sid + '</div></div></div>'
+    + lvs + '</div>';
+}
+function renderSkills(){
+  const c = S.chars[selChar];
+  let html = "";
+  html += '<div class="skill-block"><h3>普攻</h3>' + (skillCard(c.nor, "普攻") || '<div class="empty">无普攻</div>') + '</div>';
+  const acts = (c.act || []).map(sid => skillCard(sid, "主动")).filter(Boolean);
+  html += '<div class="skill-block"><h3>主动技能</h3>' + (acts.join("") || '<div class="empty">无主动技能</div>') + '</div>';
+  const pass = (c.pas || []).map(sid => skillCard(sid, "被动")).filter(Boolean);
+  html += '<div class="skill-block"><h3>被动技能</h3>' + (pass.join("") || '<div class="empty">无被动技能</div>') + '</div>';
+  document.getElementById("pane-skills").innerHTML = html;
+}
+
+// ---------- 秘仪 ----------
+function renderColl(){
+  const found = [];
+  for (const cid in S.colls){
+    const co = S.colls[cid];
+    if ((co.req || []).indexOf(Number(selChar)) >= 0) found.push(co);
+  }
+  if (!found.length){
+    document.getElementById("pane-coll").innerHTML = '<div class="empty">该角色暂不参与任何秘仪加成</div>';
+    return;
+  }
+  let html = "";
+  for (const co of found){
+    const reqChips = (co.req || []).map(cid => {
+      const cc = S.chars[String(cid)];
+      return '<span class="req-chip">' + charIcon(cid, "ico") + '<span>' + esc(cc ? cc.n : ("角色" + cid)) + '</span></span>';
+    }).join("") || '<span class="empty">—</span>';
+    const rows = (co.lv || []).map(l =>
+      "<tr><td class='cell-name'>Lv " + l.l + "</td><td>" + esc(l.rar) + "</td><td>"
+      + (l.add || []).map(a => '<span class="add-line">' + esc(a) + "</span>").join("")
+      + "</td></tr>").join("");
+    html += '<div class="skill-block"><h3>' + esc(co.n) + '</h3>'
+      + '<div class="coll-req">所需角色：' + reqChips + '</div>'
+      + '<div class="table-wrap"><table><thead><tr><th>等级</th><th>稀有度门槛</th><th>属性加成</th></tr></thead><tbody>'
+      + rows + "</tbody></table></div></div>";
+  }
+  document.getElementById("pane-coll").innerHTML = html;
+}
+
+// ---------- 专武 ----------
+function renderWeapon(){
+  const w = S.weapons[selChar];
+  if (!w){
+    document.getElementById("pane-weapon").innerHTML = '<div class="empty">该角色暂无专属武器数据</div>';
+    return;
+  }
+  let html = "";
+  const descs = (w.desc || []).filter(Boolean);
+  if (descs.length){
+    html += '<div class="skill-block"><h3>LR 专武强化 · 技能描述</h3>'
+      + descs.map(d => '<div class="skill-card"><p style="white-space:pre-wrap;margin:0;font-size:13px;line-height:1.75;color:#dcd9e8">' + esc(d) + '</p></div>').join("")
+      + "</div>";
+  }
+  const rows = (w.ef || []).map(ef =>
+    "<tr><td class='cell-name'>" + esc(ef.memo) + "</td><td>"
+    + (ef.add || []).map(a => '<span class="add-line">' + esc(a) + "</span>").join("")
+    + "</td></tr>").join("");
+  html += '<div class="skill-block"><h3>专武属性 · 各稀有度强化</h3>'
+    + '<div class="table-wrap"><table><thead><tr><th>强化档位</th><th>属性加成</th></tr></thead><tbody>'
+    + rows + "</tbody></table></div></div>";
+  document.getElementById("pane-weapon").innerHTML = html;
+}
+
+// ---------- 初始数值面板 ----------
+function renderStat(){
+  const c = S.chars[selChar];
+  const total = c.g || 1;
+  const four = [
+    ["力量", c.m], ["战技", c.en], ["魔力", c.in], ["耐力", c.he]
+  ];
+  const fourHtml = four.map(([n, v]) => {
+    const pct = (v / total) * 100;
+    return '<div class="four-bar"><div class="fb-label"><span>' + n + '</span><b>' + pct.toFixed(1) + '%</b></div>'
+      + '<div class="fb-track"><div class="fb-fill" style="width:' + pct + '%"></div></div></div>';
+  }).join("");
+  const ibpHtml = (c.ibp || []).map(([t, v]) =>
+    '<div class="ibp-item"><span class="k">' + esc(BATTLE_NAME[t] || ("参数" + t)) + '</span><span class="v">' + v + '</span></div>').join("");
+  const potHtml = buildCalc(c);
+  document.getElementById("pane-stat").innerHTML =
+    '<div class="stat-grid">'
+    + '<div class="stat-box"><h4>四维分布（占比）</h4>' + fourHtml
+    + '<div class="d-meta" style="color:var(--muted);font-size:12px;margin-top:10px">四维系数总和：' + c.g + '</div></div>'
+    + '<div class="stat-box"><h4>总基础值计算</h4>' + potHtml
+    + '<div class="d-meta" style="color:var(--muted);font-size:12px;margin-top:10px">速度（不随等级）：<b style="color:#ffe9a8">' + c.spd + '</b></div></div>'
+    + '</div>'
+    + '<div class="stat-box" style="margin-top:14px"><h4>初始战斗参数（原始值）</h4><div class="ibp-grid">' + (ibpHtml || '<div class="empty">无</div>') + '</div></div>';
+  populateLevels();
+}
+function buildCalc(c){
+  const coefs = (S.stats.coef || []).filter(x => x[0] === c.r);
+  coefs.sort((a, b) => a[1] - b[1]);
+  if (!coefs.length) return '<div class="empty">无可计算稀有度系数</div>';
+  const rarOpts = coefs.map((x, i) =>
+    '<option value="' + i + '"' + (i === 0 ? " selected" : "") + '>' + esc(rarityName(x[1])) + '</option>').join("");
+  return '<div class="calc-row"><label>稀有度</label><select id="calc-rar" onchange="calcStat()">' + rarOpts + '</select></div>'
+    + '<div class="calc-row"><label>等级</label><select id="calc-lv" onchange="calcStat()"></select>'
+    + '<label>副等级</label><select id="calc-sub" onchange="calcStat()"></select></div>'
+    + '<div class="big-val" id="calc-total">—<small>总基础值</small></div>'
+    + '<div id="calc-four" style="font-size:12px;color:var(--muted);line-height:1.9"></div>';
+}
+function populateLevels(){
+  const lvSel = document.getElementById("calc-lv");
+  const subSel = document.getElementById("calc-sub");
+  if (!lvSel || !subSel) return;
+  const maxLv = S.stats.maxLv || (function(){
+    let m = 1;
+    for (const k in S.stats.pot){
+      const lv = Number(k.split(".")[0]);
+      if (lv > m) m = lv;
+    }
+    S.stats.maxLv = m;
+    return m;
+  })();
+  let opts = "";
+  for (let l = 1; l <= maxLv; l++) opts += '<option value="' + l + '">' + l + '</option>';
+  lvSel.innerHTML = opts;
+  lvSel.value = "1";
+  subSel.innerHTML = "";
+  for (let s = 0; s <= 9; s++) subSel.innerHTML += '<option value="' + s + '">' + s + '</option>';
+  calcStat();
+}
+function calcStat(){
+  const c = S.chars[selChar];
+  const rarIdx = Number(document.getElementById("calc-rar").value);
+  const lv = Number(document.getElementById("calc-lv").value);
+  const sub = Number(document.getElementById("calc-sub").value);
+  const coefs = (S.stats.coef || []).filter(x => x[0] === c.r).sort((a, b) => a[1] - b[1]);
+  const co = coefs[rarIdx];
+  const pot = S.stats.pot[lv + "." + sub];
+  const total = (pot != null && co) ? Math.round(pot * co[2] + co[3]) : null;
+  const totalEl = document.getElementById("calc-total");
+  const fourEl = document.getElementById("calc-four");
+  if (total == null){
+    totalEl.innerHTML = "—<small>该等级无数据</small>";
+    fourEl.innerHTML = "";
+    return;
+  }
+  totalEl.innerHTML = total.toLocaleString() + "<small>总基础值</small>";
+  const g = c.g || 1;
+  const rows = [["力量", c.m], ["战技", c.en], ["魔力", c.in], ["耐力", c.he]].map(([n, v]) => {
+    const val = Math.round(total * v / g);
+    return '<div>' + n + ' <b style="color:#f1eef8">' + val.toLocaleString() + '</b>（' + ((v / g) * 100).toFixed(1) + '%）</div>';
+  }).join("");
+  fourEl.innerHTML = rows;
+}
+function setTab(tab, btn){
+  curTab = tab;
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("active", b === btn));
+  document.querySelectorAll(".tab-pane").forEach(p => p.classList.toggle("on", p.id === "pane-" + tab));
+}
+
+// ---------- 侧栏 ----------
+function toggleSide(force){
+  const s = document.getElementById("side");
+  const m = document.getElementById("side-mask");
+  const open = typeof force === "boolean" ? force : !s.classList.contains("open");
+  s.classList.toggle("open", open);
+  if (m){
+    const isM = window.matchMedia("(max-width: 768px)").matches;
+    m.classList.toggle("show", open && isM);
+  }
+  document.body.classList.toggle("side-collapsed", !open);
+}
+
+// ---------- 初始化 ----------
+toggleSide(window.matchMedia("(min-width: 769px)").matches);
+load(false);
+</script>
+<script src="player-bar.js"></script>
+</body>
+</html>
