@@ -46,7 +46,7 @@ jobs:
               if not m: continue
               d,cid=m.group(1),int(m.group(2)); cid6=str(cid).zfill(6)
               name=cmap.get(cid, CHARP+" "+cid6)
-              tracks.append({"id":"chr"+cid6,"title":name+" "+cid6,"sub":SONG+" \u00b7 JP "+SHO,"src":CDN+p})
+              tracks.append({"id":"chr"+cid6,"title":name+" "+str(cid),"sub":SONG+" \u00b7 JP "+SHO,"src":CDN+p})
           out={"date":datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),"source":"rainsillwood/mementomori-Sound","tracks":tracks}
           open("data/music.json","w",encoding="utf-8").write(json.dumps(out,ensure_ascii=False,separators=(",",":")))
           print("music.json tracks:", len(tracks))
