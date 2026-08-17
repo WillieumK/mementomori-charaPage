@@ -150,6 +150,11 @@ jobs:
           print("pvp maps done, mver:", mver)
           PYEOF
 
+      - name: 生成角色技能数据(官方源)
+        run: |
+          pip install msgpack -q
+          python3 skill_gen.py
+
       - name: 写入缓存时间戳
         run: printf '{"time":"%s"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > data/cache_time.json
       - name: 提交数据更新到 main
