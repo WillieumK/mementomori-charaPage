@@ -39,23 +39,14 @@ jobs:
               try: cmap[int(c["Id"])]=texts.get(c.get("NameKey"),"")
               except Exception: pass
           CDN="https://cdn.jsdelivr.net/gh/rainsillwood/mementomori-Sound@main/"
-          WAN="\u5b8c\u6574\u7248"; SHO="\u77ed\u7248"; SONG="\u89d2\u8272\u6b4c"; CHARP="\u89d2\u8272"
+          SHO="\u77ed\u7248"; SONG="\u89d2\u8272\u6b4c"; CHARP="\u89d2\u8272"
           tracks=[]
           for p in sorted(flacs):
-              if p.startswith("Sound/BGM/"):
-                  num=re.sub("\D","",p)
-                  tracks.append({"id":"bgm"+num,"title":"BGM "+num,"sub":"BGM","src":CDN+p})
-              elif "/CHR_" in p:
-                  m=re.match(r"CharacterSong/(CHR_(\d+))/CHR_\d+_SONG_([A-Z_]+)\.flac", p)
-                  if not m: continue
-                  d,cid,suf=m.group(1),int(m.group(2)),m.group(3)
-                  name=cmap.get(cid, CHARP+" "+str(cid).zfill(6))
-                  if suf=="SONG_JP": sid="chr"+str(cid).zfill(6); sub=SONG+" \u00b7 JP "+WAN
-                  elif suf=="SONG_SHORT_JP": sid="chr"+str(cid).zfill(6)+"-sjp"; sub=SONG+" \u00b7 JP "+SHO
-                  elif suf=="SONG_US": sid="chr"+str(cid).zfill(6)+"-us"; sub=SONG+" \u00b7 US "+WAN
-                  elif suf=="SONG_SHORT_US": sid="chr"+str(cid).zfill(6)+"-sus"; sub=SONG+" \u00b7 US "+SHO
-                  else: continue
-                  tracks.append({"id":sid,"title":name,"sub":sub,"src":CDN+p})
+              m=re.match(r"CharacterSong/(CHR_(\d+))/CHR_\d+_SONG_SHORT_JP\.flac$", p)
+              if not m: continue
+              d,cid=m.group(1),int(m.group(2)); cid6=str(cid).zfill(6)
+              name=cmap.get(cid, CHARP+" "+cid6)
+              tracks.append({"id":"chr"+cid6,"title":name+" "+cid6,"sub":SONG+" \u00b7 JP "+SHO,"src":CDN+p})
           out={"date":datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),"source":"rainsillwood/mementomori-Sound","tracks":tracks}
           open("data/music.json","w",encoding="utf-8").write(json.dumps(out,ensure_ascii=False,separators=(",",":")))
           print("music.json tracks:", len(tracks))
