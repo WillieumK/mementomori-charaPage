@@ -296,7 +296,8 @@ section[id]{scroll-margin-top:16px}
 
   <section class="card" id="sec-usage">
     <h2>巅峰使用率 · 使用率分组<span class="h2-note">
-      <select id="usage-day" onchange="onDayChange()"></select>
+      <select id="usage-attr" onchange="onAttrChange()"></select>
+    <select id="usage-day" onchange="onDayChange()"></select>
       <button type="button" id="btn-pct" class="mini" onclick="togglePct()">展开百分率</button>
     </span></h2>
     <div class="table-wrap usage-wrap" id="tbl-usage"></div>
@@ -328,6 +329,7 @@ const USAGE_GID = "1850986413";
 const USAGE_URL = "https://docs.google.com/spreadsheets/d/" + USAGE_SHEET_ID + "/gviz/tq?gid=" + USAGE_GID + "&tqx=out:json";
 const DATA_CARD0 = "data/card0.json";
 const DATA_USAGE = "data/usage.json";
+const DATA_CHAR_ATTR = "data/char_attr.json";
 const ICON_BASE = "https://mentemori.icu/assets/CHR_";
 const ICON_SUFFIX = "_00_s.png";
 
@@ -554,6 +556,8 @@ let usageState = null;
 let thresholds = [0.18, 0.13, 0.03];
 let selectedDay = null;
 let pctOpen = false;
+let CHAR_ATTR = {};
+let attrFilter = "";
 
 function pctLabel(t){
   const p = t * 100;
@@ -576,7 +580,9 @@ function renderUsage(){
     return;
   }
   const names = usageState.names || {};
-  const groups = groupsFor(usageState.perDay[selectedDay]);
+  let list = usageState.perDay[selectedDay];
+  if (attrFilter){ list = list.filter(x => CHAR_ATTR[x.id] === attrFilter); }
+  const groups = groupsFor(list);
   let html = "";
   for (let i = 0; i < groups.length; i++){
     const g = groups[i];
@@ -627,6 +633,22 @@ function editThreshold(idx, el){
     if (e.key === "Enter"){ e.preventDefault(); input.blur(); }
     else if (e.key === "Escape"){ if (!done){ done = true; renderUsage(); } }
   });
+}
+async function initAttr(){
+  try{
+    const r = await fetch(DATA_CHAR_ATTR);
+    if (r.ok) CHAR_ATTR = await r.json();
+  }catch(e){}
+  const sel = document.getElementById("usage-attr");
+  if (sel){
+    const ATTRS = ["蓝","红","绿","金","光","暗"];
+    sel.innerHTML = '<option value="">全部</option>' + ATTRS.map(a => '<option value="' + a + '">' + a + '</option>').join("");
+  }
+}
+function onAttrChange(){
+  const sel = document.getElementById("usage-attr");
+  attrFilter = sel ? sel.value : "";
+  renderUsage();
 }
 function toggleSide(force){
   const s = document.getElementById("side");
@@ -856,6 +878,7 @@ loadCacheTime();
 detectDevice();
 toggleSide(window.matchMedia("(min-width: 769px)").matches);
 initScrollSpy();
+initAttr();
 load(false);
 scheduleRefresh();
 
