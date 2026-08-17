@@ -9,7 +9,7 @@
   skill_weapon.json {cid:{desc[3行],ef:[{memo,add[]}]}}
   skill_stat.json   {pot:{"lv.sub":total}, coef:[[init,target,m,b]...], rname:{flags:name}}
 """
-import json
+import json, urllib.request, msgpack
 from pathlib import Path
 
 MASTER_DIR = Path(__file__).resolve().parent.parent.parent   # MasterData 目录
@@ -31,7 +31,33 @@ RARITY_BITS = ["N", "R", "R+", "SR", "SR+", "SSR", "SSR+", "UR", "UR+", "LR"] + 
 RARITY_MAP = {1 << i: RARITY_BITS[i] for i in range(len(RARITY_BITS))}
 
 
+_mver = None
+def _auth():
+    global _mver
+    if _mver:
+        return _mver
+    for ver in ["4.19.2", "4.19.0", "4.18.0"]:
+        try:
+            h = {"OrtegaDeviceType": "4", "ortegaappversion": ver, "Content-Type": "application/octet-stream"}
+            r = urllib.request.Request("https://prd1-auth.mememori-boi.com/api/auth/getDataUri", data=msgpack.packb({"CountryCode": "JP", "UserId": 0}), headers=h, method="POST")
+            _mver = dict(urllib.request.urlopen(r, timeout=30).headers)["ortegamasterversion"]
+            return _mver
+        except Exception:
+            continue
+    raise RuntimeError("auth failed")
+
+def load_official(name):
+    base = "https://cdn-mememori.akamaized.net/master/prd1/version/%s/" % _auth()
+    url = base + name.replace(".json", "")
+    req = urllib.request.Request(url, headers={"User-Agent": "codex"})
+    return msgpack.unpackb(urllib.request.urlopen(req, timeout=120).read())
+
 def load(name):
+    # 官方 boi CDN 优先（msgpack 解码），失败则 fallback 本地
+    try:
+        return load_official(name)
+    except Exception as e:
+        print("official fail", name, e)
     fp = MASTER_DIR / name
     if not fp.exists():
         print("MISSING:", name)
