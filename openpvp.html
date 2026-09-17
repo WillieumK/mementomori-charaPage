@@ -137,17 +137,14 @@ body:not(.side-collapsed) .side-open{display:none}
 .eqbox{background:rgba(0,0,0,.2);border:1px solid var(--panel-border);border-radius:10px;padding:8px 10px;min-width:0;display:flex;flex-direction:column}
 .eqbox .eqsec{min-width:0}
 .eqbox .eqsec + .eqsec{border-top:1px solid var(--panel-border);margin-top:7px;padding-top:7px}
-/* 圣装/魔装：和符石一样一条一个框，一行一个保证框内文字完整 */
-.sectgrid{display:grid;grid-template-columns:1fr;gap:4px}
-.sectrow{display:flex;gap:10px;min-width:0}
-.sectrow .st{flex:1 1 0;min-width:0;font-size:11px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 8px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25)}
+/* 圣装/魔装：每件装备两个框（圣装/魔装）+ 4 列排布；可整体隐藏 */
+.sectgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 8px}
+.sectrow{display:contents}
+.sectrow .st{min-width:0;font-size:11px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 7px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25)}
 .sectrow .st b{font-weight:600;font-variant-numeric:tabular-nums}
 .sectrow .st-lg{color:#ffe9a8;border-color:rgba(255,233,168,.18);background:rgba(217,178,106,.07)}
 .sectrow .st-mc{color:#b5f0c3;border-color:rgba(181,240,195,.16);background:rgba(181,240,195,.06)}
 .sectrow .st-empty{color:var(--muted);opacity:.45;border-style:dashed}
-/* 圣装/魔装折叠按钮行 */
-.sect-head{display:flex;justify-content:flex-end;margin-bottom:4px}
-/* 中窄屏：4 格挤了改 2 格 */
 @media(max-width:1180px){.sectgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:1000px){.regions{grid-template-columns:1fr}}
 .region h3{margin:0 0 6px;font-size:13px;color:var(--gold);border-bottom:1px solid var(--panel-border);padding-bottom:4px;letter-spacing:.5px}
@@ -197,9 +194,9 @@ body:not(.side-collapsed) .side-open{display:none}
 .sphgrid .sphere .sfb{display:none;height:26px;margin:0 auto 1px;align-items:center;justify-content:center;font-size:9px;color:#cfc8e2;line-height:1.05;word-break:break-all;letter-spacing:-.4px;overflow:hidden}
 .sphgrid .sphere.noimg .sfb{display:flex}
 .sphgrid .sphere .sfb-sm{font-size:8.5px;letter-spacing:-.5px}
-.sphgrid .sphere .stag{font-size:11px;color:#cfc8e2;line-height:1.25;flex:0 0 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sphgrid .sphere .stag{font-size:12px;color:#cfc8e2;line-height:1.25;flex:0 0 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sphgrid .sphere.noimg .stag{display:none}
-.sphgrid .sphere .sv{color:#ffe9a8;font-size:12px;font-weight:600;white-space:nowrap;flex:none;font-variant-numeric:tabular-nums}
+.sphgrid .sphere .sv{color:#ffe9a8;font-size:12.5px;font-weight:600;white-space:nowrap;flex:none;font-variant-numeric:tabular-nums}
 .sphgrid .sphere .slv{font-size:8.5px;color:var(--muted);white-space:nowrap}
 .sphgrid .sphere.empty{opacity:.35;display:flex;align-items:center;justify-content:center}
 /* 空符石：放一个与图标等高的占位，保证行高和有符石时一致 */
@@ -216,7 +213,7 @@ body:not(.side-collapsed) .side-open{display:none}
   .sphgrid{grid-template-columns:1fr}
 }
 /* 展开角色面板时：排名区左边贴紧侧栏、右边贴页面边缘（左右空隙全部吃掉） */
-#sec-rank.split{margin-left:-168px;margin-right:-153px;padding-left:170px;padding-right:155px;border-radius:16px}
+#sec-rank.split{margin-left:-100px;margin-right:-153px;padding-left:102px;padding-right:155px;border-radius:16px}
 @media(min-width:981px) and (max-width:1500px){
   #char-panel .eqgrid{grid-template-columns:1fr;gap:8px}
   #char-panel .eqgrid .eqslot:nth-child(n+5){border-bottom:1px dashed rgba(255,255,255,.06);padding-bottom:6px}
@@ -280,7 +277,7 @@ body:not(.side-collapsed) .side-open{display:none}
 .rank-split{display:flex;gap:14px;align-items:flex-start}
 .rank-left{flex:0 1 auto;min-width:0;max-width:100%}
 /* 展开时左表收窄，剩余宽度全给右面板（这样装备区文字才有空间放大） */
-#sec-rank.split .rank-left{flex:0 1 360px}
+#sec-rank.split .rank-left{flex:0 1 320px}
 #sec-rank.split .rank-left thead th,#sec-rank.split .rank-left tbody td{padding:8px 7px}
 #sec-rank.split .rank-left .cslot{width:42px;margin-right:2px}
 #sec-rank.split .rank-left .cslot img{width:38px;height:38px}
@@ -304,21 +301,21 @@ body:not(.side-collapsed) .side-open{display:none}
 #char-panel .eqiconbox .eqfb i{font-size:11px}
 #char-panel .eqiconbox .eqblv{display:block;font-size:9px}
 #char-panel .eqgrid .eqslot{gap:9px;padding:4px 0 7px}
-#char-panel .eqmain .en .eqrar{font-size:12px}
-#char-panel .eqmain .en .enn{font-size:15px}
+#char-panel .eqmain .en .eqrar{font-size:13px}
+#char-panel .eqmain .en .enn{font-size:16px}
 #char-panel .eqmain .em .sync-mark{font-size:10px;padding:0 2px}
 #char-panel .sectrow{gap:10px}
-#char-panel .sectrow .st{font-size:11px}
+#char-panel .sectrow .st{font-size:12px}
 /* 符石框：只把宽度收到原来的约一半（36→20px），高度与图标尺寸都不动；框内字再放大一档 */
 #char-panel .sphgrid{grid-template-columns:1fr;gap:2px}
 #char-panel .sphgrid .sphere{padding:2px 4px}
 #char-panel .sphgrid .sphere img.sphicon{width:22px;height:22px}
 #char-panel .sphgrid .sphere .sfb{height:24px;font-size:10px}
 #char-panel .sphgrid .sphere .sfb-sm{font-size:9.2px}
-#char-panel .sphgrid .sphere .stag{font-size:11px}
+#char-panel .sphgrid .sphere .stag{font-size:12px}
 #char-panel .sphgrid{grid-template-columns:1fr;gap:3px}
 #char-panel .sphgrid .sphere .stag b{color:var(--muted);font-weight:600}
-#char-panel .sphgrid .sphere .sv{font-size:10.5px;margin-left:auto}
+#char-panel .sphgrid .sphere .sv{font-size:12.5px}
 #char-panel .sphgrid .sphere .slv{font-size:9px}
 #char-panel .sphgrid .sphere.empty{min-height:0}
 #char-panel .stats{gap:6px}
@@ -438,6 +435,15 @@ body:not(.side-collapsed) .side-open{display:none}
 "use strict";
 const API = "https://api.mentemori.icu";
 const ICON_BASE = "https://mentemori.icu/assets/CHR_";
+/* 角色卡片立绘（第三方生成接口）：自带立绘 + Lv + 属性图标 + 稀有度星级
+   icon = 角色ID，rarity = RarityFlags（512=LR、2048=LR+2、16384=LR+5…），level = 角色等级 */
+const CHARA_CARD = "https://api.tamamo.dev/Generate/Character";
+function charaCardUrl(cid, rarityFlags, level){
+  return CHARA_CARD + "?icon=" + encodeURIComponent(cid)
+    + "&rarity=" + encodeURIComponent(rarityFlags != null ? rarityFlags : 1)
+    + "&level=" + encodeURIComponent(level != null ? level : 1)
+    + "&link=0&type=0";
+}
 const RAR = {0:"无",1:"N",2:"R",4:"R+",8:"SR",16:"SR+",32:"SSR",64:"SSR+",128:"UR",256:"UR+",512:"LR",1024:"LR+",2048:"LR+2",4096:"LR+3",8192:"LR+4",16384:"LR+5",32768:"LR+6",65536:"LR+7",131072:"LR+8",262144:"LR+9",524288:"LR+10"};
 /* pvp_char.json 的 e 字段为数字：1蓝 2红 3绿 4黄 5光 6暗 */
 const ELEM = {1:"蓝",2:"红",3:"绿",4:"黄",5:"光",6:"暗"};
@@ -1306,16 +1312,6 @@ function sortedEquipListBy(c, order){
   return eqs.slice(0, 6);
 }
 function sortedEquipList(c){ return sortedEquipListBy(c, EQ_SLOT_ORDER); }
-let sectFolded = false;
-try{ sectFolded = localStorage.getItem("mmt_pvp_sect_fold") === "1"; }catch(e){ sectFolded = false; }
-function toggleSect(){
-  sectFolded = !sectFolded;
-  try{ localStorage.setItem("mmt_pvp_sect_fold", sectFolded ? "1" : "0"); }catch(e){}
-  const box = document.getElementById("sect-body");
-  const btn = document.getElementById("sect-fold");
-  if (box) box.style.display = sectFolded ? "none" : "";
-  if (btn) btn.textContent = sectFolded ? "展开 ▼" : "收起 ▲";
-}
 function sectPanel(c){
   const list = sortedEquipListBy(c, SECT_SLOT_ORDER);
   if (!list.length) return "";
@@ -1327,12 +1323,7 @@ function sectPanel(c){
     rows.push('<div class="sectrow">' + (lg || '<span class="st st-empty">—</span>') + (mc || '<span class="st st-empty">—</span>') + "</div>");
   });
   if (!rows.length) return "";
-  const foldBtn = '<button type="button" class="fold-btn" id="sect-fold" onclick="toggleSect()" title="点击展开/收起">'
-    + (sectFolded ? "展开 ▼" : "收起 ▲") + "</button>";
-  return '<div class="eqsec sectsec">'
-    + '<div class="sect-head">' + foldBtn + "</div>"
-    + '<div class="sectgrid" id="sect-body"' + (sectFolded ? ' style="display:none"' : "") + ">" + rows.join("") + "</div>"
-    + "</div>";
+  return '<div class="eqsec sectsec"><div class="sectgrid">' + rows.join("") + "</div></div>";
 }
 /* 单件装备：左边图标（失败显示槽位名文字，位置不塌），右侧符石 2×2 */
 function equipSlot(c, e, idx){
@@ -1409,7 +1400,7 @@ function openChar(pi, j){
 
 function charHeadHtml(c, name, elem, job, id, posLabel, withClose){
   return '<div class="mhead">'
-    + '<div class="mavatar"><img class="face" src="' + imgSrc(ICON_BASE + id + '_00_s.png') + '" onerror="iconOnError(this)" alt=""><img class="frame" src="' + imgSrc(frameUrl(rarityLabel(c.RarityFlags))) + '" onerror="this.remove()" alt=""><span class="lvchip">Lv' + esc(c.Level) + "</span></div>"
+    + '<div class="mavatar"><img class="face" src="' + charaCardUrl(c.CharacterId, c.RarityFlags, c.Level) + '" onerror="iconOnError(this)" alt=""></div>'
     + '<div><div class="mname">' + esc(name) + "</div>"
     + '<div class="mtags">' + (elem != null && elem !== "" ? elemTag(elem) : "") + jobTag(job) + '<span class="tag">' + esc(rarityLabel(c.RarityFlags)) + "</span></div>"
     + '<div class="mmeta">' + (c.SubLevel ? "副等级 " + esc(c.SubLevel) + " · " : "") + "战力 " + fmtNum(c.BattlePower) + " · " + esc(posLabel) + "</div></div>"
@@ -1437,7 +1428,7 @@ async function renderCharBody(){
   /* 队伍小头像队列：窄屏在弹窗里；宽屏在右侧面板里 */
   let tabs = "";
   list.slice(0, 5).forEach((ch, j) => {
-    tabs += '<span class="ttab' + (j === st.j ? " on" : "") + '" onclick="switchChar(' + j + ')"><img src="' + imgSrc(ICON_BASE + padId(ch.CharacterId) + '_00_s.png') + '" loading="lazy" onerror="iconOnError(this)" alt=""><span class="tlv">Lv' + esc(ch.Level) + "</span></span>";
+    tabs += '<span class="ttab' + (j === st.j ? " on" : "") + '" onclick="switchChar(' + j + ')"><img src="' + charaCardUrl(ch.CharacterId, ch.RarityFlags, ch.Level) + '" loading="lazy" onerror="iconOnError(this)" alt=""></span>';
   });
   if (wide){
     /* 内嵌面板不再显示顶部大头像行，只留一行队伍小头像；角色名并入面板标题行 */
