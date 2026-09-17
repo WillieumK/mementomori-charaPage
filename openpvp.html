@@ -116,12 +116,12 @@ body:not(.side-collapsed) .side-open{display:none}
 .pvp-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:24px 10px;overflow:auto}
 .pvp-modal.open{display:flex}
 .pvp-modal .box{background:#151223;border:1px solid var(--panel-border);border-radius:14px;max-width:1020px;width:100%;padding:16px 18px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
-.pvp-modal .mhead{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-.pvp-modal .mhead img{width:64px;height:64px;border-radius:12px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
-.pvp-modal .mname{font-size:20px;font-weight:700}
-.pvp-modal .mtags{margin-top:4px}
-.pvp-modal .mmeta{color:var(--muted);font-size:12px;margin-top:2px}
-.pvp-modal .mclose{margin-left:auto;width:34px;height:34px;border-radius:8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);color:var(--gold);font-size:18px;cursor:pointer;flex:none}
+.pvp-modal .mhead,.char-panel .mhead{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.pvp-modal .mhead img,.char-panel .mhead img{width:64px;height:64px;border-radius:12px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
+.pvp-modal .mname,.char-panel .mname{font-size:20px;font-weight:700}
+.pvp-modal .mtags,.char-panel .mtags{margin-top:4px}
+.pvp-modal .mmeta,.char-panel .mmeta{color:var(--muted);font-size:12px;margin-top:2px}
+.pvp-modal .mclose,.char-panel .mclose{margin-left:auto;width:34px;height:34px;border-radius:8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);color:var(--gold);font-size:18px;cursor:pointer;flex:none}
 .team-tabs{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
 .team-tabs .ttab{width:48px;text-align:center;cursor:pointer;opacity:.55;transition:opacity .15s}
 .team-tabs .ttab:hover{opacity:.85}
@@ -179,6 +179,56 @@ body:not(.side-collapsed) .side-open{display:none}
 .pbar{height:8px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;margin:10px 0 6px}
 .pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#d9b26a,#7c6cf0);border-radius:4px;transition:width .2s}
 .pl-txt{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5;word-break:break-all}
+/* 翻页类下拉：服务器 = 一页 · 20 列网格（怪物查询同款交互） */
+.dd{position:relative;display:inline-block}
+.dd-btn{background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;max-width:min(460px,84vw)}
+.dd-btn .dd-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dd-arrow{font-size:10px;opacity:.8;flex:none}
+.dd-panel{position:absolute;top:calc(100% + 4px);left:0;z-index:60;background:#141020;border:1px solid var(--panel-border);border-radius:10px;padding:8px;box-shadow:0 12px 34px rgba(0,0,0,.5);max-height:62vh;overflow:auto;max-width:92vw}
+.dd-tabs{display:flex;flex-wrap:wrap;gap:6px;padding:2px 2px 8px}
+.dd-tabs button{background:rgba(255,255,255,.06);border:1px solid var(--panel-border);color:var(--text);border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer}
+.dd-tabs button.on{background:linear-gradient(90deg,#7c6cf0,#5b4fd6);color:#fff;border-color:transparent;font-weight:600}
+.dd-grid{display:grid;grid-template-columns:repeat(20,1fr);gap:4px;min-width:560px}
+.dd-grid button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:5px 2px;font-size:12px;line-height:1.2;cursor:pointer;font-variant-numeric:tabular-nums}
+.dd-grid button:hover{background:rgba(124,108,240,.25)}
+.dd-grid button.sel{background:#ffb400;color:#111;border-color:#ffb400;font-weight:700}
+.dd-pager{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:6px 2px 8px;color:var(--muted);font-size:12px}
+.dd-pager .mini{padding:4px 10px;font-size:11px;background:rgba(255,255,255,.06);color:var(--gold);border:1px solid var(--panel-border);border-radius:6px;font-weight:400}
+.dd-pager .mini:disabled{opacity:.4;cursor:default;filter:none}
+.dd-jump{width:82px;background:#1c1730;color:var(--gold);border:1px solid rgba(217,178,106,.35);border-radius:6px;padding:4px 6px;font-size:11px;outline:none}
+.dd-hint{padding:6px 2px 2px;color:var(--muted);font-size:11px;line-height:1.5;max-width:560px}
+@media (max-width:768px){
+  .dd-panel{position:fixed;left:8px;right:8px;top:auto;bottom:8px;max-width:none;max-height:68vh}
+  .dd-grid{min-width:520px;gap:3px}
+  .dd-grid button{padding:4px 1px;font-size:11px}
+  .dd-btn{max-width:86vw}
+  .dd-hint{max-width:none}
+}
+/* 排名 + 角色面板同排：左=队伍榜（压缩行内间隙），右=展开的角色面板 */
+#sec-rank.split{margin-left:-20px;border-top-left-radius:0;border-bottom-left-radius:0;padding-left:22px}
+.rank-split{display:flex;gap:14px;align-items:flex-start}
+.rank-left{flex:0 1 auto;min-width:0;max-width:100%}
+.rank-left .table-wrap{max-width:100%}
+.rank-left table{width:max-content}
+.rank-left thead th,.rank-left tbody td{padding:8px 9px}
+.rank-left thead th:first-child,.rank-left tbody td:first-child{padding-left:10px;padding-right:6px}
+.rank-left .rank{width:34px}
+.rank-left .cslot{width:46px;margin-right:3px}
+.rank-left .cslot img{width:42px;height:42px}
+.rank-side{flex:1 1 0;min-width:0}
+.rank-side .rs-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.rank-side .rs-title{flex:1;min-width:0;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-side .rs-head .mclose{width:30px;height:30px;flex:none;border-radius:8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);color:var(--gold);font-size:16px;line-height:1;cursor:pointer}
+#char-panel{min-width:0}
+/* 右侧面板窄，装备附加行与符石要能挤下（不再横向溢出） */
+#char-panel .eqslot{gap:8px}
+#char-panel .eqslot .ex{white-space:normal;word-break:break-word}
+#char-panel .eqslot .sphere{width:52px}
+#char-panel .eqslot .sphere img.sphicon{width:28px;height:28px}
+#char-panel .stats{gap:6px}
+.prow.sel td{background:rgba(217,178,106,.07)}
+.prow.sel td.rank{box-shadow:inset 3px 0 0 var(--gold)}
+@media (max-width:980px){#sec-rank.split{margin-left:0;border-radius:16px;padding-left:12px}.rank-side{display:none !important}}
 </style>
 </head>
 <body>
@@ -228,10 +278,40 @@ body:not(.side-collapsed) .side-open{display:none}
       <button id="tab-legend" onclick="setMode('legend')">Legend League 巅峰</button>
     </div>
     <div class="qrow" id="q-arena">
-      <label>服务器 / 世界</label><select id="sel-world" onchange="onSelect('world', this.value)"></select>
+      <label>服务器 / 世界</label>
+      <div class="dd" id="dd-world">
+        <button type="button" class="dd-btn" onclick="togglePvPDD('world')"><span class="dd-txt" id="dd-world-label">—</span><span class="dd-arrow">▾</span></button>
+        <div class="dd-panel" id="ddp-world" style="display:none">
+          <div class="dd-tabs" id="ddt-world"></div>
+          <div class="dd-pager">
+            <button type="button" class="mini" onclick="ddPage('world',-1)">‹ 上一页</button>
+            <span id="dd-world-pageinfo">1 / 1</span>
+            <button type="button" class="mini" onclick="ddPage('world',1)">下一页 ›</button>
+            <input id="dd-world-jump" class="dd-jump" placeholder="填序号" onkeydown="if(event.key==='Enter')jumpDd('world')">
+            <button type="button" class="mini" onclick="jumpDd('world')">跳转</button>
+          </div>
+          <div class="dd-grid" id="ddg-world"></div>
+          <div class="dd-hint" id="dd-world-hint"></div>
+        </div>
+      </div>
     </div>
     <div class="qrow" id="q-legend" style="display:none">
-      <label>世界组</label><select id="sel-group" onchange="onSelect('group', this.value)"></select>
+      <label>世界组</label>
+      <div class="dd" id="dd-group">
+        <button type="button" class="dd-btn" onclick="togglePvPDD('group')"><span class="dd-txt" id="dd-group-label">—</span><span class="dd-arrow">▾</span></button>
+        <div class="dd-panel" id="ddp-group" style="display:none">
+          <div class="dd-tabs" id="ddt-group"></div>
+          <div class="dd-pager">
+            <button type="button" class="mini" onclick="ddPage('group',-1)">‹ 上一页</button>
+            <span id="dd-group-pageinfo">1 / 1</span>
+            <button type="button" class="mini" onclick="ddPage('group',1)">下一页 ›</button>
+            <input id="dd-group-jump" class="dd-jump" placeholder="填组号" onkeydown="if(event.key==='Enter')jumpDd('group')">
+            <button type="button" class="mini" onclick="jumpDd('group')">跳转</button>
+          </div>
+          <div class="dd-grid" id="ddg-group"></div>
+          <div class="dd-hint" id="dd-group-hint"></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -240,9 +320,17 @@ body:not(.side-collapsed) .side-open{display:none}
     <div class="stats-grid" id="tbl-stats"><div class="loading"><span class="spinner"></span><br>等待数据…</div></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="sec-rank">
     <h2>排名<span class="h2-note" id="res-note"></span></h2>
-    <div class="table-wrap" id="tbl-res"></div>
+    <div class="rank-split" id="rank-split">
+      <div class="rank-left">
+        <div class="table-wrap" id="tbl-res"></div>
+      </div>
+      <div class="rank-side" id="char-side" style="display:none">
+        <div class="rs-head"><span class="rs-title" id="char-note"></span><button type="button" class="mclose" onclick="closeCharView()" title="收起角色面板">×</button></div>
+        <div class="char-panel" id="char-panel"></div>
+      </div>
+    </div>
   </section>
 
   <footer>
@@ -571,9 +659,12 @@ async function doPreload(){
   }
 }
 
+/* api.mentemori.icu 的实时数据（世界/世界组/榜单）不进 IndexedDB，避免预载缓存把分组与排名冻结成旧值 */
+function isLiveApi(url){ return String(url).indexOf(API + "/") === 0; }
 async function fetchJson(url){
+  const useIDB = cacheMode && !isLiveApi(url);
   /* 缓存模式下优先读本地，缺失则在线并顺手缓存 */
-  if (cacheMode){
+  if (useIDB){
     try{
       await openIDB();
       const b = await idbGet(url);
@@ -586,7 +677,7 @@ async function fetchJson(url){
     const resp = await fetch(url, { signal: ctrl.signal });
     if (!resp.ok) throw new Error("HTTP " + resp.status);
     const data = await resp.json();
-    if (cacheMode){
+    if (useIDB){
       try{ await openIDB(); await idbPut(url, new Blob([JSON.stringify(data)], { type: "application/json" })); }catch(e){}
     }
     return data;
@@ -601,8 +692,6 @@ async function init(){
     const [w, g] = await Promise.all([fetchJson(API + "/worlds"), fetchJson(API + "/wgroups")]);
     worlds = w.data || [];
     groups = g.data || [];
-    buildWorldSelect();
-    buildGroupSelect();
     restoreSelects();
     /* 若上次已启用本地缓存，与榜单加载并行恢复本地图标 */
     initCache();
@@ -615,64 +704,200 @@ async function init(){
   }
 }
 
-function buildWorldSelect(){
-  const selW = document.getElementById("sel-world");
-  const byServer = {};
-  worlds.forEach(x => { (byServer[x.server] = byServer[x.server] || []).push(x); });
-  let html = "";
-  SERVER_ORDER.forEach(s => {
-    const list = byServer[s];
-    if (!list || !list.length) return;
-    html += '<optgroup label="' + (SERVER_CN[s] || s) + " " + s.toUpperCase() + '">';
-    list.forEach(x => { html += '<option value="' + x.world_id + '">W' + x.world_id + '</option>'; });
-    html += "</optgroup>";
-  });
-  /* 未知服务器兜底 */
-  Object.keys(byServer).filter(s => SERVER_ORDER.indexOf(s) < 0).forEach(s => {
-    html += '<optgroup label="' + esc(s) + '">';
-    byServer[s].forEach(x => { html += '<option value="' + x.world_id + '">W' + x.world_id + '</option>'; });
-    html += "</optgroup>";
-  });
-  selW.innerHTML = html;
+/* ---------- 翻页类下拉：服务器 = 一页 · 20 列网格 ---------- */
+const DD_KINDS = ["world", "group"];
+let curWorld = null;                    /* 选中的世界 id */
+let curGroup = 0;                       /* 选中的世界组下标 */
+let ddSrvPage = { world: 0, group: 0 }; /* 各下拉当前页（= 服务器下标） */
+
+function serverKeysOf(keys){
+  const uniq = keys.filter((v, i, a) => v && a.indexOf(v) === i);
+  const out = SERVER_ORDER.filter(s => uniq.indexOf(s) >= 0);
+  uniq.filter(s => SERVER_ORDER.indexOf(s) < 0).sort().forEach(s => out.push(s));
+  return out;
 }
+function worldServerKeys(){ return serverKeysOf(worlds.map(x => x.server)); }
+function serverOfWorld(wid){
+  const m = worlds.find(x => String(x.world_id) === String(wid));
+  return m ? m.server : null;
+}
+function serverOfGroup(g){ return serverOfWorld((g && g.worlds || [])[0]); }
+function groupServerKeys(){ return serverKeysOf(groups.map(serverOfGroup)); }
+function worldsOfServer(s){ return worlds.filter(x => x.server === s).slice().sort((a, b) => a.world_id - b.world_id); }
+function groupsOfServer(s){
+  return groups.map((g, i) => ({ g: g, i: i })).filter(x => serverOfGroup(x.g) === s).sort((a, b) => a.g.group_id - b.g.group_id);
+}
+function serverLabel(s){ return (SERVER_CN[s] || s) + " " + String(s).toUpperCase(); }
+function worldSeq(wid){
+  const s = serverOfWorld(wid);
+  const list = s ? worldsOfServer(s) : [];
+  const idx = list.findIndex(x => String(x.world_id) === String(wid));
+  return idx < 0 ? null : idx + 1;
+}
+function ddKindOf(node){ return node.closest(".dd-panel").id.replace("ddp-", ""); }
+
+function updateDdLabel(kind){
+  const el = document.getElementById("dd-" + kind + "-label");
+  if (!el) return;
+  const btn = el.closest(".dd-btn");
+  let txt = "—";
+  if (kind === "world"){
+    if (curWorld != null){
+      const seq = worldSeq(curWorld);
+      txt = serverLabel(serverOfWorld(curWorld)) + " · " + (seq == null ? "?" : seq) + "（W" + curWorld + "）";
+    }
+  }else{
+    const g = groups[curGroup];
+    if (g) txt = serverLabel(serverOfGroup(g)) + " · 世界组 " + g.group_id + "（" + fmtWorlds(g.worlds) + "）";
+  }
+  el.textContent = txt;
+  if (btn) btn.title = txt;
+}
+function updateDdHint(kind, extra){
+  const el = document.getElementById("dd-" + kind + "-hint");
+  if (!el) return;
+  if (extra){ el.textContent = extra; return; }
+  if (kind === "world"){
+    el.textContent = curWorld != null
+      ? "当前：序号 " + worldSeq(curWorld) + "（W" + curWorld + "）· 网格数字为各服从 1 起的序号，悬停可看世界号"
+      : "网格数字为各服从 1 起的序号，悬停可看世界号";
+  }else{
+    const g = groups[curGroup];
+    el.textContent = g ? "当前：世界组 " + g.group_id + "（" + fmtWorlds(g.worlds) + "）" : "选择世界组后显示其包含的世界";
+  }
+}
+
+function buildPvPDD(kind){
+  const isWorld = kind === "world";
+  const keys = isWorld ? worldServerKeys() : groupServerKeys();
+  const page = Math.min(Math.max(0, ddSrvPage[kind]), Math.max(0, keys.length - 1));
+  ddSrvPage[kind] = page;
+  const srv = keys[page] || null;
+  const list = !srv ? [] : (isWorld ? worldsOfServer(srv) : groupsOfServer(srv));
+
+  const tabs = document.getElementById("ddt-" + kind);
+  tabs.innerHTML = keys.map((s, i) =>
+    '<button type="button" class="' + (i === page ? "on" : "") + '" data-srv="' + i + '" onclick="ddGoSrv(this)">' +
+    esc(serverLabel(s)) + "（" + (isWorld ? worldsOfServer(s).length : groupsOfServer(s).length) + "）</button>"
+  ).join("");
+
+  const grid = document.getElementById("ddg-" + kind);
+  grid.innerHTML = list.map((x, i) => {
+    if (isWorld){
+      return '<button type="button" class="' + (String(x.world_id) === String(curWorld) ? "sel" : "") + '" data-hint="' +
+        esc("序号 " + (i + 1) + " · W" + x.world_id) + '" title="W' + x.world_id + '" onclick="selectWorld(' + x.world_id + ')">' + (i + 1) + "</button>";
+    }
+    const g = x.g;
+    return '<button type="button" class="' + (x.i === curGroup ? "sel" : "") + '" data-hint="' +
+      esc("世界组 " + g.group_id + "：" + fmtWorlds(g.worlds)) + '" title="世界组 ' + g.group_id + "（" + esc(fmtWorlds(g.worlds)) + '）" onclick="selectGroup(' + x.i + ')">' + g.group_id + "</button>";
+  }).join("");
+  grid.onmouseover = function(e){
+    const b = e.target.closest("button");
+    if (b && b.dataset.hint) updateDdHint(kind, b.dataset.hint);
+  };
+  grid.onmouseleave = function(){ updateDdHint(kind); };
+
+  document.getElementById("dd-" + kind + "-pageinfo").textContent = srv
+    ? serverLabel(srv) + " · " + (page + 1) + "/" + keys.length + " 页 · 共 " + list.length + (isWorld ? " 个世界" : " 个世界组")
+    : "暂无数据";
+  const btns = document.querySelectorAll("#ddp-" + kind + " .dd-pager .mini");
+  if (btns.length >= 2){ btns[0].disabled = page <= 0; btns[1].disabled = page >= keys.length - 1; }
+  updateDdLabel(kind);
+  updateDdHint(kind);
+}
+function ddGoSrv(btn){
+  const kind = ddKindOf(btn);
+  ddSrvPage[kind] = parseInt(btn.dataset.srv, 10) || 0;
+  buildPvPDD(kind);
+}
+function ddPage(kind, d){
+  ddSrvPage[kind] += d;
+  buildPvPDD(kind);
+}
+function togglePvPDD(kind){
+  const cur = document.getElementById("ddp-" + kind);
+  const open = cur.style.display !== "none";
+  DD_KINDS.forEach(k => { document.getElementById("ddp-" + k).style.display = "none"; });
+  if (!open){ buildPvPDD(kind); cur.style.display = "block"; }
+}
+function selectWorld(id){
+  curWorld = Number(id);
+  document.getElementById("ddp-world").style.display = "none";
+  saveSelects();
+  updateDdLabel("world");
+  load(false);
+}
+function selectGroup(i){
+  curGroup = Number(i) || 0;
+  document.getElementById("ddp-group").style.display = "none";
+  saveSelects();
+  updateDdLabel("group");
+  load(false);
+}
+function jumpDd(kind){
+  const inp = document.getElementById("dd-" + kind + "-jump");
+  const v = parseInt(inp.value, 10);
+  if (isNaN(v)) return;
+  if (kind === "world"){
+    const keys = worldServerKeys();
+    const list = worldsOfServer(keys[ddSrvPage.world]);
+    let id = null;
+    if (v >= 1 && v <= list.length) id = list[v - 1].world_id;          /* 当前页的序号 */
+    else if (worlds.some(x => Number(x.world_id) === v)) id = v;        /* 直接填世界号，如 1005 */
+    if (id == null){ inp.value = ""; return; }
+    curWorld = Number(id);
+    ddSrvPage.world = Math.max(0, keys.indexOf(serverOfWorld(curWorld)));
+  }else{
+    let idx = groups.findIndex(x => Number(x.group_id) === v);
+    if (idx < 0 && v >= 1 && v <= groups.length) idx = v - 1;
+    if (idx < 0){ inp.value = ""; return; }
+    curGroup = idx;
+    ddSrvPage.group = Math.max(0, groupServerKeys().indexOf(serverOfGroup(groups[idx])));
+  }
+  inp.value = "";
+  document.getElementById("ddp-" + kind).style.display = "none";
+  saveSelects();
+  updateDdLabel(kind);
+  load(false);
+}
+document.addEventListener("click", function(e){
+  const t = e.target;
+  if (!t || (t.closest && t.closest(".dd"))) return;
+  /* 点页签/翻页会重建网格，事件目标可能已脱离文档 → 视为下拉内部操作，不关闭 */
+  if (!document.contains(t)) return;
+  DD_KINDS.forEach(k => { document.getElementById("ddp-" + k).style.display = "none"; });
+});
 
 function fmtWorlds(list){
+  /* 写全：逐个列出世界号（不再用 W1165~1168 这类省略） */
   if (!list || !list.length) return "";
-  const arr = list.slice().sort((a,b)=>a-b);
-  const parts = [];
-  let start = arr[0], prev = arr[0];
-  for (let i = 1; i <= arr.length; i++){
-    const cur = arr[i];
-    if (cur === prev + 1){ prev = cur; continue; }
-    parts.push(start === prev ? "W" + start : "W" + start + "~" + prev);
-    start = prev = cur;
-  }
-  return parts.join("、");
-}
-
-function buildGroupSelect(){
-  const selG = document.getElementById("sel-group");
-  selG.innerHTML = groups.map((x, i) =>
-    '<option value="' + i + '">世界组 ' + x.group_id + "（" + fmtWorlds(x.worlds) + "）</option>"
-  ).join("");
+  const uniq = list.map(Number).filter(v => !isNaN(v)).filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a - b);
+  return uniq.map(w => "W" + w).join("、");
 }
 
 function restoreSelects(){
-  let saved;
+  let saved = null;
   try{ saved = JSON.parse(localStorage.getItem("mmt_pvp_sel") || "null"); }catch(e){ saved = null; }
   if (saved && saved.mode) setMode(saved.mode, true);
-  const selW = document.getElementById("sel-world");
-  const selG = document.getElementById("sel-group");
-  if (saved && saved.world && selW.querySelector('option[value="' + saved.world + '"]')) selW.value = String(saved.world);
-  else if (selW.options.length) selW.value = selW.options[0].value;
-  if (saved && saved.group && selG.options[Number(saved.group)]) selG.value = String(saved.group);
-  else if (selG.options.length) selG.value = "0";
+  /* 世界：优先上次选择，否则日服第 1 个 */
+  curWorld = null;
+  if (saved && saved.world != null && worlds.some(x => String(x.world_id) === String(saved.world))) curWorld = Number(saved.world);
+  if (curWorld == null){
+    const keys = worldServerKeys();
+    const list = keys.length ? worldsOfServer(keys[0]) : [];
+    if (list.length) curWorld = Number(list[0].world_id);
+  }
+  ddSrvPage.world = Math.max(0, worldServerKeys().indexOf(serverOfWorld(curWorld)));
+  /* 世界组：优先上次选择，否则第 1 个 */
+  curGroup = 0;
+  if (saved && saved.group != null && groups[Number(saved.group)]) curGroup = Number(saved.group);
+  ddSrvPage.group = Math.max(0, groupServerKeys().indexOf(serverOfGroup(groups[curGroup])));
+  updateDdLabel("world");
+  updateDdLabel("group");
   saveSelects();
 }
 function saveSelects(){
-  const selW = document.getElementById("sel-world");
-  const selG = document.getElementById("sel-group");
-  try{ localStorage.setItem("mmt_pvp_sel", JSON.stringify({ mode: mode, world: selW.value, group: selG.value })); }catch(e){}
+  try{ localStorage.setItem("mmt_pvp_sel", JSON.stringify({ mode: mode, world: curWorld, group: curGroup })); }catch(e){}
 }
 
 function setMode(m, keep){
@@ -684,19 +909,14 @@ function setMode(m, keep){
   saveSelects();
   if (!keep) load(false);
 }
-function onSelect(kind, v){
-  saveSelects();
-  load(false);
-}
 
 /* ---------- 数据加载 ---------- */
 function apiTarget(){
   if (mode === "arena"){
-    const world = document.getElementById("sel-world").value;
-    return { url: API + "/" + world + "/arena/latest", label: "W" + world + " 竞技场" };
+    if (curWorld == null) throw new Error("世界列表未就绪");
+    return { url: API + "/" + curWorld + "/arena/latest", label: "W" + curWorld + " 竞技场" };
   }
-  const gi = parseInt(document.getElementById("sel-group").value, 10) || 0;
-  const g = groups[gi];
+  const g = groups[curGroup];
   if (!g) throw new Error("世界组不存在");
   return { url: API + "/wg/" + g.group_id + "/legend/latest", label: "世界组 " + g.group_id + " 巅峰" };
 }
@@ -729,6 +949,7 @@ async function load(force){
       cache[key] = data;
     }
     lastList = data.data;
+    closeCharSide(); /* 榜单变了，内嵌面板收起 */
     lastTs = data.ts;
     document.getElementById("upd-time").textContent = "数据时间：" + fmtTime(data.ts);
     const note = target.label + " · 共 " + lastList.length + " 名 · 点角色头像开盒" + (fromCache ? "（会话缓存）" : "");
@@ -786,7 +1007,7 @@ function renderTable(){
   const el = document.getElementById("tbl-res");
   if (!lastList.length){ el.innerHTML = '<table><thead><tr><th>排名</th><th>玩家</th><th>队伍（点角色开盒）</th></tr></thead><tbody><tr><td colspan="3" style="color:var(--muted)">暂无数据</td></tr></tbody></table>'; return; }
   const q = document.getElementById("q-name").value.trim().toLowerCase();
-  const gi = mode === "legend" ? (parseInt(document.getElementById("sel-group").value, 10) || 0) : -1;
+  const gi = mode === "legend" ? curGroup : -1;
   const g = mode === "legend" ? groups[gi] : null;
   const filtered = [];
   lastList.forEach((p, i) => {
@@ -806,7 +1027,7 @@ function renderTable(){
     } else {
       info = "战力 " + fmtNum(p.BattlePower);
     }
-    body += '<tr class="prow" onclick="openChar(' + i + ',0)">'
+    body += '<tr class="prow" data-pi="' + i + '" onclick="openChar(' + i + ',0)">'
       + '<td class="rank ' + rc + '">' + rank + "</td>"
       + '<td><div class="pname">' + esc(p.PlayerName) + "</div><div class=\"pinfo\">Lv" + esc(p.PlayerLevel) + " · " + info + "</div></td>"
       + "<td>" + charSlots(i, p.UserCharacterInfoList) + "</td>"
@@ -815,6 +1036,18 @@ function renderTable(){
   el.innerHTML = '<table><thead><tr><th>排名</th><th>玩家</th><th>队伍（点角色开盒）</th></tr></thead><tbody>'
     + (body || '<tr><td colspan="3" style="color:var(--muted)">无匹配玩家</td></tr>')
     + "</tbody></table>";
+  syncRowMark();
+}
+
+/* 宽屏内嵌面板时，给排名表里正在查看的那一行加高亮 */
+function syncRowMark(){
+  const wrap = document.getElementById("tbl-res");
+  if (!wrap) return;
+  const pi = charSide ? charSide.pi : -1;
+  const rows = wrap.querySelectorAll("tr.prow");
+  for (let k = 0; k < rows.length; k++){
+    rows[k].classList.toggle("sel", pi >= 0 && Number(rows[k].getAttribute("data-pi")) === pi);
+  }
 }
 
 /* ---------- 主数据映射（懒加载） ---------- */
@@ -921,12 +1154,30 @@ function equipPanel(c){
   return '<div class="region"><h3>装备（' + eqs.slice(0, 6).length + "件）</h3>" + (html || '<div class="skd">无装备</div>') + "</div>";
 }
 
-let curModal = null;  /* { pi, j } */
+/* ---------- 角色面板：宽屏内嵌（左贴侧栏） / 窄屏弹窗 ---------- */
+/* 队列默认在面板里（窄屏）；宽屏点击角色后队列移到左侧紧贴侧栏，右侧直接显示面板 */
+let curModal = null;  /* { pi, j } 窄屏弹窗用 */
+let charSide = null;  /* { pi, j } 宽屏内嵌用 */
+function isWidePanel(){ return window.matchMedia("(min-width: 981px)").matches; }
+function charState(){ return charSide || curModal; }
+
 function openChar(pi, j){
   const pl = lastList[pi];
   const c = pl && pl.UserCharacterInfoList ? pl.UserCharacterInfoList[j] : null;
   if (!c) return;
+  if (isWidePanel()){
+    closeCharModal();
+    charSide = { pi: pi, j: j };
+    const sec = document.getElementById("sec-rank");
+    const side = document.getElementById("char-side");
+    if (sec) sec.classList.add("split");   /* 左贴侧栏 + 让出右半区 */
+    if (side) side.style.display = "";
+    renderCharBody();
+    syncRowMark();
+    return;
+  }
   closeCharModal(); /* 移除旧弹窗（内部会清空 curModal） */
+  closeCharSide();  /* 窄屏不再用内嵌面板 */
   curModal = { pi: pi, j: j };
   const modal = document.createElement("div");
   modal.className = "pvp-modal open";
@@ -936,48 +1187,103 @@ function openChar(pi, j){
   document.body.appendChild(modal);
   renderCharBody();
 }
+
+function charHeadHtml(c, name, elem, job, id, posLabel, withClose){
+  return '<div class="mhead">'
+    + '<div class="mavatar"><img class="face" src="' + imgSrc(ICON_BASE + id + '_00_s.png') + '" onerror="iconOnError(this)" alt=""><img class="frame" src="' + imgSrc(frameUrl(rarityLabel(c.RarityFlags))) + '" onerror="this.remove()" alt=""><span class="lvchip">Lv' + esc(c.Level) + "</span></div>"
+    + '<div><div class="mname">' + esc(name) + "</div>"
+    + '<div class="mtags">' + (elem != null && elem !== "" ? elemTag(elem) : "") + jobTag(job) + '<span class="tag">' + esc(rarityLabel(c.RarityFlags)) + "</span></div>"
+    + '<div class="mmeta">' + (c.SubLevel ? "副等级 " + esc(c.SubLevel) + " · " : "") + "战力 " + fmtNum(c.BattlePower) + " · " + esc(posLabel) + "</div></div>"
+    + (withClose ? '<button class="mclose" onclick="closeCharView()" title="收起角色面板">×</button>' : "") + "</div>";
+}
+
 async function renderCharBody(){
-  const box = document.getElementById("char-box");
-  if (!curModal) return;
-  const pl = lastList[curModal.pi];
-  const list = pl && pl.UserCharacterInfoList || [];
-  if (!box || !list.length) return;
+  const st = charState();
+  if (!st) return;
+  const pl = lastList[st.pi];
+  const list = (pl && pl.UserCharacterInfoList) || [];
+  if (!list.length) return;
+  const wide = !!charSide;
+  const host = document.getElementById(wide ? "char-panel" : "char-box");
+  if (!host) return;
   try{ await ensurePvpData(); }catch(e){ /* 映射加载失败则降级显示 */ }
-  const c = list[curModal.j];
+  if (charState() !== st) return; /* 等待期间已关闭或切换了目标 */
+  const c = list[st.j];
+  if (!c) return;
   const cm = P.char && P.char[String(c.CharacterId)];
   const name = cm ? cm.n : ("角色 " + c.CharacterId);
   const id = padId(c.CharacterId);
   const elem = cm ? cm.e : "";
   const job = cm ? cm.j : 0;
+  /* 队伍小头像队列：窄屏在弹窗里；宽屏在右侧面板里 */
   let tabs = "";
   list.slice(0, 5).forEach((ch, j) => {
-    const cm2 = P.char && P.char[String(ch.CharacterId)];
-    tabs += '<span class="ttab' + (j === curModal.j ? " on" : "") + '" onclick="switchChar(' + j + ')"><img src="' + imgSrc(ICON_BASE + padId(ch.CharacterId) + '_00_s.png') + '" loading="lazy" onerror="iconOnError(this)" alt=""><span class="tlv">Lv' + esc(ch.Level) + "</span></span>";
+    tabs += '<span class="ttab' + (j === st.j ? " on" : "") + '" onclick="switchChar(' + j + ')"><img src="' + imgSrc(ICON_BASE + padId(ch.CharacterId) + '_00_s.png') + '" loading="lazy" onerror="iconOnError(this)" alt=""><span class="tlv">Lv' + esc(ch.Level) + "</span></span>";
   });
-  box.innerHTML = '<div class="mhead">'
-    + '<div class="mavatar"><img class="face" src="' + imgSrc(ICON_BASE + id + '_00_s.png') + '" onerror="iconOnError(this)" alt=""><img class="frame" src="' + imgSrc(frameUrl(rarityLabel(c.RarityFlags))) + '" onerror="this.remove()" alt=""><span class="lvchip">Lv' + esc(c.Level) + "</span></div>"
-    + '<div><div class="mname">' + esc(name) + "</div>"
-    + '<div class="mtags">' + (elem != null && elem !== "" ? elemTag(elem) : "") + jobTag(job) + '<span class="tag">' + esc(rarityLabel(c.RarityFlags)) + "</span></div>"
-    + '<div class="mmeta">' + (c.SubLevel ? "副等级 " + esc(c.SubLevel) + " · " : "") + "战力 " + fmtNum(c.BattlePower) + " · 队伍第" + (curModal.j + 1) + "位</div></div>"
-    + '<button class="mclose" onclick="closeCharModal()">×</button></div>'
+  if (wide){
+    const note = document.getElementById("char-note");
+    if (note){
+      const g = mode === "legend" ? groups[curGroup] : null;
+      const w = g ? legendWorldOf(g, pl.PlayerId) : "";
+      note.textContent = "第 " + (st.pi + 1) + " 名「" + (pl.PlayerName || "") + "」"
+        + (g ? " · 世界组 " + g.group_id + (w ? " · " + w : "") : "");
+    }
+    host.innerHTML = charHeadHtml(c, name, elem, job, id, "队伍第" + (st.j + 1) + "位", false)
+      + '<div class="team-tabs">' + tabs + "</div>"
+      + '<div class="regions">' + charPanel(c) + equipPanel(c) + "</div>";
+    syncRowMark();
+    return;
+  }
+  host.innerHTML = charHeadHtml(c, name, elem, job, id, "队伍第" + (st.j + 1) + "位", true)
     + '<div class="team-tabs">' + tabs + "</div>"
     + '<div class="regions">' + charPanel(c) + equipPanel(c) + "</div>";
 }
+
 function switchChar(j){
-  if (!curModal || !lastList[curModal.pi]) return;
+  const st = charState();
+  if (!st || !lastList[st.pi]) return;
+  if (charSide){
+    charSide.j = j;
+    renderCharBody();
+    return;
+  }
   curModal.j = j;
   const box = document.getElementById("char-box");
   if (box) box.innerHTML = '<div class="loading"><span class="spinner"></span><br>切换角色…</div>';
   renderCharBody();
+}
+
+function closeCharSide(){
+  if (!charSide) return;
+  charSide = null;
+  const sec = document.getElementById("sec-rank");
+  const side = document.getElementById("char-side");
+  if (sec) sec.classList.remove("split");
+  if (side) side.style.display = "none";
+  syncRowMark();
 }
 function closeCharModal(){
   const m = document.getElementById("char-modal");
   if (m) m.remove();
   curModal = null;
 }
+function closeCharView(){ closeCharModal(); closeCharSide(); }
 document.addEventListener("keydown", function(e){
-  if (e.key === "Escape"){ closeCharModal(); closeRefreshModal(); }
+  if (e.key === "Escape"){ closeCharView(); closeRefreshModal(); }
 });
+/* 视口缩到窄屏时收起内嵌面板，避免残留 */
+(function(){
+  const mq = window.matchMedia("(min-width: 981px)");
+  const onChange = function(){
+    if (mq.matches){ /* 变宽：弹窗转为左侧内嵌面板 */
+      if (curModal){ const st = curModal; closeCharModal(); openChar(st.pi, st.j); }
+    } else { /* 变窄：收起内嵌面板 */
+      closeCharSide();
+    }
+  };
+  if (mq.addEventListener) mq.addEventListener("change", onChange);
+  else if (mq.addListener) mq.addListener(onChange);
+})();
 
 /* ---------- 出场统计折叠 ---------- */
 function setStatsFold(fold){
