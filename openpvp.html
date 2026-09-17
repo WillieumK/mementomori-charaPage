@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>竞技场与巅峰开盒</title>
+<title>竞技场与巅峰详情</title>
 <link rel="icon" href="icon.png">
 <style>
 :root{--bg:#0d0b14;--panel:rgba(255,255,255,.045);--panel-border:rgba(255,255,255,.09);--gold:#d9b26a;--accent:#7c6cf0;--text:#e8e6f0;--muted:#9a94ad}
@@ -115,7 +115,7 @@ body:not(.side-collapsed) .side-open{display:none}
 @media (min-width:769px){body:not(.side-collapsed){padding-left:345px}}
 @media (max-width:768px){.side-open{display:block}header.top{padding-top:52px}.wrap{padding:16px 10px 40px}header.top h1{font-size:22px;flex-wrap:wrap}section.card{padding:14px 12px 18px}.cslot img{width:40px;height:40px}.cslot{width:44px;margin-right:4px}.toolbar{justify-content:flex-start}.toolbar .search input{width:110px}.stat-item{min-width:130px;max-width:none;flex:1 1 130px}}
 
-/* 角色开盒弹窗 */
+/* 角色详情弹窗 */
 .pvp-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:none;align-items:flex-start;justify-content:center;padding:24px 10px;overflow:auto}
 .pvp-modal.open{display:flex}
 .pvp-modal .box{background:#151223;border:1px solid var(--panel-border);border-radius:14px;max-width:1020px;width:100%;padding:16px 18px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
@@ -334,7 +334,7 @@ body:not(.side-collapsed) .side-open{display:none}
   <a class="side-link" href="index.html#sec-overview">当期卡池记录<span class="sub">新角色 · 新复刻 · 新星辰</span></a>
   <a class="side-link" href="index.html#sec-elements">属性轮档记录<span class="sub">天光 · 幽冥 · 忧蓝 · 业红 · 苍翠 · 流金</span></a>
   <a class="side-link" href="monsters.html">怪物数值查询<span class="sub">主线 Quest / 塔 Tower</span></a>
-  <a class="side-link active" href="openpvp.html">竞技场与巅峰开盒<span class="sub">Arena / Legend 排名 · 队伍角色数值与装备</span></a>
+  <a class="side-link active" href="openpvp.html">竞技场与巅峰详情<span class="sub">Arena / Legend 排名 · 队伍角色数值与装备</span></a>
   <a class="side-link" href="skill.html">角色技能页<span class="sub">技能 · 秘仪 · 专武 · 数值</span></a>
 
   <div class="side-split">
@@ -350,8 +350,8 @@ body:not(.side-collapsed) .side-open{display:none}
 
 <div class="wrap">
   <header class="top">
-    <h1><img class="logo" src="icon.png" alt="icon"><span class="title-grad">竞技场与巅峰开盒</span></h1>
-    <p class="subtitle">竞技场 Battle League / 巅峰 Legend League · 排名、队伍统计与角色开盒（数值 · 技能 · 装备 · 符石）</p>
+    <h1><img class="logo" src="icon.png" alt="icon"><span class="title-grad">竞技场与巅峰详情</span></h1>
+    <p class="subtitle">竞技场 Battle League / 巅峰 Legend League · 排名、队伍统计与角色详情（数值 · 技能 · 装备 · 符石）</p>
     <p>
       <span class="badge">在线读取 mentemori.icu API</span>
       <span class="badge" id="upd-time">数据时间：—</span>
@@ -760,7 +760,7 @@ async function doPreload(){
     }
     try{ localStorage.setItem("mmt_pvp_cache", "1"); }catch(e){}
     cacheMode = true;
-    txt.textContent = "✅ 完成！已缓存 " + (added + existed) + " 项（无资源跳过 " + missing + " 项）。已启用本地缓存，开盒不再在线加载图标与技能文本；刷新页面后依然生效。";
+    txt.textContent = "✅ 完成！已缓存 " + (added + existed) + " 项（无资源跳过 " + missing + " 项）。已启用本地缓存，查看详情不再在线加载图标与技能文本；刷新页面后依然生效。";
     renderStats(); renderTable();
   }catch(e){
     txt.textContent = "预载停止：" + e.message;
@@ -1063,7 +1063,7 @@ async function load(force){
     closeCharSide(); /* 榜单变了，内嵌面板收起 */
     lastTs = data.ts;
     document.getElementById("upd-time").textContent = "数据时间：" + fmtTime(data.ts);
-    const note = target.label + " · 共 " + lastList.length + " 名 · 点角色头像开盒" + (fromCache ? "（会话缓存）" : "");
+    const note = target.label + " · 共 " + lastList.length + " 名 · 点角色头像看详情" + (fromCache ? "（会话缓存）" : "");
     document.getElementById("res-note").textContent = note;
     renderStats();
     renderTable();
@@ -1116,7 +1116,7 @@ function charSlots(pi, list){
 
 function renderTable(){
   const el = document.getElementById("tbl-res");
-  if (!lastList.length){ el.innerHTML = '<table><thead><tr><th>排名</th><th>玩家</th><th>队伍（点角色开盒）</th></tr></thead><tbody><tr><td colspan="3" style="color:var(--muted)">暂无数据</td></tr></tbody></table>'; return; }
+  if (!lastList.length){ el.innerHTML = '<table><thead><tr><th>排名</th><th>玩家</th><th>队伍（点角色看详情）</th></tr></thead><tbody><tr><td colspan="3" style="color:var(--muted)">暂无数据</td></tr></tbody></table>'; return; }
   const q = document.getElementById("q-name").value.trim().toLowerCase();
   const gi = mode === "legend" ? curGroup : -1;
   const g = mode === "legend" ? groups[gi] : null;
@@ -1146,7 +1146,7 @@ function renderTable(){
       + "<td>" + charSlots(i, p.UserCharacterInfoList) + "</td>"
       + "</tr>";
   });
-  el.innerHTML = '<table><thead><tr><th>排名</th><th>玩家</th><th>队伍（点角色开盒）</th></tr></thead><tbody>'
+  el.innerHTML = '<table><thead><tr><th>排名</th><th>玩家</th><th>队伍（点角色看详情）</th></tr></thead><tbody>'
     + (body || '<tr><td colspan="3" style="color:var(--muted)">无匹配玩家</td></tr>')
     + "</tbody></table>";
   syncRowMark();
@@ -1174,7 +1174,7 @@ async function ensurePvpData(){
   P = { char: ch, skill: sk, equip: eq, legend: lg, matchless: mc, sphere: sp, excl: ex };
 }
 
-/* ---------- 角色开盒弹窗 ---------- */
+/* ---------- 角色详情弹窗 ---------- */
 function statCell(k, v, pct){
   const val = pct ? fmtPct(v) : fmtNum(v);
   return '<div class="stat"><div class="sk">' + k + '</div><div class="sv">' + val + "</div></div>";
@@ -1626,7 +1626,7 @@ async function waitWorkflowDone(token, timeoutMs){
 <div class="modal" id="preload-modal" onclick="if(event.target===this)closePreload()">
   <div class="modal-box" style="width:min(440px,92vw)">
     <h3>📦 图标与数据预载（可选）</h3>
-    <p>默认实时在线加载。点「开始预载」后，把主数据文本（角色/技能/装备/符石映射）与图标（角色133张 + 装备896张 + 技能榜单相关 + 符石 + 稀有度边框等）下载到浏览器本地，此后开盒不再在线加载图标与技能文本，已缓存项自动跳过。约 15MB，请耐心等待，可随时取消。</p>
+    <p>默认实时在线加载。点「开始预载」后，把主数据文本（角色/技能/装备/符石映射）与图标（角色133张 + 装备896张 + 技能榜单相关 + 符石 + 稀有度边框等）下载到浏览器本地，此后查看详情不再在线加载图标与技能文本，已缓存项自动跳过。约 15MB，请耐心等待，可随时取消。</p>
     <div class="pbar"><i id="pl-bar"></i></div>
     <div class="pl-txt" id="pl-txt">点击「开始预载」执行</div>
     <div class="modal-btns">
