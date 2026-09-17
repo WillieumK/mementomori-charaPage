@@ -144,22 +144,32 @@ body:not(.side-collapsed) .side-open{display:none}
 .skill .skn{font-weight:600;color:#f1eef8;font-size:13px}
 .skill .skd{color:var(--muted);font-size:11px;margin-top:2px;line-height:1.5}
 /* 装备区：2 件一排 × 3 排，每件 = 图标 + 符石 2×2 网格（不再显示装备附加属性） */
-.eqgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.eqgrid .eqslot{display:flex;gap:8px;align-items:flex-start;border-bottom:1px dashed rgba(255,255,255,.06);padding:3px 0 6px}
+.eqgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow-x:auto;overflow-y:hidden}
+.eqgrid .eqslot{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;min-width:136px;border-bottom:1px dashed rgba(255,255,255,.06);padding:3px 0 6px}
 .eqgrid .eqslot:nth-child(n+5){border-bottom:none;padding-bottom:1px}
 .eqiconbox{width:40px;height:40px;flex:0 0 40px;border-radius:8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);position:relative;overflow:hidden}
-.eqiconbox img.eqicon{width:100%;height:100%;object-fit:cover;padding:2px;box-sizing:border-box;opacity:0;transition:opacity .15s}
+.eqiconbox img.eqicon{position:absolute;left:2px;top:1px;z-index:1;width:calc(100% - 4px);height:calc(100% - 4px);object-fit:contain;padding-bottom:11px;box-sizing:border-box;opacity:0;transition:opacity .15s}
 .eqiconbox img.eqicon.ok{opacity:1}
-.eqiconbox .eqfb{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0 1px;text-align:center;line-height:1.2}
+.eqiconbox .eqfb{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0 1px 9px;text-align:center;line-height:1.2;box-sizing:border-box}
 .eqiconbox.noimg .eqfb{display:flex}
-.eqiconbox .eqfb i{font-style:normal;font-size:10px;color:#cfc8e2;white-space:nowrap;letter-spacing:-.5px}
-.eqiconbox .eqfb b{font-size:9px;font-weight:600;color:var(--gold);white-space:nowrap}
+.eqiconbox .eqfb i{font-style:normal;font-size:9px;color:#cfc8e2;white-space:nowrap;letter-spacing:-.5px}
+.eqiconbox .eqfb b{font-size:8.5px;font-weight:600;color:var(--gold);white-space:nowrap}
+.eqiconbox .eqblv{position:absolute;left:0;right:0;bottom:0;z-index:2;background:rgba(0,0,0,.5);color:#e8e2f5;font-size:7.5px;line-height:1.35;padding-bottom:1px;text-align:center;white-space:nowrap;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+.eqiconbox.noimg .eqblv{display:none}
 .eqmain{flex:1;min-width:0}
 .eqmain .en{display:flex;align-items:baseline;justify-content:space-between;gap:4px}
 .eqmain .en .enn{font-weight:600;font-size:11px;color:#f1eef8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .eqmain .en .elv{font-size:9px;color:var(--muted);flex:none;font-variant-numeric:tabular-nums}
 .eqmain .em{color:var(--muted);font-size:9px;margin-top:1px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-height:11px}
 .eqmain .em .sync-mark{font-size:9px;padding:0 3px;margin-left:0}
+/* 圣装 / 魔装：每件装备两行（圣装在上、魔装在下），标签与数值分两行显示，两列与装备的 2 列对齐 */
+.sectline{margin-top:3px;display:flex;flex-direction:column;gap:2px}
+.sectline .st{font-size:9px;line-height:1.2;min-width:0}
+.sectline .st b{font-weight:600}
+.sectline .st .stt{display:block;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sectline .st .stv{display:block;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sectline .st-lg .stv{color:#ffe9a8}
+.sectline .st-mc .stv{color:#b5f0c3}
 .sphgrid{display:grid;grid-template-columns:repeat(2,minmax(36px,1fr));gap:3px;margin-top:3px}
 .sphgrid .sphere{width:auto;min-width:0;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25);padding:2px 1px;font-size:9px;color:var(--muted);line-height:1.15;cursor:help;overflow:hidden;text-align:center}
 .sphgrid .sphere img.sphicon{width:26px;height:26px;border-radius:5px;background:rgba(0,0,0,.3);object-fit:contain;display:block;margin:0 auto 1px}
@@ -171,16 +181,30 @@ body:not(.side-collapsed) .side-open{display:none}
 .sphgrid .sphere.empty{opacity:.35;display:flex;align-items:center;justify-content:center;min-height:44px}
 /* 窄屏（弹窗）两件一排仍保留，只把间距收紧 */
 @media(max-width:640px){.eqgrid{gap:6px}.eqgrid .eqslot{gap:6px}.eqiconbox{width:38px;height:38px;flex:0 0 38px}.sphgrid .sphere img.sphicon{width:22px;height:22px}}
-/* 中窄屏：右半区不足两件一排时改回单列（符石排成一行），避免压扁图标 */
-@media(min-width:981px) and (max-width:1180px){
-  .eqgrid{grid-template-columns:1fr;gap:4px}
-  .eqgrid .eqslot:nth-child(n+5){border-bottom:1px dashed rgba(255,255,255,.06);padding-bottom:6px}
-  .eqgrid .eqslot:last-child{border-bottom:none;padding-bottom:1px}
-  .eqiconbox{width:36px;height:36px;flex:0 0 36px}
-  .sphgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
-}
-@media(min-width:981px) and (max-width:1060px){
+/* 中等宽度（981~1120 只在窄弹窗出现，展开面板 ≥1181）：右半区放不下两件一排时符石减列 */
+@media(min-width:981px) and (max-width:1120px){
   .sphgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+/* 容器查询兜底：装备区可用宽度不足以排下 2×2 符石时压成 2 列 */
+#char-panel .region{container-type:inline-size}
+@container (max-width:200px){
+  .sphgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+/* 展开角色面板时：排名区左移贴紧侧栏，装备区因此多出约 120px
+   实测装备区可用宽度：≥1500px 视口约 283px（够 2 件一排）；1250~1500 约 158~258px（单列 + 符石一行 4 格）；<1250 约 133px（单列 + 符石 2×2） */
+#sec-rank.split{margin-left:-52px;padding-left:54px}
+@media(min-width:981px) and (max-width:1500px){
+  #char-panel .eqgrid{grid-template-columns:1fr;gap:8px}
+  #char-panel .eqgrid .eqslot:nth-child(n+5){border-bottom:1px dashed rgba(255,255,255,.06);padding-bottom:6px}
+  #char-panel .eqgrid .eqslot:last-child{border-bottom:none}
+  #char-panel .sphgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(min-width:981px) and (max-width:1250px){
+  #char-panel .sphgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+/* 中等宽度：面板两列都变窄，数值面板 4 列会挤断数字 → 改 2 列 */
+@media(min-width:981px) and (max-width:1500px){
+  #char-panel .stats{grid-template-columns:repeat(2,1fr)}
 }
 /* 稀有度框头像 + 等级角标 */
 .mavatar{position:relative;width:72px;height:72px;flex:none}
@@ -244,19 +268,32 @@ body:not(.side-collapsed) .side-open{display:none}
 .rank-side .rs-title{flex:1;min-width:0;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rank-side .rs-head .mclose{width:30px;height:30px;flex:none;border-radius:8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);color:var(--gold);font-size:16px;line-height:1;cursor:pointer}
 #char-panel{min-width:0}
-/* 右侧面板窄：装备图标/符石再缩一档，2 件一排仍不横向溢出 */
+/* 右侧展开面板：装备栏整体放大 1.2 倍（图标框 40→60px 并在框内加一行 Lv基础+强化） */
 #char-panel .eqgrid{gap:6px}
-#char-panel .eqgrid .eqslot{gap:6px}
-#char-panel .eqiconbox{width:36px;height:36px;flex:0 0 36px}
-#char-panel .eqmain .en .enn{font-size:10.5px}
-#char-panel .sphgrid{gap:2px}
-#char-panel .sphgrid .sphere img.sphicon{width:22px;height:22px}
-#char-panel .sphgrid .sphere .sfb{min-height:22px;font-size:9px}
-#char-panel .sphgrid .sphere.empty{min-height:38px}
+#char-panel .eqiconbox{width:60px;height:60px;flex:0 0 60px}
+#char-panel .eqiconbox img.eqicon{padding-bottom:17px}
+#char-panel .eqiconbox .eqfb{padding-bottom:15px}
+#char-panel .eqiconbox .eqfb i{font-size:11px}
+#char-panel .eqiconbox .eqblv{display:block;font-size:9px}
+#char-panel .eqgrid .eqslot{gap:9px;padding:4px 0 7px}
+#char-panel .eqmain .en .enn{font-size:13px}
+#char-panel .eqmain .em{font-size:11px;min-height:13px}
+#char-panel .eqmain .em .sync-mark{font-size:11px}
+#char-panel .sectline{margin-top:4px;gap:2px}
+#char-panel .sectline .st{font-size:10px}
+/* 符石框：只把宽度收到原来的约一半（36→20px），高度与图标尺寸都不动 */
+#char-panel .sphgrid{grid-template-columns:repeat(2,minmax(20px,1fr));gap:2px}
+#char-panel .sphgrid .sphere{padding:2px 0}
+#char-panel .sphgrid .sphere img.sphicon{width:26px;height:26px}
+#char-panel .sphgrid .sphere .sfb{height:26px;font-size:9px}
+#char-panel .sphgrid .sphere .sfb-sm{font-size:8.4px}
+#char-panel .sphgrid .sphere .sv{font-size:8.6px}
+#char-panel .sphgrid .sphere .slv{font-size:8px}
+#char-panel .sphgrid .sphere.empty{min-height:44px}
 #char-panel .stats{gap:6px}
 .prow.sel td{background:rgba(217,178,106,.07)}
 .prow.sel td.rank{box-shadow:inset 3px 0 0 var(--gold)}
-@media (max-width:980px){#sec-rank.split{margin-left:0;border-radius:16px;padding-left:12px}.rank-side{display:none !important}}
+@media (max-width:1180px){#sec-rank.split{margin-left:0;border-radius:16px;padding-left:12px}.rank-side{display:none !important}}
 </style>
 </head>
 <body>
@@ -1128,14 +1165,23 @@ function charPanel(c){
     + '<div class="stats">' + stats + "</div>"
     + '<div style="margin-top:8px">' + (skills || '<div class="skd">无技能数据</div>') + "</div></div>";
 }
-function equipIconBox(em, slotName){
+/* 装备图标框：图 + 框内一行「基础Lv+强化」（基础等级与强化等级相同时只显示一次） */
+function equipIconBox(em, slotName, reinforceLv){
   const url = equipIconUrl(em);
-  const lvTxt = em && em.lv != null ? esc(em.lv) : "—";
-  const fb = '<span class="eqfb"><i>' + esc(slotName) + "</i><b>" + lvTxt + (em && em.lv != null ? "级" : "") + "</b></span>";
+  const baseLv = em && em.lv != null ? Number(em.lv) : null;
+  const rein = reinforceLv != null && reinforceLv !== "" ? Number(reinforceLv) : 0;
+  let lvTxt = "";
+  if (baseLv != null && isFinite(baseLv)){
+    lvTxt = baseLv === rein ? "Lv" + baseLv : "Lv" + baseLv + (rein ? "+" + rein : "");
+  } else if (rein){
+    lvTxt = "Lv" + rein;
+  }
+  const fb = '<span class="eqfb"><i>' + esc(slotName) + "</i></span>";
   const img = url
     ? '<img class="eqicon" src="' + imgSrc(url) + '" alt="" onload="this.classList.add(\'ok\')" onerror="equipTextFallback(this)">'
     : "";
-  return '<span class="eqiconbox' + (url ? "" : " noimg") + '">' + img + fb + "</span>";
+  return '<span class="eqiconbox' + (url ? "" : " noimg") + '">' + img + fb
+    + '<span class="eqblv">' + esc(lvTxt) + "</span></span>";
 }
 /* 符石名压缩为格子内的短标签：去掉「符石」后缀，过长的官方名用同义短名（title 里仍是全名） */
 const SPHERE_SHORT = { "物魔防御穿透":"物魔穿透", "弱化效果命中":"弱化命中", "弱化效果抗性":"弱化抗性", "物理防御力":"物防", "魔法防御力":"魔防" };
@@ -1161,27 +1207,49 @@ function sphereCell(e, s){
     + "</span>"
     ;
 }
-/* 单件装备：左边图标（失败显示「武器 / 835级」文字，位置不塌），右侧符石 2×2 */
+/* 圣装 / 魔装：按槽位取对应字段，圣装是百分比（×100 存）、魔装是绝对值 */
+function sectRow(label, lv, fieldName, value, isPct, cls){
+  if (!(lv > 0) || !fieldName || value == null) return "";
+  const val = isPct ? fmtPct(value) : fmtNum(value);
+  return '<div class="st ' + cls + '" title="' + esc(label + " Lv" + lv + " · " + fieldName + " " + val) + '">'
+    + '<span class="stt">' + esc(label) + "<b>Lv" + esc(lv) + "</b> " + esc(fieldName) + "</span>"
+    + '<span class="stv">' + esc(val) + "</span></div>";
+}
+function sectLines(e){
+  const slot = equipSlotNo(e);
+  const legendIdx = slot >= 1 ? slot - 1 : -1;
+  let html = "";
+  if (legendIdx >= 0 && LEGEND_FIELDS[legendIdx]){
+    const lf = LEGEND_FIELDS[legendIdx];
+    const lg = P.legend && P.legend[String(e.LegendSacredTreasureLv)];
+    html += sectRow("圣装", e.LegendSacredTreasureLv, lf[1], lg ? lg[lf[0]] : null, true, "st-lg");
+  }
+  if (legendIdx >= 0 && MATCHLESS_FIELDS[legendIdx]){
+    const mf = MATCHLESS_FIELDS[legendIdx];
+    const mc = P.matchless && P.matchless[String(e.MatchlessSacredTreasureLv)];
+    html += sectRow("魔装", e.MatchlessSacredTreasureLv, mf[1], mc ? mc[mf[0]] : null, false, "st-mc");
+  }
+  return html ? '<div class="sectline">' + html + "</div>" : "";
+}
+/* 单件装备：左边图标（失败显示槽位名文字，位置不塌），右侧符石 2×2 + 圣装/魔装两行 */
 function equipSlot(c, e, idx){
   const em = P.equip && P.equip[String(e.EquipmentId)];
   const name = em ? em.n : ("装备 " + e.EquipmentId);
   const rarity = em ? em.r : "";
-  const lv = em && em.lv != null ? em.lv : "—";
   const slotName = em && SLOT_NAMES[em.s] ? SLOT_NAMES[em.s] : (SLOT_NAMES[idx + 1] || ("槽" + (idx + 1)));
   const sync = e.SetBaseSynchroGroupId > 0 ? '<span class="sync-mark">同步组' + e.SetBaseSynchroGroupId + "</span>" : "";
   let spheres = "";
   for (let s = 1; s <= 4; s++) spheres += sphereCell(e, s);
   return '<div class="eqslot" title="' + esc(slotName + " · " + name + (rarity ? " · " + rarity : "")) + '">'
-    + equipIconBox(em, slotName)
+    + equipIconBox(em, slotName, e.ReinforcementLv)
     + '<div class="eqmain">'
-    +   '<div class="en"><span class="enn">' + esc(name) + '</span><span class="elv">+' + esc(lv) + "</span></div>"
+    +   '<div class="en"><span class="enn">' + esc(name) + '</span></div>'
     +   '<div class="em"><span class="' + rarityClass(rarity) + '">' + esc(rarity) + "</span>" + sync + "</div>"
     +   '<div class="sphgrid">' + spheres + "</div>"
+    +   sectLines(e)
     + "</div></div>";
 }
-/* 装备区两列排布顺序（按 SlotType 取号）：
-   左列 = 武器 / 项链 / 手甲，右列 = 头盔 / 护甲 / 鞋
-   → 展示顺序 1,4,2,5,3,6；缺件时后面的补位，不出现空洞 */
+/* 装备区两列排布顺序（按 SlotType 取号）：左列 武器/项链/手甲，右列 头盔/护甲/鞋 → 展示顺序 1,4,2,5,3,6 */
 const EQ_SLOT_ORDER = [1, 4, 2, 5, 3, 6];
 function equipSlotNo(e){
   const em = P.equip && P.equip[String(e.EquipmentId)];
@@ -1207,7 +1275,7 @@ function equipPanel(c){
 /* 队列默认在面板里（窄屏）；宽屏点击角色后队列移到左侧紧贴侧栏，右侧直接显示面板 */
 let curModal = null;  /* { pi, j } 窄屏弹窗用 */
 let charSide = null;  /* { pi, j } 宽屏内嵌用 */
-function isWidePanel(){ return window.matchMedia("(min-width: 981px)").matches; }
+function isWidePanel(){ return window.matchMedia("(min-width: 1181px)").matches; }
 function charState(){ return charSide || curModal; }
 
 function openChar(pi, j){
@@ -1270,15 +1338,16 @@ async function renderCharBody(){
     tabs += '<span class="ttab' + (j === st.j ? " on" : "") + '" onclick="switchChar(' + j + ')"><img src="' + imgSrc(ICON_BASE + padId(ch.CharacterId) + '_00_s.png') + '" loading="lazy" onerror="iconOnError(this)" alt=""><span class="tlv">Lv' + esc(ch.Level) + "</span></span>";
   });
   if (wide){
+    /* 内嵌面板不再显示顶部大头像行，只留一行队伍小头像；角色名并入面板标题行 */
     const note = document.getElementById("char-note");
     if (note){
       const g = mode === "legend" ? groups[curGroup] : null;
       const w = g ? legendWorldOf(g, pl.PlayerId) : "";
       note.textContent = "第 " + (st.pi + 1) + " 名「" + (pl.PlayerName || "") + "」"
+        + " · " + name + " · 队伍第" + (st.j + 1) + "位"
         + (g ? " · 世界组 " + g.group_id + (w ? " · " + w : "") : "");
     }
-    host.innerHTML = charHeadHtml(c, name, elem, job, id, "队伍第" + (st.j + 1) + "位", false)
-      + '<div class="team-tabs">' + tabs + "</div>"
+    host.innerHTML = '<div class="team-tabs">' + tabs + "</div>"
       + '<div class="regions">' + charPanel(c) + equipPanel(c) + "</div>";
     syncRowMark();
     return;
@@ -1322,7 +1391,7 @@ document.addEventListener("keydown", function(e){
 });
 /* 视口缩到窄屏时收起内嵌面板，避免残留 */
 (function(){
-  const mq = window.matchMedia("(min-width: 981px)");
+  const mq = window.matchMedia("(min-width: 1181px)");
   const onChange = function(){
     if (mq.matches){ /* 变宽：弹窗转为左侧内嵌面板 */
       if (curModal){ const st = curModal; closeCharModal(); openChar(st.pi, st.j); }
