@@ -162,10 +162,23 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add data/
-          if ! git diff --cached --quiet; then
-            git commit -m "数据缓存更新 $(date '+%Y-%m-%d %H:%M')"
-            git push
+          if git diff --cached --quiet; then
+            echo "无数据变化，跳过提交"
+            exit 0
           fi
+          git commit -m "数据缓存更新 $(date '+%Y-%m-%d %H:%M')"
+          # main 上可能刚被其它工作流推送过，非快进会被拒绝：先 rebase 再重试
+          for i in 1 2 3 4 5; do
+            if git pull --rebase origin main; then
+              if git push; then exit 0; fi
+            else
+              git rebase --abort 2>/dev/null || true
+            fi
+            echo "第 $i 次推送未成功，5 秒后重试"
+            sleep 5
+          done
+          echo "::error::重试 5 次后仍无法推送到 main"
+          exit 1
 
       - name: 部署到 GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
