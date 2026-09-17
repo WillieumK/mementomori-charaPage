@@ -1303,8 +1303,7 @@ function sectCell(e, kind){
   return '<span class="st st-mc" title="' + esc("魔装 Lv" + e.MatchlessSacredTreasureLv + " · " + f[1] + " " + val) + '">'
     + '魔装<b>Lv' + esc(e.MatchlessSacredTreasureLv) + "</b> " + esc(sectLabel(f[1])) + " " + esc(val) + "</span>";
 }
-/* 装备区下方独立的「圣装 · 魔装」块：按 武器→项链→手甲→头盔→护甲→鞋 纵向排列，可折叠 */
-const SECT_SLOT_ORDER = [1, 2, 3, 4, 5, 6];
+/* 圣装/魔装块：顺序与装备区完全对应（左列 武器/项链/手甲，右列 头盔/护甲/鞋） */
 function sortedEquipListBy(c, order){
   const eqs = (c.UserEquipmentDtoInfos || []).slice();
   const rank = {};
@@ -1316,7 +1315,7 @@ function sortedEquipListBy(c, order){
 }
 function sortedEquipList(c){ return sortedEquipListBy(c, EQ_SLOT_ORDER); }
 function sectPanel(c){
-  const list = sortedEquipListBy(c, SECT_SLOT_ORDER);
+  const list = sortedEquipListBy(c, EQ_SLOT_ORDER);   /* 与装备区同一顺序，位置一一对应 */
   if (!list.length) return "";
   /* 一行 = 一件装备的「圣装 魔装」两个框，顺序 武器→项链→手甲→头盔→护甲→鞋 */
   const rows = [];
