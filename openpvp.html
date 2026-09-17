@@ -132,18 +132,19 @@ body:not(.side-collapsed) .side-open{display:none}
 .team-tabs .ttab .tlv{font-size:10px;color:var(--muted)}
 /* 展开面板：左=数值(独立框) · 右=装备+圣魔装(同一个框，中间只隔一条横线，不留间隙)
    右框给多一点宽度：装备 2 件一排 + 圣装/魔装 一行 4 格都需要横向空间 */
-.regions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.9fr);gap:10px;margin-top:4px;align-items:start}
+.regions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:10px;margin-top:4px;align-items:start}
 .region{background:rgba(0,0,0,.2);border:1px solid var(--panel-border);border-radius:10px;padding:8px 10px;min-width:0}
 .eqbox{background:rgba(0,0,0,.2);border:1px solid var(--panel-border);border-radius:10px;padding:8px 10px;min-width:0;display:flex;flex-direction:column}
 .eqbox .eqsec{min-width:0}
 .eqbox .eqsec + .eqsec{border-top:1px solid var(--panel-border);margin-top:7px;padding-top:7px}
-.sectgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px 16px}
-.sectrow{display:flex;gap:16px;min-width:0;grid-column:span 4}
-.sectrow .st{flex:1 1 0;min-width:0;font-size:10px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 0}
+/* 圣装/魔装：和符石一样一条一个框，一行一个保证框内文字完整 */
+.sectgrid{display:grid;grid-template-columns:1fr;gap:4px}
+.sectrow{display:flex;gap:10px;min-width:0}
+.sectrow .st{flex:1 1 0;min-width:0;font-size:10px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 8px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25)}
 .sectrow .st b{font-weight:600;font-variant-numeric:tabular-nums}
-.sectrow .st-lg{color:#ffe9a8}
-.sectrow .st-mc{color:#b5f0c3}
-.sectrow .st-empty{color:var(--muted);opacity:.45}
+.sectrow .st-lg{color:#ffe9a8;border-color:rgba(255,233,168,.18);background:rgba(217,178,106,.07)}
+.sectrow .st-mc{color:#b5f0c3;border-color:rgba(181,240,195,.16);background:rgba(181,240,195,.06)}
+.sectrow .st-empty{color:var(--muted);opacity:.45;border-style:dashed}
 /* 中窄屏：4 格挤了改 2 格 */
 @media(max-width:1180px){.sectgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:1000px){.regions{grid-template-columns:1fr}}
@@ -199,7 +200,9 @@ body:not(.side-collapsed) .side-open{display:none}
 .sphgrid .sphere.noimg .stag{display:none}
 .sphgrid .sphere .sv{color:#ffe9a8;font-size:10px;font-weight:600;white-space:nowrap;flex:none;font-variant-numeric:tabular-nums}
 .sphgrid .sphere .slv{font-size:8.5px;color:var(--muted);white-space:nowrap}
-.sphgrid .sphere.empty{opacity:.35;display:flex;align-items:center;justify-content:center;min-height:44px}
+.sphgrid .sphere.empty{opacity:.35;display:flex;align-items:center;justify-content:center}
+/* 空符石：放一个与图标等高的占位，保证行高和有符石时一致 */
+.sphgrid .sphere.empty::before{content:"";width:22px;height:24px;flex:none;border-radius:5px;background:rgba(255,255,255,.05)}
 /* 窄屏（弹窗）两件一排仍保留，只把间距收紧 */
 @media(max-width:640px){.eqgrid{gap:6px}.eqgrid .eqslot{gap:6px}.eqiconbox{width:38px;height:38px;flex:0 0 38px}.sphgrid .sphere img.sphicon{width:22px;height:22px}}
 /* 中等宽度（981~1120 只在窄弹窗出现，展开面板 ≥1181）：右半区放不下两件一排时符石减列 */
@@ -211,9 +214,8 @@ body:not(.side-collapsed) .side-open{display:none}
 @container (max-width:200px){
   .sphgrid{grid-template-columns:1fr}
 }
-/* 展开角色面板时：排名区左移贴紧侧栏，装备区因此多出约 120px
-   实测装备区可用宽度：≥1500px 视口约 283px（够 2 件一排）；1250~1500 约 158~258px（单列 + 符石一行 4 格）；<1250 约 133px（单列 + 符石 2×2） */
-#sec-rank.split{margin-left:-52px;margin-right:-20px;padding-left:54px;padding-right:22px}
+/* 展开角色面板时：排名区左边贴紧侧栏、右边贴页面边缘（左右空隙全部吃掉） */
+#sec-rank.split{margin-left:-168px;margin-right:-153px;padding-left:170px;padding-right:155px;border-radius:16px}
 @media(min-width:981px) and (max-width:1500px){
   #char-panel .eqgrid{grid-template-columns:1fr;gap:8px}
   #char-panel .eqgrid .eqslot:nth-child(n+5){border-bottom:1px dashed rgba(255,255,255,.06);padding-bottom:6px}
@@ -299,8 +301,8 @@ body:not(.side-collapsed) .side-open{display:none}
 #char-panel .eqmain .en .eqrar{font-size:11px}
 #char-panel .eqmain .en .enn{font-size:13.5px}
 #char-panel .eqmain .em .sync-mark{font-size:10px;padding:0 2px}
-#char-panel .sectrow{gap:16px}
-#char-panel .sectrow .st{font-size:11px}
+#char-panel .sectrow{gap:10px}
+#char-panel .sectrow .st{font-size:9.5px}
 /* 符石框：只把宽度收到原来的约一半（36→20px），高度与图标尺寸都不动；框内字再放大一档 */
 #char-panel .sphgrid{grid-template-columns:1fr;gap:2px}
 #char-panel .sphgrid .sphere{padding:2px 5px}
@@ -312,7 +314,7 @@ body:not(.side-collapsed) .side-open{display:none}
 #char-panel .sphgrid .sphere .stag b{color:var(--muted);font-weight:600}
 #char-panel .sphgrid .sphere .sv{font-size:10.5px;margin-left:auto}
 #char-panel .sphgrid .sphere .slv{font-size:9px}
-#char-panel .sphgrid .sphere.empty{min-height:44px}
+#char-panel .sphgrid .sphere.empty{min-height:0}
 #char-panel .stats{gap:6px}
 .prow.sel td{background:rgba(217,178,106,.07)}
 .prow.sel td.rank{box-shadow:inset 3px 0 0 var(--gold)}
@@ -1212,14 +1214,15 @@ function charPanel(c){
     + '<div class="stats">' + stats + "</div>"
     + '<div style="margin-top:8px">' + (bottom || '<div class="skd">无技能数据</div>') + "</div></div>";
 }
-/* 装备图标框：图 + 框内一行「基础Lv+强化」（基础等级与强化等级相同时只显示一次） */
+/* 装备图标框：框内一行「Lv基础+强化」；强化等级始终显示（没有强化等级时才只显示基础等级） */
 function equipIconBox(em, slotName, reinforceLv){
   const url = equipIconUrl(em);
   const baseLv = em && em.lv != null ? Number(em.lv) : null;
-  const rein = reinforceLv != null && reinforceLv !== "" ? Number(reinforceLv) : 0;
+  const rein = reinforceLv != null && reinforceLv !== "" ? Number(reinforceLv) : null;
   let lvTxt = "";
   if (baseLv != null && isFinite(baseLv)){
-    lvTxt = baseLv === rein ? "Lv" + baseLv : "Lv" + baseLv + (rein ? "+" + rein : "");
+    if (rein != null && isFinite(rein) && rein > 0) lvTxt = "Lv" + baseLv + "+" + rein;
+    else lvTxt = "Lv" + baseLv;
   } else if (rein){
     lvTxt = "Lv" + rein;
   }
@@ -1299,18 +1302,13 @@ function sortedEquipList(c){
 function sectPanel(c){
   const list = sortedEquipList(c);
   if (!list.length) return "";
-  /* 一行 = 一件装备的「圣装 魔装」，每格占一列；6 件 → 3 排 × 4 列（与装备 2 列对齐） */
+  /* 一行 = 一件装备的「圣装 魔装」两个框（一行两格，保证框内文字完整） */
   const rows = [];
-  for (let i = 0; i < list.length; i += 2){
-    const cells = [];
-    [list[i], list[i + 1]].forEach(function(e){
-      if (!e) return;
-      const lg = sectCell(e, "lg"), mc = sectCell(e, "mc");
-      if (!lg && !mc) return;
-      cells.push((lg || '<span class="st st-empty">—</span>') + (mc || '<span class="st st-empty">—</span>'));
-    });
-    if (cells.length) rows.push('<div class="sectrow">' + cells.join("") + "</div>");
-  }
+  list.forEach(function(e){
+    const lg = sectCell(e, "lg"), mc = sectCell(e, "mc");
+    if (!lg && !mc) return;
+    rows.push('<div class="sectrow">' + (lg || '<span class="st st-empty">—</span>') + (mc || '<span class="st st-empty">—</span>') + "</div>");
+  });
   if (!rows.length) return "";
   return '<div class="eqsec sectsec"><div class="sectgrid">' + rows.join("") + "</div></div>";
 }
