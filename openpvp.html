@@ -213,7 +213,7 @@ body:not(.side-collapsed) .side-open{display:none}
   .sphgrid{grid-template-columns:1fr}
 }
 /* 展开角色面板时：排名区左边贴紧侧栏、右边贴页面边缘（左右空隙全部吃掉） */
-#sec-rank.split{margin-left:-100px;margin-right:-153px;padding-left:102px;padding-right:155px;border-radius:16px}
+#sec-rank.split{margin-left:-100px;margin-right:-153px;padding-left:40px;padding-right:40px;border-radius:16px}
 @media(min-width:981px) and (max-width:1500px){
   #char-panel .eqgrid{grid-template-columns:1fr;gap:8px}
   #char-panel .eqgrid .eqslot:nth-child(n+5){border-bottom:1px dashed rgba(255,255,255,.06);padding-bottom:6px}
@@ -277,10 +277,10 @@ body:not(.side-collapsed) .side-open{display:none}
 .rank-split{display:flex;gap:14px;align-items:flex-start}
 .rank-left{flex:0 1 auto;min-width:0;max-width:100%}
 /* 展开时左表收窄，剩余宽度全给右面板（这样装备区文字才有空间放大） */
-#sec-rank.split .rank-left{flex:0 1 320px}
+#sec-rank.split .rank-left{flex:0 1 430px}
 #sec-rank.split .rank-left thead th,#sec-rank.split .rank-left tbody td{padding:8px 7px}
-#sec-rank.split .rank-left .cslot{width:42px;margin-right:2px}
-#sec-rank.split .rank-left .cslot img{width:38px;height:38px}
+#sec-rank.split .rank-left .cslot{width:40px;margin-right:2px}
+#sec-rank.split .rank-left .cslot img{width:36px;height:36px}
 .rank-left .table-wrap{max-width:100%}
 .rank-left table{width:max-content}
 .rank-left thead th,.rank-left tbody td{padding:8px 9px}
@@ -302,7 +302,7 @@ body:not(.side-collapsed) .side-open{display:none}
 #char-panel .eqiconbox .eqblv{display:block;font-size:9px}
 #char-panel .eqgrid .eqslot{gap:9px;padding:4px 0 7px}
 #char-panel .eqmain .en .eqrar{font-size:13px}
-#char-panel .eqmain .en .enn{font-size:16px}
+#char-panel .eqmain .en .enn{font-size:14px}
 #char-panel .eqmain .em .sync-mark{font-size:10px;padding:0 2px}
 #char-panel .sectrow{gap:10px}
 #char-panel .sectrow .st{font-size:12px}
