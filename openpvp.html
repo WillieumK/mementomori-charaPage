@@ -10,7 +10,6 @@
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;color:var(--text);font-family:"Segoe UI","Microsoft YaHei","PingFang SC",Arial,sans-serif;background:radial-gradient(1200px 600px at 80% -10%,rgba(124,108,240,.18),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(217,178,106,.10),transparent 60%),linear-gradient(180deg,#0d0b14 0%,#12101c 55%,#0a0910 100%);background-attachment:fixed}
 .wrap{max-width:1280px;margin:0 auto;padding:36px 20px 60px}
-@media(min-width:1400px){.wrap{max-width:none}}
 header.top{text-align:center;padding:34px 20px 24px;border-bottom:1px solid var(--panel-border);margin-bottom:26px}
 header.top h1{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 10px;font-size:30px;letter-spacing:1px}
 h1 .logo{width:42px;height:42px;border-radius:10px;box-shadow:0 0 18px rgba(217,178,106,.35)}
@@ -44,7 +43,8 @@ tbody tr:hover{background:rgba(124,108,240,.14)}
 .rank.top1{color:#ffd76a}
 .rank.top2{color:#d7dbe8}
 .rank.top3{color:#d9a066}
-.pname{font-weight:600;color:#f1eef8}
+.pname{font-weight:600;color:#f1eef8;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.pname .ppower{font-weight:400;font-size:11px;color:#a99fd9;white-space:nowrap}
 .pinfo{color:var(--muted);font-size:11px;margin-top:2px}
 .pinfo .pworld{color:#a99fd9}
 .cslot{display:inline-block;width:52px;text-align:center;margin-right:6px;cursor:pointer;vertical-align:top}
@@ -189,39 +189,39 @@ body:not(.side-collapsed) .side-open{display:none}
 .eqmain .en .elv{font-size:9px;color:var(--muted);flex:none;font-variant-numeric:tabular-nums}
 .eqmain .em{color:var(--muted);font-size:9px;margin-top:1px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-height:11px}
 .eqmain .em .sync-mark{font-size:9px;padding:0 3px;margin-left:0}
-.sphgrid{display:grid;grid-template-columns:repeat(2,minmax(36px,1fr));gap:3px;margin-top:3px}
-.sphgrid .sphere{width:auto;min-width:0;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25);padding:2px 1px;font-size:9px;color:var(--muted);line-height:1.15;cursor:help;overflow:hidden;text-align:center}
-.sphgrid .sphere img.sphicon{width:26px;height:26px;border-radius:5px;background:rgba(0,0,0,.3);object-fit:contain;display:block;margin:0 auto 1px}
+.sphgrid{display:grid;grid-template-columns:1fr;gap:2px;margin-top:3px}
+.sphgrid .sphere{width:auto;min-width:0;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25);padding:2px 5px;font-size:9.5px;color:var(--muted);line-height:1.25;cursor:help;overflow:hidden;display:flex;align-items:center;gap:5px;text-align:left}
+.sphgrid .sphere img.sphicon{width:22px;height:22px;border-radius:5px;background:rgba(0,0,0,.3);object-fit:contain;flex:none}
 .sphgrid .sphere .sfb{display:none;height:26px;margin:0 auto 1px;align-items:center;justify-content:center;font-size:9px;color:#cfc8e2;line-height:1.05;word-break:break-all;letter-spacing:-.4px;overflow:hidden}
 .sphgrid .sphere.noimg .sfb{display:flex}
 .sphgrid .sphere .sfb-sm{font-size:8.5px;letter-spacing:-.5px}
-.sphgrid .sphere .stag{font-size:8.5px;color:#cfc8e2;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.3px;max-width:100%}
+.sphgrid .sphere .stag{font-size:9.5px;color:#cfc8e2;line-height:1.25;flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sphgrid .sphere.noimg .stag{display:none}
-.sphgrid .sphere .sv{color:#ffe9a8;font-size:9px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sphgrid .sphere .sv{color:#ffe9a8;font-size:10px;font-weight:600;white-space:nowrap;flex:none;font-variant-numeric:tabular-nums}
 .sphgrid .sphere .slv{font-size:8.5px;color:var(--muted);white-space:nowrap}
 .sphgrid .sphere.empty{opacity:.35;display:flex;align-items:center;justify-content:center;min-height:44px}
 /* 窄屏（弹窗）两件一排仍保留，只把间距收紧 */
 @media(max-width:640px){.eqgrid{gap:6px}.eqgrid .eqslot{gap:6px}.eqiconbox{width:38px;height:38px;flex:0 0 38px}.sphgrid .sphere img.sphicon{width:22px;height:22px}}
 /* 中等宽度（981~1120 只在窄弹窗出现，展开面板 ≥1181）：右半区放不下两件一排时符石减列 */
 @media(min-width:981px) and (max-width:1120px){
-  .sphgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sphgrid{grid-template-columns:1fr}
 }
 /* 容器查询兜底：装备区可用宽度不足以排下 2×2 符石时压成 2 列 */
 #char-panel .region{container-type:inline-size}
 @container (max-width:200px){
-  .sphgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sphgrid{grid-template-columns:1fr}
 }
 /* 展开角色面板时：排名区左移贴紧侧栏，装备区因此多出约 120px
    实测装备区可用宽度：≥1500px 视口约 283px（够 2 件一排）；1250~1500 约 158~258px（单列 + 符石一行 4 格）；<1250 约 133px（单列 + 符石 2×2） */
-#sec-rank.split{margin-left:-52px;padding-left:54px}
+#sec-rank.split{margin-left:-52px;margin-right:-20px;padding-left:54px;padding-right:22px}
 @media(min-width:981px) and (max-width:1500px){
   #char-panel .eqgrid{grid-template-columns:1fr;gap:8px}
   #char-panel .eqgrid .eqslot:nth-child(n+5){border-bottom:1px dashed rgba(255,255,255,.06);padding-bottom:6px}
   #char-panel .eqgrid .eqslot:last-child{border-bottom:none}
-  #char-panel .sphgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  #char-panel .sphgrid{grid-template-columns:1fr}
 }
 @media(min-width:981px) and (max-width:1250px){
-  #char-panel .sphgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #char-panel .sphgrid{grid-template-columns:1fr}
 }
 /* 中等宽度：面板两列都变窄，数值面板 4 列会挤断数字 → 改 2 列 */
 @media(min-width:981px) and (max-width:1500px){
@@ -274,7 +274,6 @@ body:not(.side-collapsed) .side-open{display:none}
   .dd-hint{max-width:none}
 }
 /* 排名 + 角色面板同排：左=队伍榜（压缩行内间隙），右=展开的角色面板 */
-#sec-rank.split{margin-left:-20px;border-top-left-radius:0;border-bottom-left-radius:0;padding-left:22px}
 .rank-split{display:flex;gap:14px;align-items:flex-start}
 .rank-left{flex:0 1 auto;min-width:0;max-width:100%}
 .rank-left .table-wrap{max-width:100%}
@@ -303,13 +302,15 @@ body:not(.side-collapsed) .side-open{display:none}
 #char-panel .sectrow{gap:16px}
 #char-panel .sectrow .st{font-size:11px}
 /* 符石框：只把宽度收到原来的约一半（36→20px），高度与图标尺寸都不动；框内字再放大一档 */
-#char-panel .sphgrid{grid-template-columns:repeat(2,minmax(20px,1fr));gap:2px}
-#char-panel .sphgrid .sphere{padding:2px 0}
-#char-panel .sphgrid .sphere img.sphicon{width:26px;height:26px}
-#char-panel .sphgrid .sphere .sfb{height:26px;font-size:10px}
+#char-panel .sphgrid{grid-template-columns:1fr;gap:2px}
+#char-panel .sphgrid .sphere{padding:2px 5px}
+#char-panel .sphgrid .sphere img.sphicon{width:24px;height:24px}
+#char-panel .sphgrid .sphere .sfb{height:24px;font-size:10px}
 #char-panel .sphgrid .sphere .sfb-sm{font-size:9.2px}
-#char-panel .sphgrid .sphere .stag{font-size:9px}
-#char-panel .sphgrid .sphere .sv{font-size:9.5px}
+#char-panel .sphgrid .sphere .stag{font-size:9.5px}
+#char-panel .sphgrid{grid-template-columns:1fr;gap:3px}
+#char-panel .sphgrid .sphere .stag b{color:var(--muted);font-weight:600}
+#char-panel .sphgrid .sphere .sv{font-size:10.5px;margin-left:auto}
 #char-panel .sphgrid .sphere .slv{font-size:9px}
 #char-panel .sphgrid .sphere.empty{min-height:44px}
 #char-panel .stats{gap:6px}
@@ -1113,18 +1114,19 @@ function renderTable(){
     const p = row.p, i = row.i;
     const rank = i + 1;
     const rc = rank === 1 ? "top1" : rank === 2 ? "top2" : rank === 3 ? "top3" : "";
-    let info;
+    let info, nameExtra = "";
     if (mode === "legend"){
       info = "积分 " + fmtNum(p.CurrentPoint) + " · 连胜 " + (p.ConsecutiveVictoryCount || 0);
       const w = legendWorldOf(g, p.PlayerId);
       if (w) info += ' · <span class="pworld">' + esc(w) + "</span>";
-      if (p.BattlePower != null) info += " · 战力 " + fmtNum(p.BattlePower);
+      /* 战力跟在玩家名后面同一行 */
+      if (p.BattlePower != null) nameExtra = '<span class="ppower">战力 ' + fmtNum(p.BattlePower) + "</span>";
     } else {
       info = "战力 " + fmtNum(p.BattlePower);
     }
     body += '<tr class="prow" data-pi="' + i + '" onclick="openChar(' + i + ',0)">'
       + '<td class="rank ' + rc + '">' + rank + "</td>"
-      + '<td><div class="pname">' + esc(p.PlayerName) + "</div><div class=\"pinfo\">Lv" + esc(p.PlayerLevel) + " · " + info + "</div></td>"
+      + '<td><div class="pname">' + esc(p.PlayerName) + nameExtra + "</div><div class=\"pinfo\">Lv" + esc(p.PlayerLevel) + " · " + info + "</div></td>"
       + "<td>" + charSlots(i, p.UserCharacterInfoList) + "</td>"
       + "</tr>";
   });
@@ -1228,11 +1230,18 @@ function equipIconBox(em, slotName, reinforceLv){
   return '<span class="eqiconbox' + (url ? "" : " noimg") + '">' + img + fb
     + '<span class="eqblv">' + esc(lvTxt) + "</span></span>";
 }
-/* 符石短名 / 框内类型名：一律用官方简中全名（与 pvp_sphere.json 的 n 去「符石」后缀一致） */
+/* 符石短名 / 框内类型名：官方全名太长会换行或被截断，统一用简称（完整名在悬停提示里） */
+const SPHERE_SHORT = { "物魔防御穿透": "物魔穿透", "弱化效果命中": "弱化命中", "弱化效果抗性": "弱化抗性", "物理防御力": "物防", "魔法防御力": "魔防" };
+/* 符石行里显示的类型名（可以更短） */
+const SPHERE_TAG = { "物魔穿透": "穿透", "防御穿透": "穿透", "物防": "物防", "魔防": "魔防", "暴击伤害强化": "暴伤", "物理暴击伤害降低": "物暴降", "魔法暴击伤害降低": "魔暴降", "暴击抗性": "暴抗", "弱化效果命中": "弱命", "弱化效果抗性": "弱抗", "弱化命中": "弱命", "弱化抗性": "弱抗" };
 function shortSphereName(n){
-  return String(n == null ? "" : n).replace(/符石$/, "");
+  const base = String(n == null ? "" : n).replace(/符石$/, "");
+  return SPHERE_SHORT[base] || base;
 }
-function sphereTag(n){ return shortSphereName(n); }
+function sphereTag(n){
+  const s = shortSphereName(n);
+  return SPHERE_TAG[s] || s;
+}
 function sphereCell(e, s){
   const sid = e["SphereId" + s];
   const sp = sid && P.sphere ? P.sphere[String(sid)] : null;
@@ -1245,13 +1254,14 @@ function sphereCell(e, s){
     : "";
   const tip = sp.n + (sp.lv != null ? " Lv" + sp.lv : "") + " · " + (sp.r || "")
     + (sp.v != null ? " · " + fmtNum(sp.v) : "") + (sp.d ? "\n" + sp.d : "");
-  return '<span class="sphere' + (url ? "" : " noimg") + '" title="' + esc(tip) + '">'
-    + img + '<div class="sfb' + (short.length > 4 ? " sfb-sm" : "") + '">' + esc(short) + "</div>"
-    + '<div class="stag">' + esc(tag) + "</div>"
-    + '<div class="sv">' + (sp.v != null ? fmtNum(sp.v) : "—") + "</div>"
-    + (sp.lv != null ? '<div class="slv">Lv' + esc(sp.lv) + "</div>" : "")
-    + "</span>"
-    ;
+  /* 符石：一件装备一行一个（共 4 行），行内左边图标、右边「LvXX 类型 数值」 */
+const lvTxt = sp.lv != null ? "Lv" + sp.lv : "";
+return '<span class="sphere' + (url ? "" : " noimg") + '" title="' + esc(tip) + '">'
+  + img
+  + '<span class="stag">' + (lvTxt ? '<b>' + esc(lvTxt) + "</b> " : "") + esc(tag) + "</span>"
+  + '<span class="sv">' + (sp.v != null ? fmtNum(sp.v) : "—") + "</span>"
+  + "</span>"
+  ;
 }
 /* 圣装 / 魔装：按槽位取对应字段，圣装是百分比（×100 存）、魔装是绝对值
    显示格式「圣装Lv40 攻击力 60%」/「魔装Lv23 攻击力 4,000」，属性名用官方简称（完整名放 title） */
