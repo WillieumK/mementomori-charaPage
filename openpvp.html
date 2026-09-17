@@ -47,6 +47,8 @@ tbody tr:hover{background:rgba(124,108,240,.14)}
 .pname .ppower{font-weight:400;font-size:11px;color:#a99fd9;white-space:nowrap}
 .pinfo{color:var(--muted);font-size:11px;margin-top:2px}
 .pinfo .pworld{color:#a99fd9}
+/* 巅峰展开面板时：排名列只留名字与区服 */
+#sec-rank.split .pinfo .pout,#sec-rank.split .pname .pout{display:none}
 .cslot{display:inline-block;width:52px;text-align:center;margin-right:6px;cursor:pointer;vertical-align:top}
 .cslot img{width:48px;height:48px;border-radius:9px;border:1px solid var(--panel-border);background:rgba(255,255,255,.06);object-fit:cover;display:block;margin:0 auto}
 .cslot:hover img{outline:1px solid var(--gold)}
@@ -278,12 +280,12 @@ body:not(.side-collapsed) .side-open{display:none}
 .rank-left{flex:0 1 auto;min-width:0;max-width:100%}
 /* 展开时左表收窄，剩余宽度全给右面板（这样装备区文字才有空间放大） */
 #sec-rank.split .rank-left{flex:0 1 540px}
-#sec-rank.split .rank-left thead th,#sec-rank.split .rank-left tbody td{padding:2px 6px}
+#sec-rank.split .rank-left thead th,#sec-rank.split .rank-left tbody td{padding:6px 6px}
 #sec-rank.split .rank-left .cslot{width:56px;margin-right:2px}
 #sec-rank.split .rank-left .cslot img{width:52px;height:52px;border-radius:9px}
 .rank-left .table-wrap{max-width:100%}
 .rank-left table{width:max-content}
-.rank-left thead th,.rank-left tbody td{padding:2px 9px}
+.rank-left thead th,.rank-left tbody td{padding:6px 9px}
 .rank-left thead th:first-child,.rank-left tbody td:first-child{padding-left:10px;padding-right:6px}
 .rank-left .rank{width:34px}
 .rank-left .cslot{width:54px;margin-right:3px}
@@ -1128,19 +1130,20 @@ function renderTable(){
     const p = row.p, i = row.i;
     const rank = i + 1;
     const rc = rank === 1 ? "top1" : rank === 2 ? "top2" : rank === 3 ? "top3" : "";
+    /* 巅峰展开面板时，排名列只保留「名字 + 区服」，其余（Lv/积分/连胜/战力）加 .pout 由 CSS 隐藏，把宽度让给队伍图标 */
     let info, nameExtra = "";
     if (mode === "legend"){
-      info = "积分 " + fmtNum(p.CurrentPoint) + " · 连胜 " + (p.ConsecutiveVictoryCount || 0);
       const w = legendWorldOf(g, p.PlayerId);
-      if (w) info += ' · <span class="pworld">' + esc(w) + "</span>";
-      /* 战力跟在玩家名后面同一行 */
-      if (p.BattlePower != null) nameExtra = '<span class="ppower">战力 ' + fmtNum(p.BattlePower) + "</span>";
+      info = '<span class="pout">Lv' + esc(p.PlayerLevel) + " · 积分 " + fmtNum(p.CurrentPoint) + " · 连胜 " + (p.ConsecutiveVictoryCount || 0) + " · </span>"
+        + (w ? '<span class="pworld">' + esc(w) + "</span>" : "")
+        + (p.BattlePower != null ? '<span class="pout"> · 战力 ' + fmtNum(p.BattlePower) + "</span>" : "");
+      if (p.BattlePower != null) nameExtra = '<span class="ppower pout">战力 ' + fmtNum(p.BattlePower) + "</span>";
     } else {
       info = "战力 " + fmtNum(p.BattlePower);
     }
     body += '<tr class="prow" data-pi="' + i + '" onclick="openChar(' + i + ',0)">'
       + '<td class="rank ' + rc + '">' + rank + "</td>"
-      + '<td><div class="pname">' + esc(p.PlayerName) + nameExtra + "</div><div class=\"pinfo\">Lv" + esc(p.PlayerLevel) + " · " + info + "</div></td>"
+      + '<td><div class="pname">' + esc(p.PlayerName) + nameExtra + "</div><div class=\"pinfo\">" + (mode === "legend" ? info : ("Lv" + esc(p.PlayerLevel) + " · " + info)) + "</div></td>"
       + "<td>" + charSlots(i, p.UserCharacterInfoList) + "</td>"
       + "</tr>";
   });
