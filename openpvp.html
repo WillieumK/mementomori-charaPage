@@ -1118,6 +1118,7 @@ function renderTable(){
       info = "积分 " + fmtNum(p.CurrentPoint) + " · 连胜 " + (p.ConsecutiveVictoryCount || 0);
       const w = legendWorldOf(g, p.PlayerId);
       if (w) info += ' · <span class="pworld">' + esc(w) + "</span>";
+      if (p.BattlePower != null) info += " · 战力 " + fmtNum(p.BattlePower);
     } else {
       info = "战力 " + fmtNum(p.BattlePower);
     }
