@@ -132,7 +132,7 @@ body:not(.side-collapsed) .side-open{display:none}
 .team-tabs .ttab .tlv{font-size:10px;color:var(--muted)}
 /* 展开面板：左=数值(独立框) · 右=装备+圣魔装(同一个框，中间只隔一条横线，不留间隙)
    右框给多一点宽度：装备 2 件一排 + 圣装/魔装 一行 4 格都需要横向空间 */
-.regions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:4px;align-items:start}
+.regions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:10px;margin-top:4px;align-items:start}
 .region{background:rgba(0,0,0,.2);border:1px solid var(--panel-border);border-radius:10px;padding:8px 10px;min-width:0}
 .eqbox{background:rgba(0,0,0,.2);border:1px solid var(--panel-border);border-radius:10px;padding:8px 10px;min-width:0;display:flex;flex-direction:column}
 .eqbox .eqsec{min-width:0}
@@ -140,7 +140,7 @@ body:not(.side-collapsed) .side-open{display:none}
 /* 圣装/魔装：每件装备两个框（圣装/魔装）+ 4 列排布；可整体隐藏 */
 .sectgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 8px}
 .sectrow{display:contents}
-.sectrow .st{min-width:0;font-size:11px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 7px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25)}
+.sectrow .st{min-width:0;font-size:10px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 7px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25)}
 .sectrow .st b{font-weight:600;font-variant-numeric:tabular-nums}
 .sectrow .st-lg{color:#ffe9a8;border-color:rgba(255,233,168,.18);background:rgba(217,178,106,.07)}
 .sectrow .st-mc{color:#b5f0c3;border-color:rgba(181,240,195,.16);background:rgba(181,240,195,.06)}
@@ -194,9 +194,9 @@ body:not(.side-collapsed) .side-open{display:none}
 .sphgrid .sphere .sfb{display:none;height:26px;margin:0 auto 1px;align-items:center;justify-content:center;font-size:9px;color:#cfc8e2;line-height:1.05;word-break:break-all;letter-spacing:-.4px;overflow:hidden}
 .sphgrid .sphere.noimg .sfb{display:flex}
 .sphgrid .sphere .sfb-sm{font-size:8.5px;letter-spacing:-.5px}
-.sphgrid .sphere .stag{font-size:12px;color:#cfc8e2;line-height:1.25;flex:0 0 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sphgrid .sphere .stag{font-size:11px;color:#cfc8e2;line-height:1.25;flex:0 0 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sphgrid .sphere.noimg .stag{display:none}
-.sphgrid .sphere .sv{color:#ffe9a8;font-size:12.5px;font-weight:600;white-space:nowrap;flex:none;font-variant-numeric:tabular-nums}
+.sphgrid .sphere .sv{color:#ffe9a8;font-size:11.5px;font-weight:600;white-space:nowrap;flex:none;font-variant-numeric:tabular-nums}
 .sphgrid .sphere .slv{font-size:8.5px;color:var(--muted);white-space:nowrap}
 .sphgrid .sphere.empty{opacity:.35;display:flex;align-items:center;justify-content:center}
 /* 空符石：放一个与图标等高的占位，保证行高和有符石时一致 */
@@ -277,7 +277,7 @@ body:not(.side-collapsed) .side-open{display:none}
 .rank-split{display:flex;gap:14px;align-items:flex-start}
 .rank-left{flex:0 1 auto;min-width:0;max-width:100%}
 /* 展开时左表收窄，剩余宽度全给右面板（这样装备区文字才有空间放大） */
-#sec-rank.split .rank-left{flex:0 1 470px}
+#sec-rank.split .rank-left{flex:0 1 500px}
 #sec-rank.split .rank-left thead th,#sec-rank.split .rank-left tbody td{padding:8px 7px}
 #sec-rank.split .rank-left .cslot{width:48px;margin-right:2px}
 #sec-rank.split .rank-left .cslot img{width:45px;height:45px;border-radius:8px}
@@ -301,21 +301,21 @@ body:not(.side-collapsed) .side-open{display:none}
 #char-panel .eqiconbox .eqfb i{font-size:11px}
 #char-panel .eqiconbox .eqblv{display:block;font-size:9px}
 #char-panel .eqgrid .eqslot{gap:9px;padding:4px 0 7px}
-#char-panel .eqmain .en .eqrar{font-size:13px}
-#char-panel .eqmain .en .enn{font-size:14px}
+#char-panel .eqmain .en .eqrar{font-size:12px}
+#char-panel .eqmain .en .enn{font-size:13px}
 #char-panel .eqmain .em .sync-mark{font-size:10px;padding:0 2px}
 #char-panel .sectrow{gap:10px}
-#char-panel .sectrow .st{font-size:12px}
+#char-panel .sectrow .st{font-size:11px}
 /* 符石框：只把宽度收到原来的约一半（36→20px），高度与图标尺寸都不动；框内字再放大一档 */
 #char-panel .sphgrid{grid-template-columns:1fr;gap:2px}
 #char-panel .sphgrid .sphere{padding:2px 4px}
 #char-panel .sphgrid .sphere img.sphicon{width:22px;height:22px}
 #char-panel .sphgrid .sphere .sfb{height:24px;font-size:10px}
 #char-panel .sphgrid .sphere .sfb-sm{font-size:9.2px}
-#char-panel .sphgrid .sphere .stag{font-size:12px}
+#char-panel .sphgrid .sphere .stag{font-size:11px}
 #char-panel .sphgrid{grid-template-columns:1fr;gap:3px}
 #char-panel .sphgrid .sphere .stag b{color:var(--muted);font-weight:600}
-#char-panel .sphgrid .sphere .sv{font-size:12.5px}
+#char-panel .sphgrid .sphere .sv{font-size:11.5px}
 #char-panel .sphgrid .sphere .slv{font-size:9px}
 #char-panel .sphgrid .sphere.empty{min-height:0}
 #char-panel .stats{gap:6px}
