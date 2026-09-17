@@ -174,15 +174,17 @@ body:not(.side-collapsed) .side-open{display:none}
 .eqgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow-x:auto;overflow-y:hidden}
 .eqgrid .eqslot{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;min-width:136px;border-bottom:1px dashed rgba(255,255,255,.06);padding:3px 0 6px}
 .eqgrid .eqslot:nth-child(n+5){border-bottom:none;padding-bottom:1px}
+.eqleft{display:flex;flex-direction:column;align-items:center;gap:2px;flex:none;min-width:0}
 .eqiconbox{width:40px;height:40px;flex:0 0 40px;border-radius:8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);position:relative;overflow:hidden}
-.eqiconbox img.eqicon{position:absolute;left:2px;top:1px;z-index:1;width:calc(100% - 4px);height:calc(100% - 4px);object-fit:contain;padding-bottom:11px;box-sizing:border-box;opacity:0;transition:opacity .15s}
+.eqiconbox img.eqicon{position:absolute;inset:2px;z-index:1;width:calc(100% - 4px);height:calc(100% - 4px);object-fit:contain;opacity:0;transition:opacity .15s}
 .eqiconbox img.eqicon.ok{opacity:1}
-.eqiconbox .eqfb{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0 1px 9px;text-align:center;line-height:1.2;box-sizing:border-box}
+.eqiconbox .eqfb{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0 1px;text-align:center;line-height:1.2;box-sizing:border-box}
 .eqiconbox.noimg .eqfb{display:flex}
 .eqiconbox .eqfb i{font-style:normal;font-size:9px;color:#cfc8e2;white-space:nowrap;letter-spacing:-.5px}
 .eqiconbox .eqfb b{font-size:8.5px;font-weight:600;color:var(--gold);white-space:nowrap}
-.eqiconbox .eqblv{position:absolute;left:0;right:0;bottom:0;z-index:2;background:rgba(0,0,0,.5);color:#e8e2f5;font-size:7.5px;line-height:1.35;padding-bottom:1px;text-align:center;white-space:nowrap;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
-.eqiconbox.noimg .eqblv{display:none}
+/* 等级+强化：挪到图标框下方单独一行，写大一点 */
+.eqblv{color:var(--gold);font-size:10px;font-weight:600;line-height:1.25;white-space:nowrap;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+.eqleft.noimg .eqblv,.eqiconbox.noimg + .eqblv{color:var(--muted)}
 .eqmain{flex:1;min-width:0}
 .eqmain .en{display:flex;align-items:baseline;gap:5px}
 .eqmain .en .eqrar{flex:none;font-size:10px;font-weight:700;letter-spacing:.3px}
@@ -297,11 +299,11 @@ body:not(.side-collapsed) .side-open{display:none}
 #char-panel{min-width:0}
 /* 右侧展开面板：装备栏整体放大 1.2 倍（图标框 40→60px 并在框内加一行 Lv基础+强化） */
 #char-panel .eqgrid{gap:6px}
-#char-panel .eqiconbox{width:60px;height:60px;flex:0 0 60px}
-#char-panel .eqiconbox img.eqicon{padding-bottom:17px}
-#char-panel .eqiconbox .eqfb{padding-bottom:15px}
+#char-panel .eqiconbox{width:64px;height:64px;flex:0 0 64px}
+#char-panel .eqiconbox img.eqicon{inset:3px;width:calc(100% - 6px);height:calc(100% - 6px)}
+#char-panel .eqiconbox .eqfb{padding-bottom:0}
 #char-panel .eqiconbox .eqfb i{font-size:11px}
-#char-panel .eqiconbox .eqblv{display:block;font-size:9px}
+#char-panel .eqblv{font-size:12px}
 #char-panel .eqgrid .eqslot{gap:9px;padding:4px 0 7px}
 #char-panel .eqmain .en .eqrar{font-size:12px}
 #char-panel .eqmain .en .enn{font-size:13px}
@@ -1245,8 +1247,11 @@ function equipIconBox(em, slotName, reinforceLv){
   const img = url
     ? '<img class="eqicon" src="' + imgSrc(url) + '" alt="" onload="this.classList.add(\'ok\')" onerror="equipTextFallback(this)">'
     : "";
-  return '<span class="eqiconbox' + (url ? "" : " noimg") + '">' + img + fb
-    + '<span class="eqblv">' + esc(lvTxt) + "</span></span>";
+  /* 图标填满整框；「Lv基础+强化」挪到框下方单独一行，可以写更大 */
+  return '<span class="eqleft">'
+    + '<span class="eqiconbox' + (url ? "" : " noimg") + '">' + img + fb + "</span>"
+    + '<span class="eqblv">' + esc(lvTxt) + "</span>"
+    + "</span>";
 }
 /* 符石短名 / 框内类型名：官方全名太长会换行或被截断，统一用简称（完整名在悬停提示里） */
 const SPHERE_SHORT = { "物魔防御穿透": "物魔穿透", "弱化效果命中": "弱化命中", "弱化效果抗性": "弱化抗性", "物理防御力": "物防", "魔法防御力": "魔防" };
