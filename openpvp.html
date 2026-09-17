@@ -44,11 +44,11 @@ tbody tr:hover{background:rgba(124,108,240,.14)}
 .rank.top2{color:#d7dbe8}
 .rank.top3{color:#d9a066}
 .pname{font-weight:600;color:#f1eef8;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.pname .ppower{font-weight:400;font-size:11px;color:#a99fd9;white-space:nowrap}
 .pinfo{color:var(--muted);font-size:11px;margin-top:2px}
 .pinfo .pworld{color:#a99fd9}
-/* 巅峰展开面板时：排名列只留名字与区服 */
-#sec-rank.split .pinfo .pout,#sec-rank.split .pname .pout{display:none}
+/* 巅峰第三行：区服 · 战力（紧贴上一行，展开时也不隐藏） */
+.pthird{color:var(--muted);font-size:10.5px;line-height:1.35;white-space:nowrap}
+.pthird .pworld{color:#a99fd9}
 .cslot{display:inline-block;width:52px;text-align:center;margin-right:6px;cursor:pointer;vertical-align:top}
 .cslot img{width:48px;height:48px;border-radius:9px;border:1px solid var(--panel-border);background:rgba(255,255,255,.06);object-fit:cover;display:block;margin:0 auto}
 .cslot:hover img{outline:1px solid var(--gold)}
@@ -1130,19 +1130,21 @@ function renderTable(){
     const p = row.p, i = row.i;
     const rank = i + 1;
     const rc = rank === 1 ? "top1" : rank === 2 ? "top2" : rank === 3 ? "top3" : "";
-    /* 巅峰展开面板时，排名列只保留「名字 + 区服」，其余（Lv/积分/连胜/战力）加 .pout 由 CSS 隐藏，把宽度让给队伍图标 */
-    let info;
+    /* 巅峰行三行：① 玩家名 ② Lv·积分·连胜 ③ 区服·战力（紧贴上面，展开时也照常显示） */
+    let info, third = "";
     if (mode === "legend"){
       const w = legendWorldOf(g, p.PlayerId);
-      info = '<span class="pout">Lv' + esc(p.PlayerLevel) + " · 积分 " + fmtNum(p.CurrentPoint) + " · 连胜 " + (p.ConsecutiveVictoryCount || 0) + " · </span>"
-        + (w ? '<span class="pworld">' + esc(w) + "</span>" : "")
-        + (p.BattlePower != null ? '<span class="pout"> · 战力 ' + fmtNum(p.BattlePower) + "</span>" : "");
+      info = "Lv" + esc(p.PlayerLevel) + " · 积分 " + fmtNum(p.CurrentPoint) + " · 连胜 " + (p.ConsecutiveVictoryCount || 0);
+      third = (w ? '<span class="pworld">' + esc(w) + "</span>" : "")
+        + (p.BattlePower != null ? (w ? " · " : "") + "战力 " + fmtNum(p.BattlePower) : "");
     } else {
-      info = "战力 " + fmtNum(p.BattlePower);
+      info = "Lv" + esc(p.PlayerLevel) + " · 战力 " + fmtNum(p.BattlePower);
     }
     body += '<tr class="prow" data-pi="' + i + '" onclick="openChar(' + i + ',0)">'
       + '<td class="rank ' + rc + '">' + rank + "</td>"
-      + '<td><div class="pname">' + esc(p.PlayerName) + "</div><div class=\"pinfo\">" + (mode === "legend" ? info : ("Lv" + esc(p.PlayerLevel) + " · " + info)) + "</div></td>"
+      + '<td><div class="pname">' + esc(p.PlayerName) + '</div><div class="pinfo">' + info + "</div>"
+      + (third ? '<div class="pthird">' + third + "</div>" : "")
+      + "</td>"
       + "<td>" + charSlots(i, p.UserCharacterInfoList) + "</td>"
       + "</tr>";
   });
