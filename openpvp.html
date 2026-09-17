@@ -129,9 +129,23 @@ body:not(.side-collapsed) .side-open{display:none}
 .team-tabs .ttab img{width:44px;height:44px;border-radius:9px;border:2px solid transparent;background:rgba(0,0,0,.3)}
 .team-tabs .ttab.on img{border-color:var(--gold);outline:1px solid rgba(217,178,106,.5)}
 .team-tabs .ttab .tlv{font-size:10px;color:var(--muted)}
-.regions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
-@media(max-width:920px){.regions{grid-template-columns:1fr}}
+/* 展开面板：左=数值(独立框) · 右=装备+圣魔装(同一个框，中间只隔一条横线，不留间隙)
+   右框给多一点宽度：装备 2 件一排 + 圣装/魔装 一行 4 格都需要横向空间 */
+.regions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.55fr);gap:10px;margin-top:4px;align-items:start}
 .region{background:rgba(0,0,0,.2);border:1px solid var(--panel-border);border-radius:10px;padding:8px 10px;min-width:0}
+.eqbox{background:rgba(0,0,0,.2);border:1px solid var(--panel-border);border-radius:10px;padding:8px 10px;min-width:0;display:flex;flex-direction:column}
+.eqbox .eqsec{min-width:0}
+.eqbox .eqsec + .eqsec{border-top:1px solid var(--panel-border);margin-top:8px;padding-top:8px}
+.sectgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px 8px}
+.sectrow{display:flex;gap:5px;min-width:0;grid-column:span 4}
+.sectrow .st{flex:1 1 0;min-width:0;font-size:9.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sectrow .st b{font-weight:600;font-variant-numeric:tabular-nums}
+.sectrow .st-lg{color:#ffe9a8}
+.sectrow .st-mc{color:#b5f0c3}
+.sectrow .st-empty{color:var(--muted);opacity:.45}
+/* 中窄屏：4 格挤了改 2 格 */
+@media(max-width:1180px){.sectgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1000px){.regions{grid-template-columns:1fr}}
 .region h3{margin:0 0 6px;font-size:13px;color:var(--gold);border-bottom:1px solid var(--panel-border);padding-bottom:4px;letter-spacing:.5px}
 .region h3.sect-title{margin:10px 0 5px}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
@@ -144,6 +158,16 @@ body:not(.side-collapsed) .side-open{display:none}
 .skill img.skicon{width:34px;height:34px;border-radius:7px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);flex:none;object-fit:cover}
 .skill .skn{font-weight:600;color:#f1eef8;font-size:13px}
 .skill .skd{color:var(--muted);font-size:11px;margin-top:2px;line-height:1.5}
+/* 专武块（替代原技能区）：3 条强化描述 + 属性加成 */
+.exwrap{border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:6px 8px;background:rgba(217,178,106,.06);min-width:0}
+.exhead{font-size:12px;font-weight:600;color:var(--gold);display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px}
+.exhead .tag{font-size:9px}
+.exlv{font-size:10px;color:var(--muted);font-weight:400}
+.exwrap .skill{padding:2px 0}
+.exwrap .skill .skd{font-size:10.5px;line-height:1.45;color:#ded9ec}
+.exattrs{display:flex;flex-wrap:wrap;gap:3px 6px;margin-top:4px}
+.exattrs .exattr{font-size:11px;color:#b5f0c3;background:rgba(181,240,195,.08);border:1px solid rgba(181,240,195,.22);border-radius:5px;padding:1px 6px;white-space:nowrap}
+.exattrs .exattr i{font-style:normal;color:var(--muted);margin-right:3px}
 /* 装备区：2 件一排 × 3 排，每件 = 图标 + 符石 2×2 网格（不再显示装备附加属性） */
 .eqgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow-x:auto;overflow-y:hidden}
 .eqgrid .eqslot{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;min-width:136px;border-bottom:1px dashed rgba(255,255,255,.06);padding:3px 0 6px}
@@ -163,17 +187,6 @@ body:not(.side-collapsed) .side-open{display:none}
 .eqmain .en .elv{font-size:9px;color:var(--muted);flex:none;font-variant-numeric:tabular-nums}
 .eqmain .em{color:var(--muted);font-size:9px;margin-top:1px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-height:11px}
 .eqmain .em .sync-mark{font-size:9px;padding:0 3px;margin-left:0}
-/* 圣装 / 魔装：在装备区下方独占整行（横跨装备+数值两列），每行 4 格 = 左件「圣 魔」+ 右件「圣 魔」 */
-.sectpanel{grid-column:1 / -1;min-width:0}
-.sectgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px 8px}
-.sectrow{display:flex;gap:4px;min-width:0}
-.sectrow .st{flex:1 1 0;min-width:0;font-size:9.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sectrow .st b{font-weight:600;font-variant-numeric:tabular-nums}
-.sectrow .st-lg{color:#ffe9a8}
-.sectrow .st-mc{color:#b5f0c3}
-.sectrow .st-empty{color:var(--muted);opacity:.45}
-/* 中窄屏：4 格挤了改 2 格 */
-@media(max-width:1180px){.sectgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .sphgrid{display:grid;grid-template-columns:repeat(2,minmax(36px,1fr));gap:3px;margin-top:3px}
 .sphgrid .sphere{width:auto;min-width:0;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25);padding:2px 1px;font-size:9px;color:var(--muted);line-height:1.15;cursor:help;overflow:hidden;text-align:center}
 .sphgrid .sphere img.sphicon{width:26px;height:26px;border-radius:5px;background:rgba(0,0,0,.3);object-fit:contain;display:block;margin:0 auto 1px}
@@ -284,7 +297,7 @@ body:not(.side-collapsed) .side-open{display:none}
 #char-panel .eqmain .em{font-size:11px;min-height:13px}
 #char-panel .eqmain .em .sync-mark{font-size:11px}
 #char-panel .sectrow{gap:5px}
-#char-panel .sectrow .st{font-size:10.5px}
+#char-panel .sectrow .st{font-size:9.5px}
 /* 符石框：只把宽度收到原来的约一半（36→20px），高度与图标尺寸都不动 */
 #char-panel .sphgrid{grid-template-columns:repeat(2,minmax(20px,1fr));gap:2px}
 #char-panel .sphgrid .sphere{padding:2px 0}
@@ -447,7 +460,7 @@ let worlds = [], groups = [];
 let lastList = [];
 let lastTs = null;
 let cache = {};           /* 会话内缓存：url -> {data, ts} */
-let P = { char:null, skill:null, equip:null, legend:null, matchless:null, sphere:null };
+let P = { char:null, skill:null, equip:null, legend:null, matchless:null, sphere:null, excl:null };
 
 function esc(v){ return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function fmtNum(v){
@@ -650,7 +663,7 @@ let preloadAbort = false;
 function buildPreloadList(){
   const urls = [];
   /* 1) 主数据 JSON（技能文本等） */
-  ["pvp_char","pvp_skill","pvp_equip","pvp_legend","pvp_matchless","pvp_sphere"].forEach(n => urls.push("data/" + n + ".json"));
+  ["pvp_char","pvp_skill","pvp_equip","pvp_legend","pvp_matchless","pvp_sphere","pvp_excl"].forEach(n => urls.push("data/" + n + ".json"));
   /* 2) 静态小件：稀有度边框 / 属性图标 / 职业图标 */
   ["n","r","sr","ssr","ur","lr"].forEach(k => urls.push(FRAME_BASE + k + ".png"));
   for (let i = 0; i <= 6; i++) urls.push(ASSET_BASE + "icon_element_" + i + ".png");
@@ -1129,11 +1142,12 @@ function syncRowMark(){
 /* ---------- 主数据映射（懒加载） ---------- */
 async function ensurePvpData(){
   if (P.char) return;
-  const [ch, sk, eq, lg, mc, sp] = await Promise.all([
+  const [ch, sk, eq, lg, mc, sp, ex] = await Promise.all([
     fetchJson("data/pvp_char.json"), fetchJson("data/pvp_skill.json"), fetchJson("data/pvp_equip.json"),
-    fetchJson("data/pvp_legend.json"), fetchJson("data/pvp_matchless.json"), fetchJson("data/pvp_sphere.json")
+    fetchJson("data/pvp_legend.json"), fetchJson("data/pvp_matchless.json"), fetchJson("data/pvp_sphere.json"),
+    fetchJson("data/pvp_excl.json").catch(function(){ return null; })   /* 专武数据缺失时回退原技能显示 */
   ]);
-  P = { char: ch, skill: sk, equip: eq, legend: lg, matchless: mc, sphere: sp };
+  P = { char: ch, skill: sk, equip: eq, legend: lg, matchless: mc, sphere: sp, excl: ex };
 }
 
 /* ---------- 角色开盒弹窗 ---------- */
@@ -1147,6 +1161,24 @@ function skillHtml(sid, prefix, label){
   const ic = '<img class="skicon" src="' + imgSrc(skillIconUrl(sid)) + '" onerror="this.remove()" alt="">';
   return '<div class="skill">' + ic + '<div style="min-width:0"><div class="skn">[' + label + '] ' + esc(s.n || "") + '</div><div class="skd">' + esc(s.d || "（无描述）") + "</div></div></div>";
 }
+/* 专武：技能（3 条强化描述）+ 属性加成，替代原来的角色技能区 */
+function exclBlock(cid){
+  const ex = P.excl && P.excl[String(cid)];
+  if (!ex) return "";
+  const rar = ex.r ? '<span class="tag">' + esc(ex.r) + "</span>" : "";
+  let desc = "";
+  (ex.d || []).forEach(function(t){ desc += '<div class="skill"><div style="min-width:0"><div class="skd">' + esc(t) + "</div></div></div>"; });
+  let attrs = "";
+  (ex.a || []).forEach(function(t){
+    const m = String(t).match(/^(\S+)\s*(.*)$/);
+    attrs += '<span class="exattr"><i>' + esc(m ? m[1] : t) + "</i>" + esc(m ? m[2] : "") + "</span>";
+  });
+  return '<div class="exwrap">'
+    +   '<div class="exhead">专武 ' + esc(ex.n || "") + " " + rar + (ex.lv ? '<span class="exlv">Lv' + esc(ex.lv) + "</span>" : "") + "</div>"
+    +   (desc || '<div class="skd">无专武技能数据</div>')
+    +   (attrs ? '<div class="exattrs">' + attrs + "</div>" : "")
+    + "</div>";
+}
 function charPanel(c){
   const cm = P.char && P.char[String(c.CharacterId)];
   const name = cm ? cm.n : ("角色 " + c.CharacterId);
@@ -1159,15 +1191,18 @@ function charPanel(c){
   let stats = "";
   stats += statCell("力量", b.Muscle) + statCell("战技", b.Energy) + statCell("魔力", b.Intelligence) + statCell("耐力", b.Health);
   BP_FIELDS.forEach(f => { stats += statCell(f[1], bp[f[0]], f[2]); });
-  let skills = "";
-  if (cm){
+  /* 有专武数据 → 显示专武技能与属性；没有 → 回退显示原角色技能 */
+  let bottom = exclBlock(c.CharacterId);
+  if (!bottom && cm){
+    let skills = "";
     if (cm.nor) skills += skillHtml(cm.nor, "a", "普攻");
     (cm.act || []).forEach(sid => skills += skillHtml(sid, "a", "主动"));
     (cm.pas || []).forEach(sid => skills += skillHtml(sid, "p", "被动"));
+    bottom = skills;
   }
   return '<div class="region"><h3>' + esc(name) + " · " + esc(rarityLabel(c.RarityFlags)) + " " + eTag + jTag + " · Lv" + esc(c.Level) + "</h3>"
     + '<div class="stats">' + stats + "</div>"
-    + '<div style="margin-top:8px">' + (skills || '<div class="skd">无技能数据</div>') + "</div></div>";
+    + '<div style="margin-top:8px">' + (bottom || '<div class="skd">无技能数据</div>') + "</div></div>";
 }
 /* 装备图标框：图 + 框内一行「基础Lv+强化」（基础等级与强化等级相同时只显示一次） */
 function equipIconBox(em, slotName, reinforceLv){
@@ -1212,6 +1247,9 @@ function sphereCell(e, s){
     ;
 }
 /* 圣装 / 魔装：按槽位取对应字段，圣装是百分比（×100 存）、魔装是绝对值；单行显示（框已另起，横向够宽） */
+/* 属性名太长会把格子撑爆，这里用官方简写（完整名放 title） */
+const ST_SHORT = { "物理暴击伤害降低": "物暴降低", "魔法暴击伤害降低": "魔暴降低", "暴击伤害强化": "暴伤强化", "物魔防御穿透": "物魔穿透", "弱化效果命中": "弱化命中", "弱化效果抗性": "弱化抗性" };
+function stLabel(name){ return ST_SHORT[name] || name; }
 function sectCell(e, kind){
   const slot = equipSlotNo(e);
   const i = slot >= 1 ? slot - 1 : -1;
@@ -1222,14 +1260,14 @@ function sectCell(e, kind){
     if (!f || !(e.LegendSacredTreasureLv > 0) || !t || t[f[0]] == null) return "";
     const val = fmtPct(t[f[0]]);
     return '<span class="st st-lg" title="' + esc("圣装 Lv" + e.LegendSacredTreasureLv + " · " + f[1] + " " + val) + '">'
-      + '圣<b>Lv' + esc(e.LegendSacredTreasureLv) + "</b> " + esc(f[1]) + " " + esc(val) + "</span>";
+      + '圣<b>' + esc(e.LegendSacredTreasureLv) + "</b> " + esc(stLabel(f[1])) + " " + esc(val) + "</span>";
   }
   const f = MATCHLESS_FIELDS[i];
   const t = P.matchless && P.matchless[String(e.MatchlessSacredTreasureLv)];
   if (!f || !(e.MatchlessSacredTreasureLv > 0) || !t || t[f[0]] == null) return "";
   const val = fmtNum(t[f[0]]);
   return '<span class="st st-mc" title="' + esc("魔装 Lv" + e.MatchlessSacredTreasureLv + " · " + f[1] + " " + val) + '">'
-    + '魔<b>Lv' + esc(e.MatchlessSacredTreasureLv) + "</b> " + esc(f[1]) + " " + esc(val) + "</span>";
+    + '魔<b>' + esc(e.MatchlessSacredTreasureLv) + "</b> " + esc(stLabel(f[1])) + " " + esc(val) + "</span>";
 }
 /* 装备区下方独立的「圣装 · 魔装」块：整行 4 格 = 左件(圣/魔) + 右件(圣/魔)，共 3 排 */
 function sortedEquipList(c){
@@ -1244,20 +1282,21 @@ function sortedEquipList(c){
 function sectPanel(c){
   const list = sortedEquipList(c);
   if (!list.length) return "";
-  const cells = [];
+  /* 一行 = 一件装备的「圣装 魔装」，每格占一列；6 件 → 3 排 × 4 列（与装备 2 列对齐） */
+  const rows = [];
   for (let i = 0; i < list.length; i += 2){
+    const cells = [];
     [list[i], list[i + 1]].forEach(function(e){
       if (!e) return;
       const lg = sectCell(e, "lg"), mc = sectCell(e, "mc");
       if (!lg && !mc) return;
       cells.push((lg || '<span class="st st-empty">—</span>') + (mc || '<span class="st st-empty">—</span>'));
     });
+    if (cells.length) rows.push('<div class="sectrow">' + cells.join("") + "</div>");
   }
-  if (!cells.length) return "";
-  let rows = "";
-  for (let i = 0; i < cells.length; i += 4) rows += '<div class="sectrow">' + cells.slice(i, i + 4).join("") + "</div>";
-  return '<div class="region sectpanel"><h3 class="sect-title">圣装 · 魔装（' + list.length + "件）</h3>"
-    + '<div class="sectgrid">' + rows + "</div></div>";
+  if (!rows.length) return "";
+  return '<div class="eqsec sectsec"><h3>圣装 · 魔装（' + list.length + "件）</h3>"
+    + '<div class="sectgrid">' + rows.join("") + "</div></div>";
 }
 /* 单件装备：左边图标（失败显示槽位名文字，位置不塌），右侧符石 2×2 */
 function equipSlot(c, e, idx){
@@ -1283,11 +1322,15 @@ function equipSlotNo(e){
   const s = em ? Number(em.s) : 0;
   return (s >= 1 && s <= 6) ? s : 0;
 }
+/* 装备 + 圣装/魔装：同一个框，中间只用一条横线隔开（不留间隙） */
 function equipPanel(c){
   const list = sortedEquipList(c);
   const html = list.map((e, i) => equipSlot(c, e, i)).join("");
-  return '<div class="region"><h3>装备（' + list.length + "件）</h3>"
+  return '<div class="eqbox">'
+    + '<div class="eqsec"><h3>装备（' + list.length + "件）</h3>"
     + (html ? '<div class="eqgrid">' + html + "</div>" : '<div class="skd">无装备</div>')
+    + "</div>"
+    + sectPanel(c)
     + "</div>";
 }
 
@@ -1368,13 +1411,13 @@ async function renderCharBody(){
         + (g ? " · 世界组 " + g.group_id + (w ? " · " + w : "") : "");
     }
     host.innerHTML = '<div class="team-tabs">' + tabs + "</div>"
-      + '<div class="regions">' + charPanel(c) + equipPanel(c) + sectPanel(c) + "</div>";
+      + '<div class="regions">' + charPanel(c) + equipPanel(c) + "</div>";
     syncRowMark();
     return;
   }
   host.innerHTML = charHeadHtml(c, name, elem, job, id, "队伍第" + (st.j + 1) + "位", true)
     + '<div class="team-tabs">' + tabs + "</div>"
-    + '<div class="regions">' + charPanel(c) + equipPanel(c) + sectPanel(c) + "</div>";
+    + '<div class="regions">' + charPanel(c) + equipPanel(c) + "</div>";
 }
 
 function switchChar(j){

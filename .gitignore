@@ -5,3 +5,6 @@ PROJECT_交接文档.txt
 OPENPVP_任务留档.md
 
 __pycache__/
+
+# 本地预览沙盒生成的临时页面（_verify 构建脚本产出）
+_eqpreview*.html

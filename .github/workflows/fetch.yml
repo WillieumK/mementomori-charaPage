@@ -140,6 +140,46 @@ jobs:
               elif s.get("BattleParameterChangeInfo") and s["BattleParameterChangeInfo"].get("Value") is not None: v = s["BattleParameterChangeInfo"]["Value"]
               spmap[str(s["Id"])] = {"n":t.get(s.get("NameKey"),s.get("Memo","")),"d":t.get(s.get("DescriptionKey"),""),"v":v,"r":RAR.get(s.get("RarityFlags"),str(s.get("RarityFlags"))),"cat":s.get("CategoryId"),"t":s.get("SphereType"),"lv":s.get("Lv")}
           save("pvp_sphere.json", spmap)
+          # 专武：技能（3 条强化描述）+ 属性加成
+          BPARM = {1:"\u529b\u91cf",2:"\u6218\u6280",3:"\u9b54\u529b",4:"\u8010\u529b"}
+          BATTL = {1:"\u751f\u547d",2:"\u653b\u51fb\u529b",3:"\u7269\u7406\u9632\u5fa1\u529b",4:"\u9b54\u6cd5\u9632\u5fa1\u529b",5:"\u547d\u4e2d",6:"\u95ea\u907f",7:"\u66b4\u51fb",8:"\u66b4\u51fb\u6297\u6027",9:"\u66b4\u51fb\u4f24\u5bb3\u5f3a\u5316",10:"\u7269\u7406\u66b4\u51fb\u4f24\u5bb3\u964d\u4f4e",11:"\u9b54\u6cd5\u66b4\u51fb\u4f24\u5bb3\u964d\u4f4e",12:"\u9632\u5fa1\u7a7f\u900f",13:"\u9632\u5fa1\u529b",14:"\u7269\u9b54\u9632\u5fa1\u7a7f\u900f",15:"\u5f31\u5316\u6548\u679c\u547d\u4e2d",16:"\u5f31\u5316\u6548\u679c\u6297\u6027",17:"\u4f24\u5bb3\u53cd\u5f39",18:"\u5438\u8840",19:"\u901f\u5ea6"}
+          def _chg(pmap, pt, ct, val):
+              nm = pmap.get(pt, "\u5c5e\u6027%s" % pt)
+              if ct == 1: return "%s +%d" % (nm, round(val))
+              if ct == 2:
+                  s = ("%.2f" % (val / 100.0)).rstrip("0").rstrip(".")
+                  return "%s +%s%%" % (nm, s)
+              return "%s +%d\u00d7\u89d2\u8272\u7b49\u7ea7" % (nm, round(val))
+          def _alines(fx):
+              out = []
+              for i in (fx.get("BaseParameterChangeInfoList") or []):
+                  out.append(_chg(BPARM, i.get("BaseParameterType"), i.get("ChangeParameterType"), i.get("Value") or 0))
+              for i in (fx.get("BattleParameterChangeInfoList") or []):
+                  out.append(_chg(BATTL, i.get("BattleParameterType"), i.get("ChangeParameterType"), i.get("Value") or 0))
+              return out
+          fx_by_id = {x["Id"]: x for x in load_mb("EquipmentExclusiveEffectMB")}
+          sd_by_id = {x["Id"]: x for x in load_mb("EquipmentExclusiveSkillDescriptionMB")}
+          excl = {}
+          for e in load_mb("EquipmentMB"):
+              if e.get("Category") != 3 or not (e.get("ExclusiveEffectId") or 0): continue
+              fx = fx_by_id.get(e["ExclusiveEffectId"])
+              if not fx or not fx.get("CharacterId"): continue
+              cid = fx["CharacterId"]
+              cur = excl.get(str(cid))
+              score = (100000 if "LR" in (e.get("Memo") or "") else 0) + (e.get("EquipmentLv") or 0)
+              if cur and cur.get("_s", 0) >= score: continue
+              d = sd_by_id.get(e.get("EquipmentExclusiveSkillDescriptionId"))
+              descs = []
+              if d:
+                  for k in (d.get("Description1Key"), d.get("Description2Key"), d.get("Description3Key")):
+                      if k and t.get(k): descs.append(t[k])
+              rf = e.get("RarityFlags") or 0
+              excl[str(cid)] = {"_s": score, "n": t.get(e.get("NameKey"), e.get("Memo", "")),
+                                "r": "LR" if rf >= 512 else ("UR" if rf >= 256 else "SSR"),
+                                "lv": e.get("EquipmentLv") or 0, "ic": e.get("IconId"),
+                                "d": descs, "a": _alines(fx)}
+          for v in excl.values(): v.pop("_s", None)
+          save("pvp_excl.json", excl)
           ATTRMAP = {1:"\u84dd",2:"\u7ea2",3:"\u7eff",4:"\u91d1",5:"\u5149",6:"\u6697"}
           cattr = {}
           for c in load_mb("CharacterMB"):
