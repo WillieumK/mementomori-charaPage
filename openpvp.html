@@ -132,7 +132,7 @@ body:not(.side-collapsed) .side-open{display:none}
 .team-tabs .ttab .tlv{font-size:10px;color:var(--muted)}
 /* 展开面板：左=数值(独立框) · 右=装备+圣魔装(同一个框，中间只隔一条横线，不留间隙)
    右框给多一点宽度：装备 2 件一排 + 圣装/魔装 一行 4 格都需要横向空间 */
-.regions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:10px;margin-top:4px;align-items:start}
+.regions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:4px;align-items:start}
 .region{background:rgba(0,0,0,.2);border:1px solid var(--panel-border);border-radius:10px;padding:8px 10px;min-width:0}
 .eqbox{background:rgba(0,0,0,.2);border:1px solid var(--panel-border);border-radius:10px;padding:8px 10px;min-width:0;display:flex;flex-direction:column}
 .eqbox .eqsec{min-width:0}
@@ -140,11 +140,13 @@ body:not(.side-collapsed) .side-open{display:none}
 /* 圣装/魔装：和符石一样一条一个框，一行一个保证框内文字完整 */
 .sectgrid{display:grid;grid-template-columns:1fr;gap:4px}
 .sectrow{display:flex;gap:10px;min-width:0}
-.sectrow .st{flex:1 1 0;min-width:0;font-size:10px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 8px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25)}
+.sectrow .st{flex:1 1 0;min-width:0;font-size:11px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:2px 8px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25)}
 .sectrow .st b{font-weight:600;font-variant-numeric:tabular-nums}
 .sectrow .st-lg{color:#ffe9a8;border-color:rgba(255,233,168,.18);background:rgba(217,178,106,.07)}
 .sectrow .st-mc{color:#b5f0c3;border-color:rgba(181,240,195,.16);background:rgba(181,240,195,.06)}
 .sectrow .st-empty{color:var(--muted);opacity:.45;border-style:dashed}
+/* 圣装/魔装折叠按钮行 */
+.sect-head{display:flex;justify-content:flex-end;margin-bottom:4px}
 /* 中窄屏：4 格挤了改 2 格 */
 @media(max-width:1180px){.sectgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:1000px){.regions{grid-template-columns:1fr}}
@@ -164,7 +166,6 @@ body:not(.side-collapsed) .side-open{display:none}
 .exwrap{border:1px solid rgba(217,178,106,.35);border-radius:8px;padding:6px 8px;background:rgba(217,178,106,.06);min-width:0}
 .exhead{font-size:12px;font-weight:600;color:var(--gold);display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px}
 .exhead .tag{font-size:9px}
-.exlv{font-size:10px;color:var(--muted);font-weight:400}
 .exwrap .skill{padding:2px 0}
 .exwrap .skill .skd{font-size:10.5px;line-height:1.45;color:#ded9ec}
 .exattrs{display:flex;flex-wrap:wrap;gap:3px 6px;margin-top:4px}
@@ -196,9 +197,9 @@ body:not(.side-collapsed) .side-open{display:none}
 .sphgrid .sphere .sfb{display:none;height:26px;margin:0 auto 1px;align-items:center;justify-content:center;font-size:9px;color:#cfc8e2;line-height:1.05;word-break:break-all;letter-spacing:-.4px;overflow:hidden}
 .sphgrid .sphere.noimg .sfb{display:flex}
 .sphgrid .sphere .sfb-sm{font-size:8.5px;letter-spacing:-.5px}
-.sphgrid .sphere .stag{font-size:9.5px;color:#cfc8e2;line-height:1.25;flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sphgrid .sphere .stag{font-size:11px;color:#cfc8e2;line-height:1.25;flex:0 0 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sphgrid .sphere.noimg .stag{display:none}
-.sphgrid .sphere .sv{color:#ffe9a8;font-size:10px;font-weight:600;white-space:nowrap;flex:none;font-variant-numeric:tabular-nums}
+.sphgrid .sphere .sv{color:#ffe9a8;font-size:12px;font-weight:600;white-space:nowrap;flex:none;font-variant-numeric:tabular-nums}
 .sphgrid .sphere .slv{font-size:8.5px;color:var(--muted);white-space:nowrap}
 .sphgrid .sphere.empty{opacity:.35;display:flex;align-items:center;justify-content:center}
 /* 空符石：放一个与图标等高的占位，保证行高和有符石时一致 */
@@ -227,7 +228,7 @@ body:not(.side-collapsed) .side-open{display:none}
 }
 /* 中等宽度：面板两列都变窄，数值面板 4 列会挤断数字 → 改 2 列 */
 @media(min-width:981px) and (max-width:1500px){
-  #char-panel .stats{grid-template-columns:repeat(2,1fr)}
+  #char-panel .stats{grid-template-columns:repeat(3,1fr)}
 }
 /* 稀有度框头像 + 等级角标 */
 .mavatar{position:relative;width:72px;height:72px;flex:none}
@@ -278,6 +279,11 @@ body:not(.side-collapsed) .side-open{display:none}
 /* 排名 + 角色面板同排：左=队伍榜（压缩行内间隙），右=展开的角色面板 */
 .rank-split{display:flex;gap:14px;align-items:flex-start}
 .rank-left{flex:0 1 auto;min-width:0;max-width:100%}
+/* 展开时左表收窄，剩余宽度全给右面板（这样装备区文字才有空间放大） */
+#sec-rank.split .rank-left{flex:0 1 360px}
+#sec-rank.split .rank-left thead th,#sec-rank.split .rank-left tbody td{padding:8px 7px}
+#sec-rank.split .rank-left .cslot{width:42px;margin-right:2px}
+#sec-rank.split .rank-left .cslot img{width:38px;height:38px}
 .rank-left .table-wrap{max-width:100%}
 .rank-left table{width:max-content}
 .rank-left thead th,.rank-left tbody td{padding:8px 9px}
@@ -298,18 +304,18 @@ body:not(.side-collapsed) .side-open{display:none}
 #char-panel .eqiconbox .eqfb i{font-size:11px}
 #char-panel .eqiconbox .eqblv{display:block;font-size:9px}
 #char-panel .eqgrid .eqslot{gap:9px;padding:4px 0 7px}
-#char-panel .eqmain .en .eqrar{font-size:11px}
-#char-panel .eqmain .en .enn{font-size:13.5px}
+#char-panel .eqmain .en .eqrar{font-size:12px}
+#char-panel .eqmain .en .enn{font-size:15px}
 #char-panel .eqmain .em .sync-mark{font-size:10px;padding:0 2px}
 #char-panel .sectrow{gap:10px}
-#char-panel .sectrow .st{font-size:9.5px}
+#char-panel .sectrow .st{font-size:11px}
 /* 符石框：只把宽度收到原来的约一半（36→20px），高度与图标尺寸都不动；框内字再放大一档 */
 #char-panel .sphgrid{grid-template-columns:1fr;gap:2px}
-#char-panel .sphgrid .sphere{padding:2px 5px}
-#char-panel .sphgrid .sphere img.sphicon{width:24px;height:24px}
+#char-panel .sphgrid .sphere{padding:2px 4px}
+#char-panel .sphgrid .sphere img.sphicon{width:22px;height:22px}
 #char-panel .sphgrid .sphere .sfb{height:24px;font-size:10px}
 #char-panel .sphgrid .sphere .sfb-sm{font-size:9.2px}
-#char-panel .sphgrid .sphere .stag{font-size:9.5px}
+#char-panel .sphgrid .sphere .stag{font-size:11px}
 #char-panel .sphgrid{grid-template-columns:1fr;gap:3px}
 #char-panel .sphgrid .sphere .stag b{color:var(--muted);font-weight:600}
 #char-panel .sphgrid .sphere .sv{font-size:10.5px;margin-left:auto}
@@ -1184,7 +1190,7 @@ function exclBlock(cid){
     attrs += '<span class="exattr"><i>' + esc(m ? m[1] : t) + "</i>" + esc(m ? m[2] : "") + "</span>";
   });
   return '<div class="exwrap">'
-    +   '<div class="exhead">专武 ' + esc(ex.n || "") + " " + rar + (ex.lv ? '<span class="exlv">Lv' + esc(ex.lv) + "</span>" : "") + "</div>"
+    +   '<div class="exhead">专武 ' + esc(ex.n || "") + " " + rar + "</div>"
     +   (desc || '<div class="skd">无专武技能数据</div>')
     +   (attrs ? '<div class="exattrs">' + attrs + "</div>" : "")
     + "</div>";
@@ -1257,14 +1263,13 @@ function sphereCell(e, s){
     : "";
   const tip = sp.n + (sp.lv != null ? " Lv" + sp.lv : "") + " · " + (sp.r || "")
     + (sp.v != null ? " · " + fmtNum(sp.v) : "") + (sp.d ? "\n" + sp.d : "");
-  /* 符石：一件装备一行一个（共 4 行），行内左边图标、右边「LvXX 类型 数值」 */
-const lvTxt = sp.lv != null ? "Lv" + sp.lv : "";
-return '<span class="sphere' + (url ? "" : " noimg") + '" title="' + esc(tip) + '">'
-  + img
-  + '<span class="stag">' + (lvTxt ? '<b>' + esc(lvTxt) + "</b> " : "") + esc(tag) + "</span>"
-  + '<span class="sv">' + (sp.v != null ? fmtNum(sp.v) : "—") + "</span>"
-  + "</span>"
-  ;
+  /* 符石：一件装备一行一个（共 4 行），行内左边图标，右边「LvXX 类型」+ 数值 */
+  const lvTxt = sp.lv != null ? "Lv" + sp.lv : "";
+  return '<span class="sphere' + (url ? "" : " noimg") + '" title="' + esc(tip) + '">'
+    + img
+    + '<span class="stag">' + (lvTxt ? esc(lvTxt) + " " : "") + esc(tag) + "</span>"
+    + '<span class="sv">' + (sp.v != null ? fmtNum(sp.v) : "—") + "</span>"
+    + "</span>";
 }
 /* 圣装 / 魔装：按槽位取对应字段，圣装是百分比（×100 存）、魔装是绝对值
    显示格式「圣装Lv40 攻击力 60%」/「魔装Lv23 攻击力 4,000」，属性名用官方简称（完整名放 title） */
@@ -1289,20 +1294,32 @@ function sectCell(e, kind){
   return '<span class="st st-mc" title="' + esc("魔装 Lv" + e.MatchlessSacredTreasureLv + " · " + f[1] + " " + val) + '">'
     + '魔装<b>Lv' + esc(e.MatchlessSacredTreasureLv) + "</b> " + esc(sectLabel(f[1])) + " " + esc(val) + "</span>";
 }
-/* 装备区下方独立的「圣装 · 魔装」块：整行 4 格 = 左件(圣/魔) + 右件(圣/魔)，共 3 排 */
-function sortedEquipList(c){
+/* 装备区下方独立的「圣装 · 魔装」块：按 武器→项链→手甲→头盔→护甲→鞋 纵向排列，可折叠 */
+const SECT_SLOT_ORDER = [1, 2, 3, 4, 5, 6];
+function sortedEquipListBy(c, order){
   const eqs = (c.UserEquipmentDtoInfos || []).slice();
   const rank = {};
-  EQ_SLOT_ORDER.forEach((s, i) => { rank[s] = i; });
+  order.forEach((s, i) => { rank[s] = i; });
   eqs.map((e, i) => ({ e: e, i: i, r: rank[equipSlotNo(e)] }))
     .sort((a, b) => ((a.r == null ? 99 : a.r) - (b.r == null ? 99 : b.r)) || (a.i - b.i))
     .forEach((o, k) => { eqs[k] = o.e; });
   return eqs.slice(0, 6);
 }
+function sortedEquipList(c){ return sortedEquipListBy(c, EQ_SLOT_ORDER); }
+let sectFolded = false;
+try{ sectFolded = localStorage.getItem("mmt_pvp_sect_fold") === "1"; }catch(e){ sectFolded = false; }
+function toggleSect(){
+  sectFolded = !sectFolded;
+  try{ localStorage.setItem("mmt_pvp_sect_fold", sectFolded ? "1" : "0"); }catch(e){}
+  const box = document.getElementById("sect-body");
+  const btn = document.getElementById("sect-fold");
+  if (box) box.style.display = sectFolded ? "none" : "";
+  if (btn) btn.textContent = sectFolded ? "展开 ▼" : "收起 ▲";
+}
 function sectPanel(c){
-  const list = sortedEquipList(c);
+  const list = sortedEquipListBy(c, SECT_SLOT_ORDER);
   if (!list.length) return "";
-  /* 一行 = 一件装备的「圣装 魔装」两个框（一行两格，保证框内文字完整） */
+  /* 一行 = 一件装备的「圣装 魔装」两个框，顺序 武器→项链→手甲→头盔→护甲→鞋 */
   const rows = [];
   list.forEach(function(e){
     const lg = sectCell(e, "lg"), mc = sectCell(e, "mc");
@@ -1310,7 +1327,12 @@ function sectPanel(c){
     rows.push('<div class="sectrow">' + (lg || '<span class="st st-empty">—</span>') + (mc || '<span class="st st-empty">—</span>') + "</div>");
   });
   if (!rows.length) return "";
-  return '<div class="eqsec sectsec"><div class="sectgrid">' + rows.join("") + "</div></div>";
+  const foldBtn = '<button type="button" class="fold-btn" id="sect-fold" onclick="toggleSect()" title="点击展开/收起">'
+    + (sectFolded ? "展开 ▼" : "收起 ▲") + "</button>";
+  return '<div class="eqsec sectsec">'
+    + '<div class="sect-head">' + foldBtn + "</div>"
+    + '<div class="sectgrid" id="sect-body"' + (sectFolded ? ' style="display:none"' : "") + ">" + rows.join("") + "</div>"
+    + "</div>";
 }
 /* 单件装备：左边图标（失败显示槽位名文字，位置不塌），右侧符石 2×2 */
 function equipSlot(c, e, idx){

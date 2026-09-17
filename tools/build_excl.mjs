@@ -70,8 +70,6 @@ Object.keys(byChar).sort((a, b) => Number(a) - Number(b)).forEach(cid => {
   out[String(cid)] = {
     n: T[e.NameKey] || ("专武 " + e.Id),      /* 专武名（游戏内简中） */
     r: e.RarityFlags >= 512 ? "LR" : (e.RarityFlags >= 256 ? "UR" : "SSR"),
-    lv: e.EquipmentLv || 0,
-    ic: e.IconId,
     d: descs,                                  /* 3 条专武强化描述 */
     a: attrLines(fx)                           /* 专武属性加成 */
   };

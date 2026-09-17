@@ -176,7 +176,6 @@ jobs:
               rf = e.get("RarityFlags") or 0
               excl[str(cid)] = {"_s": score, "n": t.get(e.get("NameKey"), e.get("Memo", "")),
                                 "r": "LR" if rf >= 512 else ("UR" if rf >= 256 else "SSR"),
-                                "lv": e.get("EquipmentLv") or 0, "ic": e.get("IconId"),
                                 "d": descs, "a": _alines(fx)}
           for v in excl.values(): v.pop("_s", None)
           save("pvp_excl.json", excl)
