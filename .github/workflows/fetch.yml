@@ -130,6 +130,12 @@ jobs:
           for e in load_mb("EquipmentMB"):
               emap[str(e["Id"])] = {"n":t.get(e.get("NameKey"),e.get("Memo","")),"r":RAR.get(e.get("RarityFlags"),str(e.get("RarityFlags"))),"s":e.get("SlotType"),"lv":e.get("EquipmentLv"),"ic":e.get("IconId")}
           save("pvp_equip.json", emap)
+          # 主线关卡序号 → 「章-关」映射（玩家进度里的 LatestQuestId 用它转成 12-3 这种）
+          _qmap = {}
+          for q in load_mb("QuestMB"):
+              if q.get("Id") and q.get("Memo"): _qmap[q["Id"]] = q["Memo"]
+          _qmax = max(_qmap) if _qmap else 0
+          save("pvp_quest.json", [_qmap.get(i, "") for i in range(1, _qmax + 1)])
           def slotmap(items, fields): return {str(x["Lv"]): {k: x.get(k) for k in fields} for x in items}
           save("pvp_legend.json", slotmap(load_mb("EquipmentLegendSacredTreasureMB"), ["WeaponAttackPowerPercent","SubHitPercent","GauntletCriticalDamagePercent","HelmetPhysicalCriticalDamageRelaxPercent","ArmorMagicCriticalDamageRelaxPercent","ShoesHpDrainPercent"]))
           save("pvp_matchless.json", slotmap(load_mb("EquipmentMatchlessSacredTreasureMB"), ["WeaponAttackPower","SubPhysicalDamageRelax","GauntletMagicDamageRelax","HelmetCritical","ArmorDefensePenetration","ShoesHp"]))

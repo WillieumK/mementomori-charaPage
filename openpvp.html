@@ -170,6 +170,17 @@ body:not(.side-collapsed) .side-open{display:none}
 .exattrs{display:flex;flex-wrap:wrap;gap:3px 6px;margin-top:4px}
 .exattrs .exattr{font-size:11px;color:#b5f0c3;background:rgba(181,240,195,.08);border:1px solid rgba(181,240,195,.22);border-radius:5px;padding:1px 6px;white-space:nowrap}
 .exattrs .exattr i{font-style:normal;color:var(--muted);margin-right:3px}
+/* 进度块（专武板下方）：主线 / 推塔 + 4 个属性塔 */
+.progbox{margin-top:6px;border:1px solid var(--panel-border);border-radius:8px;padding:6px 8px;background:rgba(0,0,0,.2);min-width:0}
+.proggrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.progitem{display:flex;align-items:baseline;gap:4px;min-width:0;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.25);padding:2px 6px}
+.progitem i{font-style:normal;font-size:10px;color:var(--muted);flex:none}
+.progitem b{font-size:12px;font-weight:600;color:#ffe9a8;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.progitem.t-blue b{color:#8ec7ff}
+.progitem.t-red b{color:#ff9b9b}
+.progitem.t-yellow b{color:#ffe066}
+.progitem.t-green b{color:#9fe3a8}
+.progitem.na b{color:var(--muted);opacity:.6}
 /* 装备区：2 件一排 × 3 排，每件 = 图标 + 符石 2×2 网格（不再显示装备附加属性） */
 .eqgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow-x:auto;overflow-y:hidden}
 .eqgrid .eqslot{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;min-width:136px;border-bottom:1px dashed rgba(255,255,255,.06);padding:3px 0 6px}
@@ -482,7 +493,7 @@ let worlds = [], groups = [];
 let lastList = [];
 let lastTs = null;
 let cache = {};           /* 会话内缓存：url -> {data, ts} */
-let P = { char:null, skill:null, equip:null, legend:null, matchless:null, sphere:null, excl:null };
+let P = { char:null, skill:null, equip:null, legend:null, matchless:null, sphere:null, excl:null, quest:null };
 
 function esc(v){ return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 function fmtNum(v){
@@ -1168,12 +1179,86 @@ function syncRowMark(){
 /* ---------- 主数据映射（懒加载） ---------- */
 async function ensurePvpData(){
   if (P.char) return;
-  const [ch, sk, eq, lg, mc, sp, ex] = await Promise.all([
+  const [ch, sk, eq, lg, mc, sp, ex, qs] = await Promise.all([
     fetchJson("data/pvp_char.json"), fetchJson("data/pvp_skill.json"), fetchJson("data/pvp_equip.json"),
     fetchJson("data/pvp_legend.json"), fetchJson("data/pvp_matchless.json"), fetchJson("data/pvp_sphere.json"),
-    fetchJson("data/pvp_excl.json").catch(function(){ return null; })   /* 专武数据缺失时回退原技能显示 */
+    fetchJson("data/pvp_excl.json").catch(function(){ return null; }),   /* 专武数据缺失时回退原技能显示 */
+    fetchJson("data/pvp_quest.json").catch(function(){ return null; })   /* 主线关卡序号 → 章-关 */
   ]);
-  P = { char: ch, skill: sk, equip: eq, legend: lg, matchless: mc, sphere: sp, excl: ex };
+  P = { char: ch, skill: sk, equip: eq, legend: lg, matchless: mc, sphere: sp, excl: ex, quest: qs };
+}
+
+/* ---------- 玩家进度（主线 / 推塔 / 4 个属性塔） ---------- */
+/* 数据源：api.mentemori.icu/{world}/player_ranking/latest
+   其中 player_info[玩家id] 给主线 quest_id 与无穷塔 tower_id；rankings.tower_blue/red/yellow/green 给 4 个属性塔 */
+const PROG_BASE = API;
+function rankingCacheKey(world){ return "rank_" + world; }
+async function ensurePlayerRanking(world){
+  if (!world) return null;
+  const key = rankingCacheKey(world);
+  if (cache[key]) return cache[key].data;
+  if (pendingRanking[key]) return null;
+  pendingRanking[key] = true;
+  try{
+    const r = await fetch(PROG_BASE + "/" + encodeURIComponent(world) + "/player_ranking/latest").then(function(x){ return x.json(); });
+    if (r && r.data) cache[key] = { data: r.data, ts: r.timestamp };
+    pendingRanking[key] = false;
+    return r && r.data ? r.data : null;
+  }catch(e){ pendingRanking[key] = false; return null; }
+}
+const pendingRanking = {};
+/* 主线关卡序号 → 「章-关」：数组（索引=序号-1）与对象（键=序号）两种格式都兼容 */
+function questStage(qid){
+  const s = P.quest;
+  if (!s || !(qid > 0)) return null;
+  const v = Array.isArray(s) ? s[qid - 1] : s[String(qid)];
+  return v || null;
+}
+function towerOfRank(rankings, key, pid){
+  const arr = (rankings && rankings[key]) || [];
+  for (let i = 0; i < arr.length; i++) if (String(arr[i].id) === String(pid)) return arr[i].tower_id;
+  return null;
+}
+/* 当前查看的玩家在哪个世界（竞技场=当前世界；巅峰=由玩家ID推出的世界号） */
+function playerWorldOf(pl){
+  if (!pl) return null;
+  if (mode === "legend"){
+    const g = groups[curGroup];
+    const w = g ? legendWorldOf(g, pl.PlayerId) : "";
+    const m = String(w || "").match(/\d+/);
+    return m ? m[0] : null;
+  }
+  return curWorld != null ? String(curWorld) : null;
+}
+/* 专武板下方的进度块 */
+function progressBlock(pl){
+  if (!pl) return "";
+  const world = playerWorldOf(pl);
+  const pr = world && cache[rankingCacheKey(world)] ? cache[rankingCacheKey(world)].data : null;
+  const info = pr && pr.player_info ? (pr.player_info[String(pl.PlayerId)] || null) : null;
+  const qid = info && info.quest_id ? info.quest_id : pl.LatestQuestId;
+  const mapped = questStage(qid);
+  const stage = mapped || (qid > 0 ? qid + " 关" : "—");
+  const tw = info && info.tower_id ? info.tower_id : pl.LatestTowerBattleQuestId;
+  const cell = function(k, label, cls, val){
+    return '<div class="progitem' + (cls ? " " + cls : "") + (val == null ? " na" : "") + '"><i>' + label + "</i><b>"
+      + (val == null ? "—" : esc(val)) + "</b></div>";
+  };
+  let towers = "";
+  if (pr){
+    towers = cell("b", "蓝塔", "t-blue", towerOfRank(pr.rankings, "tower_blue", pl.PlayerId))
+      + cell("r", "红塔", "t-red", towerOfRank(pr.rankings, "tower_red", pl.PlayerId))
+      + cell("y", "黄塔", "t-yellow", towerOfRank(pr.rankings, "tower_yellow", pl.PlayerId))
+      + cell("g", "绿塔", "t-green", towerOfRank(pr.rankings, "tower_green", pl.PlayerId));
+  } else {
+    towers = cell("b", "蓝塔", "t-blue", null) + cell("r", "红塔", "t-red", null)
+      + cell("y", "黄塔", "t-yellow", null) + cell("g", "绿塔", "t-green", null);
+  }
+  return '<div class="progbox"><div class="proggrid">'
+    + cell("q", "主线", "", stage)
+    + cell("t", "推塔", "", tw != null ? String(tw) : null)
+    + towers
+    + "</div></div>";
 }
 
 /* ---------- 角色详情弹窗 ---------- */
@@ -1205,7 +1290,7 @@ function exclBlock(cid){
     +   (attrs ? '<div class="exattrs">' + attrs + "</div>" : "")
     + "</div>";
 }
-function charPanel(c){
+function charPanel(c, pl){
   const cm = P.char && P.char[String(c.CharacterId)];
   const name = cm ? cm.n : ("角色 " + c.CharacterId);
   const elem = cm ? cm.e : "";
@@ -1228,7 +1313,9 @@ function charPanel(c){
   }
   return '<div class="region"><h3>' + esc(name) + " · " + esc(rarityLabel(c.RarityFlags)) + " " + eTag + jTag + " · Lv" + esc(c.Level) + "</h3>"
     + '<div class="stats">' + stats + "</div>"
-    + '<div style="margin-top:8px">' + (bottom || '<div class="skd">无技能数据</div>') + "</div></div>";
+    + '<div style="margin-top:8px">' + (bottom || '<div class="skd">无技能数据</div>') + "</div>"
+    + progressBlock(pl)
+    + "</div>";
 }
 /* 装备图标框：框内一行「Lv基础+强化」；强化等级始终显示（没有强化等级时才只显示基础等级） */
 function equipIconBox(em, slotName, reinforceLv){
@@ -1436,6 +1523,11 @@ async function renderCharBody(){
   list.slice(0, 5).forEach((ch, j) => {
     tabs += '<span class="ttab' + (j === st.j ? " on" : "") + '" onclick="switchChar(' + j + ')"><img src="' + charaCardUrl(ch.CharacterId, ch.RarityFlags, ch.Level) + '" loading="lazy" onerror="iconOnError(this)" alt=""></span>';
   });
+  /* 进度块需要该玩家所在世界的排行榜数据：没缓存就异步拉一次，到了再重渲染 */
+  const pw = playerWorldOf(pl);
+  if (pw && !cache[rankingCacheKey(pw)]){
+    ensurePlayerRanking(pw).then(function(d){ if (d) renderCharBody(); });
+  }
   if (wide){
     /* 内嵌面板不再显示顶部大头像行，只留一行队伍小头像；角色名并入面板标题行 */
     const note = document.getElementById("char-note");
@@ -1447,13 +1539,13 @@ async function renderCharBody(){
         + (g ? " · 世界组 " + g.group_id + (w ? " · " + w : "") : "");
     }
     host.innerHTML = '<div class="team-tabs">' + tabs + "</div>"
-      + '<div class="regions">' + charPanel(c) + equipPanel(c) + "</div>";
+      + '<div class="regions">' + charPanel(c, pl) + equipPanel(c) + "</div>";
     syncRowMark();
     return;
   }
   host.innerHTML = charHeadHtml(c, name, elem, job, id, "队伍第" + (st.j + 1) + "位", true)
     + '<div class="team-tabs">' + tabs + "</div>"
-    + '<div class="regions">' + charPanel(c) + equipPanel(c) + "</div>";
+    + '<div class="regions">' + charPanel(c, pl) + equipPanel(c) + "</div>";
 }
 
 function switchChar(j){
