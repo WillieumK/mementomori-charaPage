@@ -48,7 +48,7 @@ tbody tr:hover{background:rgba(124,108,240,.14)}
 .pinfo{color:var(--muted);font-size:11px;margin-top:2px}
 .pinfo .pworld{color:#a99fd9}
 .cslot{display:inline-block;width:52px;text-align:center;margin-right:6px;cursor:pointer;vertical-align:top}
-.cslot img{width:48px;height:48px;border-radius:9px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);object-fit:cover;display:block;margin:0 auto}
+.cslot img{width:48px;height:48px;border-radius:9px;border:1px solid var(--panel-border);background:rgba(255,255,255,.06);object-fit:cover;display:block;margin:0 auto}
 .cslot:hover img{outline:1px solid var(--gold)}
 .cslot .clv{color:var(--muted);font-size:10px;margin-top:2px}
 .cslot .cname{display:none}
@@ -277,10 +277,10 @@ body:not(.side-collapsed) .side-open{display:none}
 .rank-split{display:flex;gap:14px;align-items:flex-start}
 .rank-left{flex:0 1 auto;min-width:0;max-width:100%}
 /* 展开时左表收窄，剩余宽度全给右面板（这样装备区文字才有空间放大） */
-#sec-rank.split .rank-left{flex:0 1 430px}
+#sec-rank.split .rank-left{flex:0 1 470px}
 #sec-rank.split .rank-left thead th,#sec-rank.split .rank-left tbody td{padding:8px 7px}
-#sec-rank.split .rank-left .cslot{width:40px;margin-right:2px}
-#sec-rank.split .rank-left .cslot img{width:36px;height:36px}
+#sec-rank.split .rank-left .cslot{width:48px;margin-right:2px}
+#sec-rank.split .rank-left .cslot img{width:45px;height:45px;border-radius:8px}
 .rank-left .table-wrap{max-width:100%}
 .rank-left table{width:max-content}
 .rank-left thead th,.rank-left tbody td{padding:8px 9px}
@@ -1102,13 +1102,12 @@ function renderStats(){
 function charSlots(pi, list){
   let h = "";
   (list || []).slice(0, 5).forEach((c, j) => {
-    const id = padId(c.CharacterId);
     const cm = P.char && P.char[String(c.CharacterId)];
     const name = cm ? cm.n : "";
-    /* 榜内头像保持官方小图（20行×5=100个立绘请求会把接口拖慢，立绘只在展开面板里用） */
+    /* 队伍图标统一用立绘卡片（自带 Lv/属性/稀有度星级），不再单独显示等级文字 */
     h += '<span class="cslot" title="' + esc(name || ("角色 " + c.CharacterId)) + '" onclick="event.stopPropagation();openChar(' + pi + ',' + j + ')">'
-      + '<img src="' + imgSrc(ICON_BASE + id + '_00_s.png') + '" loading="lazy" onerror="iconOnError(this)" alt="' + esc(c.CharacterId) + '">'
-      + '<span class="clv">Lv' + esc(c.Level) + "</span></span>";
+      + '<img src="' + charaCardUrl(c.CharacterId, c.RarityFlags, c.Level) + '" loading="lazy" onerror="iconOnError(this)" alt="' + esc(c.CharacterId) + '">'
+      + "</span>";
   });
   return h;
 }
