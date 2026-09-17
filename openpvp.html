@@ -1105,6 +1105,7 @@ function charSlots(pi, list){
     const id = padId(c.CharacterId);
     const cm = P.char && P.char[String(c.CharacterId)];
     const name = cm ? cm.n : "";
+    /* 榜内头像保持官方小图（20行×5=100个立绘请求会把接口拖慢，立绘只在展开面板里用） */
     h += '<span class="cslot" title="' + esc(name || ("角色 " + c.CharacterId)) + '" onclick="event.stopPropagation();openChar(' + pi + ',' + j + ')">'
       + '<img src="' + imgSrc(ICON_BASE + id + '_00_s.png') + '" loading="lazy" onerror="iconOnError(this)" alt="' + esc(c.CharacterId) + '">'
       + '<span class="clv">Lv' + esc(c.Level) + "</span></span>";
