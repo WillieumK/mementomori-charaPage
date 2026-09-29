@@ -61,18 +61,30 @@ section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;backg
 .tag.rar{color:#f3d9ff;border-color:rgba(243,217,255,.4);background:rgba(243,217,255,.08)}
 .tag.type{color:#d5ffe2;border-color:rgba(213,255,226,.4);background:rgba(213,255,226,.08)}
 /* ---------- 角色网格 ---------- */
-.char-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.char-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px}
 .char-cell{
   background:rgba(0,0,0,.25);border:1px solid var(--panel-border);border-radius:12px;
-  padding:10px 6px 8px;cursor:pointer;text-align:center;transition:border-color .15s,background .15s,transform .1s;
+  padding:8px 5px 7px;cursor:pointer;text-align:center;transition:border-color .15s,background .15s,transform .1s;
 }
 .char-cell:hover{border-color:rgba(124,108,240,.6);background:rgba(124,108,240,.12)}
 .char-cell.sel{border-color:var(--gold);background:rgba(217,178,106,.12);box-shadow:0 0 14px rgba(217,178,106,.25)}
-.char-cell .cico{display:block;width:56px;height:56px;margin:0 auto 6px;border-radius:10px;overflow:hidden;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
+.char-cell .cico{display:block;width:100%;max-width:56px;aspect-ratio:1/1;height:auto;margin:0 auto 6px;border-radius:10px;overflow:hidden;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
 .char-cell .cico img{width:100%;height:100%;object-fit:cover;display:block}
 .char-cell .cico .fallback{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--muted);font-size:11px}
-.char-cell .cname{display:block;font-size:12px;color:#f1eef8;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.char-cell .cname{display:block;font-size:11px;color:#f1eef8;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .char-cell .tags{display:flex;justify-content:center;gap:4px;flex-wrap:wrap}
+/* ---------- 角色下拉选择 ---------- */
+.pick-btn{position:relative;display:block;padding:0;border:0;background:none;cursor:pointer;border-radius:14px;flex:0 0 84px}
+.pick-btn:hover .big-ico{border-color:var(--gold)}
+.pick-btn .big-ico{display:block}
+.pick-caret{position:absolute;right:-6px;bottom:-6px;width:24px;height:24px;border-radius:50%;background:var(--gold);color:#241d10;font-size:12px;line-height:24px;text-align:center;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.char-picker{display:none;border:1px solid var(--panel-border);border-radius:12px;background:rgba(0,0,0,.28);padding:12px;margin:0 0 18px}
+.char-picker.open{display:block}
+.picker-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.picker-title{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--gold);font-weight:600}
+.picker-title::before{content:"";width:4px;height:15px;border-radius:2px;background:var(--gold)}
+.char-picker .toolbar{margin-bottom:10px}
+.char-picker .char-grid{max-height:46vh;overflow-y:auto;padding-right:4px}
 /* ---------- 详情 ---------- */
 #detail{display:none}
 .d-head{display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
@@ -175,7 +187,7 @@ body:not(.side-collapsed) .side-open{display:none}
 .side-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:70;display:none}
 .side-mask.show{display:block}
 @media (min-width:769px){body:not(.side-collapsed) .side{transform:translateX(0)}body:not(.side-collapsed){padding-left:345px}}
-@media (max-width:768px){header.top{padding-top:52px}.wrap{padding:16px 10px 40px}header.top h1{font-size:20px;flex-wrap:wrap}h1 .logo{width:32px;height:32px}header.top .subtitle{font-size:13px}.toolbar{justify-content:flex-start}.char-grid{grid-template-columns:repeat(auto-fill,minmax(74px,1fr))}.char-cell .cico{width:44px;height:44px}section.card{padding:14px 12px 18px}section.card h2{font-size:15px}.d-head .big-ico{width:64px;height:64px;flex:0 0 64px}.d-head .d-name{font-size:19px}}
+@media (max-width:768px){header.top{padding-top:52px}.wrap{padding:16px 10px 40px}header.top h1{font-size:20px;flex-wrap:wrap}h1 .logo{width:32px;height:32px}header.top .subtitle{font-size:13px}.toolbar{justify-content:flex-start}.char-grid{grid-template-columns:repeat(auto-fill,minmax(74px,1fr))}.char-cell .cico{max-width:48px}section.card{padding:14px 12px 18px}section.card h2{font-size:15px}.d-head .big-ico{width:64px;height:64px;flex:0 0 64px}.d-head .d-name{font-size:19px}}
 </style>
 </head>
 <body>
@@ -198,42 +210,43 @@ body:not(.side-collapsed) .side-open{display:none}
 <div class="wrap">
   <header class="top">
     <h1><img class="logo" src="icon.png" alt="icon"><span class="title-grad">角色技能页</span></h1>
-    <p class="subtitle">点选角色查看：普攻/主动/被动技能 · 秘仪加成 · 专属武器 · 初始数值面板</p>
+    <p class="subtitle">点头像切换角色 · 普攻/主动/被动技能 · 秘仪加成 · 专属武器 · 初始数值面板</p>
     <p><span class="badge"><span class="dot"></span>数据来源：官方主数据（本地压缩）</span></p>
   </header>
 
-  <div class="toolbar">
-    <label>属性</label>
-    <select id="f-element" onchange="renderGrid()">
-      <option value="0">全部</option>
-      <option value="1">蓝</option>
-      <option value="2">红</option>
-      <option value="3">绿</option>
-      <option value="4">金</option>
-      <option value="5">光</option>
-      <option value="6">暗</option>
-    </select>
-    <label>职业</label>
-    <select id="f-job" onchange="renderGrid()">
-      <option value="0">全部</option>
-      <option value="1">战士</option>
-      <option value="2">射手</option>
-      <option value="4">法师</option>
-    </select>
-    <label>初始稀有度</label>
-    <select id="f-rarity" onchange="renderGrid()"></select>
-    <input class="search" id="f-name" type="text" placeholder="搜索中文名…" oninput="renderGrid()">
-    <button onclick="clearFilter()">清除筛选</button>
-    <button onclick="load(true)">🔄 刷新数据</button>
-  </div>
-
-  <section class="card">
-    <h2>角色选择<span class="h2-note" id="char-count"></span></h2>
-    <div class="char-grid" id="char-grid"></div>
-  </section>
-
   <section class="card" id="detail">
     <div class="d-head" id="d-head"></div>
+    <div class="char-picker" id="char-picker">
+      <div class="picker-bar">
+        <span class="picker-title">角色选择<span class="h2-note" id="char-count"></span></span>
+        <button type="button" onclick="togglePicker(false)" title="收起列表">✕</button>
+      </div>
+      <div class="toolbar">
+        <label>属性</label>
+        <select id="f-element" onchange="renderGrid()">
+          <option value="0">全部</option>
+          <option value="1">蓝</option>
+          <option value="2">红</option>
+          <option value="3">绿</option>
+          <option value="4">金</option>
+          <option value="5">光</option>
+          <option value="6">暗</option>
+        </select>
+        <label>职业</label>
+        <select id="f-job" onchange="renderGrid()">
+          <option value="0">全部</option>
+          <option value="1">战士</option>
+          <option value="2">射手</option>
+          <option value="4">法师</option>
+        </select>
+        <label>初始稀有度</label>
+        <select id="f-rarity" onchange="renderGrid()"></select>
+        <input class="search" id="f-name" type="text" placeholder="搜索中文名…" oninput="renderGrid()">
+        <button onclick="clearFilter()">清除筛选</button>
+        <button onclick="load(true)">🔄 刷新数据</button>
+      </div>
+      <div class="char-grid" id="char-grid"></div>
+    </div>
     <div class="tabs">
       <button class="active" data-tab="skills" onclick="setTab('skills', this)">角色技能</button>
       <button data-tab="coll" onclick="setTab('coll', this)">秘仪</button>
@@ -303,6 +316,8 @@ function rarityName(flags){
 // ---------- 加载 ----------
 async function load(force){
   const grid = document.getElementById("char-grid");
+  document.getElementById("detail").style.display = "block";
+  togglePicker(true);
   grid.innerHTML = '<div class="loading"><span class="spinner"></span><br>正在读取数据…</div>';
   try{
     const [chars, skills, colls, weapons, stats] = await Promise.all([
@@ -367,12 +382,10 @@ function renderGrid(){
     const cls = ELEM_CLS[c.e] || "";
     const eName = ELEM_NAME[c.e] || c.e;
     const jobN = JOB_NAME[c.j] || ("职业" + c.j);
-    const rN = rarityName(c.r);
     return '<div class="char-cell' + (String(cid) === String(selChar) ? " sel" : "") + '" onclick="selectChar(\'' + cid + '\')">'
       + charIcon(cid, "cico")
       + '<span class="cname">' + esc(c.n) + '</span>'
       + '<span class="tags"><span class="tag ' + cls + '">' + esc(eName) + '</span><span class="tag job">' + esc(jobN) + '</span>'
-      + (rN ? '<span class="tag rar">' + esc(rN) + '</span>' : "")
       + "</span></div>";
   }).join("");
   if (!list.length) grid.innerHTML = '<div class="empty">没有符合筛选条件的角色</div>';
@@ -381,12 +394,25 @@ function renderGrid(){
 // ---------- 选中角色 ----------
 function selectChar(cid){
   selChar = cid;
+  togglePicker(false);
   renderGrid();
   document.getElementById("detail").style.display = "block";
   renderAll();
   const d = document.getElementById("detail");
   d.scrollIntoView({ behavior: "smooth", block: "start" });
 }
+function togglePicker(force){
+  const p = document.getElementById("char-picker");
+  if (!p) return;
+  const open = typeof force === "boolean" ? force : !p.classList.contains("open");
+  p.classList.toggle("open", open);
+}
+document.addEventListener("click", function(ev){
+  const p = document.getElementById("char-picker");
+  if (!p || !p.classList.contains("open")) return;
+  if (p.contains(ev.target) || (ev.target.closest && ev.target.closest(".pick-btn"))) return;
+  togglePicker(false);
+});
 function renderAll(){
   renderHead();
   renderSkills();
@@ -398,7 +424,9 @@ function renderHead(){
   const c = S.chars[selChar];
   const cls = ELEM_CLS[c.e] || "";
   document.getElementById("d-head").innerHTML =
-    charIcon(selChar, "big-ico")
+    '<button type="button" class="pick-btn" onclick="togglePicker()" title="点击切换角色">'
+    + charIcon(selChar, "big-ico")
+    + '<span class="pick-caret">▾</span></button>'
     + '<div><div class="d-name">' + esc(c.n) + '</div>'
     + '<div class="d-tags">'
     + '<span class="tag ' + cls + '">' + esc(ELEM_NAME[c.e] || c.e) + '属性</span>'
