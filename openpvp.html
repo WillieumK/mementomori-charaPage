@@ -1341,7 +1341,7 @@ function equipIconBox(em, slotName, reinforceLv){
   /* 图标填满整框；「Lv基础+强化」挪到框下方单独一行，可以写更大 */
   return '<span class="eqleft">'
     + '<span class="eqiconbox' + (url ? "" : " noimg") + '">' + img + fb + "</span>"
-    + '<span class="eqblv">' + esc(lvTxt) + "</span>"
+    + '<span class="eqblv"></span>'
     + "</span>";
 }
 /* 符石短名 / 框内类型名：官方全名太长会换行或被截断，统一用简称（完整名在悬停提示里） */
