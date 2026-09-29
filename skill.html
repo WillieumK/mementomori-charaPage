@@ -107,6 +107,13 @@ section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;backg
 .skill-card .sk-lv{border-top:1px dashed rgba(255,255,255,.08);padding-top:8px;margin-top:8px}
 .skill-card .sk-lv .lv-tag{display:inline-block;font-size:11px;color:#ffd76a;background:rgba(255,215,106,.1);border:1px solid rgba(255,215,106,.3);border-radius:6px;padding:1px 7px;margin-bottom:4px}
 .skill-card .sk-lv p{white-space:pre-wrap;margin:0;font-size:13px;line-height:1.75;color:#dcd9e8}
+/* 技能表（技能名称 / 冷却 / 技能描述） */
+.sk-table th:nth-child(1){width:170px}
+.sk-table th:nth-child(2){width:64px}
+.sk-table .cell-cd{text-align:center;color:#ffd76a;font-weight:600;font-variant-numeric:tabular-nums}
+.sk-table .cell-desc .d-line{display:block;font-size:13px;line-height:1.75;color:#dcd9e8}
+.sk-table .cell-desc .d-line+.d-line{margin-top:5px}
+.sk-table .cell-desc .d-lv{color:#ffd76a;font-weight:600}
 /* 秘仪 / 专武 表格 */
 table{width:100%;border-collapse:collapse;font-size:13px}
 thead th{background:#1c1730;color:var(--gold);font-weight:600;text-align:left;white-space:nowrap;padding:9px 12px;border-bottom:1px solid rgba(217,178,106,.25)}
@@ -403,31 +410,30 @@ function renderHead(){
 }
 
 // ---------- 技能 ----------
-function skillCard(sid, typeLabel){
-  const key = "a_" + sid;
-  const keyP = "p_" + sid;
-  const sk = S.skills[key] || S.skills[keyP];
-  if (!sk) return "";
-  const lvs = (sk.d || []).map((d, i) => {
-    const [lv, desc] = d;
-    return '<div class="sk-lv"><span class="lv-tag">Lv ' + lv + ' 解锁</span><p>' + esc(desc) + '</p></div>';
-  }).join("");
-  return '<div class="skill-card">'
-    + '<div class="sk-head">' + skillIcon(sid)
-    + '<div><div class="sk-name">' + esc(sk.n) + ' <span class="tag type">' + esc(typeLabel) + '</span>'
-    + (sk.cd ? ' <span class="tag">冷却 ' + sk.cd + '</span>' : "")
-    + '</div><div class="sk-meta">技能ID ' + sid + '</div></div></div>'
-    + lvs + '</div>';
+function skillRows(sids, passive){
+  let html = "";
+  for (const sid of sids){
+    const sk = S.skills["a_" + sid] || S.skills["p_" + sid];
+    if (!sk) continue;
+    const lines = (sk.d || []).map(d =>
+      '<span class="d-line"><span class="d-lv">' + d[0] + ':</span> ' + esc(d[1]) + "</span>"
+    ).join("");
+    html += '<tr><td class="cell-name">' + esc(sk.n) + "</td>"
+      + '<td class="cell-cd">' + (passive ? 0 : (sk.cd || 0)) + "</td>"
+      + '<td class="cell-desc">' + (lines || '<span class="empty">—</span>') + "</td></tr>";
+  }
+  return html;
 }
 function renderSkills(){
   const c = S.chars[selChar];
-  let html = "";
-  html += '<div class="skill-block"><h3>普攻</h3>' + (skillCard(c.nor, "普攻") || '<div class="empty">无普攻</div>') + '</div>';
-  const acts = (c.act || []).map(sid => skillCard(sid, "主动")).filter(Boolean);
-  html += '<div class="skill-block"><h3>主动技能</h3>' + (acts.join("") || '<div class="empty">无主动技能</div>') + '</div>';
-  const pass = (c.pas || []).map(sid => skillCard(sid, "被动")).filter(Boolean);
-  html += '<div class="skill-block"><h3>被动技能</h3>' + (pass.join("") || '<div class="empty">无被动技能</div>') + '</div>';
-  document.getElementById("pane-skills").innerHTML = html;
+  const rows = skillRows([c.nor], false)
+    + skillRows(c.act || [], false)
+    + skillRows(c.pas || [], true);
+  document.getElementById("pane-skills").innerHTML = rows
+    ? '<div class="table-wrap"><table class="sk-table">'
+      + '<thead><tr><th>技能名称</th><th>冷却</th><th>技能描述</th></tr></thead>'
+      + "<tbody>" + rows + "</tbody></table></div>"
+    : '<div class="empty">该角色暂无技能数据</div>';
 }
 
 // ---------- 秘仪 ----------
