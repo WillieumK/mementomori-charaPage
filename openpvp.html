@@ -88,11 +88,11 @@ section.card.collapsed h2{margin-bottom:0}
 .job-tag{color:#9fe3c0;border-color:rgba(159,227,192,.4);background:rgba(159,227,192,.08)}
 
 /* 稀有度颜色 */
-.r-N,.r-R{color:#b8b4c4}
-.r-R\+,.r-SR,.r-SR\+{color:#7fb8ff}
-.r-SSR,.r-SSR\+{color:#b48ae8}
-.r-UR,.r-UR\+{color:#ffd76a}
-.r-LR,.r-LR\+{color:#ff9d9d}
+.r-N,.r-R{color:rgba(255,255,255,.35)}
+.r-SR{color:#d9b26a}
+.r-SSR{color:#a78bfa}
+.r-UR{color:#ff7a7a}
+.r-LR{color:#ff4040}
 
 /* 侧栏 */
 .side{position:fixed;left:0;top:0;bottom:0;width:345px;background:rgba(16,13,26,.97);border-right:1px solid var(--panel-border);padding:22px 14px;z-index:80;transform:translateX(-100%);transition:transform .25s ease;overflow-y:auto}
@@ -186,7 +186,7 @@ body:not(.side-collapsed) .side-open{display:none}
 .eqgrid .eqslot{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;min-width:136px;border-bottom:1px dashed rgba(255,255,255,.06);padding:3px 0 6px}
 .eqgrid .eqslot:nth-child(n+5){border-bottom:none;padding-bottom:1px}
 .eqleft{display:flex;flex-direction:column;align-items:center;gap:2px;flex:none;min-width:0}
-.eqiconbox{width:40px;height:40px;flex:0 0 40px;border-radius:8px;border:1px solid var(--panel-border);background:rgba(255,255,255,.12);position:relative;overflow:hidden}
+.eqiconbox{width:40px;height:40px;flex:0 0 40px;border-radius:8px;border:1px solid var(--panel-border);background:rgba(255,255,255,.12);position:relative;overflow:hidden} .eqiconbox.r-N,.eqiconbox.r-R{border-color:rgba(255,255,255,.22)} .eqiconbox.r-SR{border-color:rgba(217,178,106,.55)} .eqiconbox.r-SSR{border-color:rgba(180,138,232,.55)} .eqiconbox.r-UR{border-color:rgba(255,122,122,.5)} .eqiconbox.r-LR{border-color:rgba(255,60,60,.6)}
 .eqiconbox img.eqicon{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .15s}
 .eqiconbox img.eqicon.ok{opacity:1}
 .eqiconbox .eqfb{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0 1px;text-align:center;line-height:1.2;box-sizing:border-box}
@@ -314,7 +314,7 @@ body:not(.side-collapsed) .side-open{display:none}
 #char-panel{min-width:0}
 /* 右侧展开面板：装备栏整体放大 1.2 倍（图标框 40→60px 并在框内加一行 Lv基础+强化） */
 #char-panel .eqgrid{gap:6px}
-#char-panel .eqiconbox{width:64px;height:64px;flex:0 0 64px;background:rgba(255,255,255,.12)}
+#char-panel .eqiconbox{width:64px;height:64px;flex:0 0 64px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.12)} #char-panel .eqiconbox.r-N,#char-panel .eqiconbox.r-R{border-color:rgba(255,255,255,.26)} #char-panel .eqiconbox.r-SR{border-color:rgba(217,178,106,.65)} #char-panel .eqiconbox.r-SSR{border-color:rgba(180,138,232,.65)} #char-panel .eqiconbox.r-UR{border-color:rgba(255,122,122,.55)} #char-panel .eqiconbox.r-LR{border-color:rgba(255,60,60,.65)}
 #char-panel .eqiconbox img.eqicon{inset:0;width:100%;height:100%;object-fit:cover}
 #char-panel .eqiconbox .eqfb{padding-bottom:0}
 #char-panel .eqiconbox .eqfb i{font-size:11px}
@@ -1788,6 +1788,8 @@ async function waitWorkflowDone(token, timeoutMs){
 </script>
 </body>
 </html>
+
+
 
 
 
