@@ -529,6 +529,11 @@ function rarityLabel(flags){
   const f = Number(flags);
   return RAR[f] || (f > 524288 ? "LR+" + Math.round(Math.log2(f / 512)) : String(f));
 }
+function equipRarityText(text){
+  const s = String(text || "");
+  const m = s.match(/^(N|R|SR|SSR|UR|LR)/);
+  return m ? m[1] : s;
+}
 function rarityClass(label){
   const base = label.replace(/\+\d+$/,"");
   const m = (base || "").match(/^(N|R|SR|SSR|UR|LR)/);
@@ -1422,7 +1427,7 @@ function sectPanel(c){
 function equipSlot(c, e, idx){
   const em = P.equip && P.equip[String(e.EquipmentId)];
   const name = em ? em.n : ("装备 " + e.EquipmentId);
-  const rarity = em ? em.r : "";
+  const rarity = em ? equipRarityText(em.r) : "";
   const slotName = em && SLOT_NAMES[em.s] ? SLOT_NAMES[em.s] : (SLOT_NAMES[idx + 1] || ("槽" + (idx + 1)));
   const sync = e.SetBaseSynchroGroupId > 0 ? '<span class="sync-mark">组' + e.SetBaseSynchroGroupId + "</span>" : "";
   let spheres = "";
