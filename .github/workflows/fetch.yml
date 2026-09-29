@@ -47,7 +47,7 @@ jobs:
           def load_mb(n): return msgpack.unpackb(fetch(base + n))
           COLS = ["stage","name","attr","rarity","rank","speed","reson","atk","def","hp","mdef","pdef","skill","stamina","magic","strength","icon","type"]
           ELEM = {1:"\u84dd",2:"\u7ea2",3:"\u7eff",4:"\u9ec4",5:"\u5149",6:"\u6697","Blue":"\u84dd","Red":"\u7ea2","Green":"\u7eff","Yellow":"\u9ec4","Light":"\u5149","Dark":"\u6697"}
-          RAR = {0:"\u65e0",1:"N",2:"R",4:"R+",8:"SR",16:"SR+",32:"SSR",64:"SSR+",128:"UR",256:"UR+",512:"LR",1024:"LR+",2048:"LR+2",4096:"LR+3",8192:"LR+4",16384:"LR+5",32768:"LR+6",65536:"LR+7",131072:"LR+8",262144:"LR+9",524288:"LR+10"}
+          ERAR = {0:"\u65e0",1:"D",2:"C",4:"B",8:"A",16:"S",32:"R",64:"SR",128:"SSR",256:"UR",512:"LR"}
           WAN="\u4e07"; YI="\u4ebf"; GAO="\u9ad8"; DI="\u4f4e"
           def fmt(v):
               # 缓存存原始数值（不带万/亿），显示时再转换
@@ -133,7 +133,7 @@ jobs:
           save("pvp_skill.json", smap)
           emap = {}
           for e in load_mb("EquipmentMB"):
-              emap[str(e["Id"])] = {"n":t.get(e.get("NameKey"),e.get("Memo","")),"r":RAR.get(e.get("RarityFlags"),str(e.get("RarityFlags"))),"s":e.get("SlotType"),"lv":e.get("EquipmentLv"),"ic":e.get("IconId")}
+              emap[str(e["Id"])] = {"n":t.get(e.get("NameKey"),e.get("Memo","")),"r":ERAR.get(e.get("RarityFlags"),str(e.get("RarityFlags"))),"s":e.get("SlotType"),"lv":e.get("EquipmentLv"),"ic":e.get("IconId")}
           save("pvp_equip.json", emap)
           # 主线关卡序号 → 「章-关」映射（玩家进度里的 LatestQuestId 用它转成 12-3 这种）
           _qmap = {}
@@ -149,7 +149,7 @@ jobs:
               v = None
               if s.get("BaseParameterChangeInfo") and s["BaseParameterChangeInfo"].get("Value") is not None: v = s["BaseParameterChangeInfo"]["Value"]
               elif s.get("BattleParameterChangeInfo") and s["BattleParameterChangeInfo"].get("Value") is not None: v = s["BattleParameterChangeInfo"]["Value"]
-              spmap[str(s["Id"])] = {"n":t.get(s.get("NameKey"),s.get("Memo","")),"d":t.get(s.get("DescriptionKey"),""),"v":v,"r":RAR.get(s.get("RarityFlags"),str(s.get("RarityFlags"))),"cat":s.get("CategoryId"),"t":s.get("SphereType"),"lv":s.get("Lv")}
+              spmap[str(s["Id"])] = {"n":t.get(s.get("NameKey"),s.get("Memo","")),"d":t.get(s.get("DescriptionKey"),""),"v":v,"r":ERAR.get(s.get("RarityFlags"),str(s.get("RarityFlags"))),"cat":s.get("CategoryId"),"t":s.get("SphereType"),"lv":s.get("Lv")}
           save("pvp_sphere.json", spmap)
           # 专武：技能（3 条强化描述）+ 属性加成
           BPARM = {1:"\u529b\u91cf",2:"\u6218\u6280",3:"\u9b54\u529b",4:"\u8010\u529b"}

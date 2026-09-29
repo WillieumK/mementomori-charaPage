@@ -2,8 +2,8 @@ name: 更新音乐列表
 on:
   schedule:
     # 每 6 小时更新一次（UTC），源: rainsillwood/mementomori-Sound
-    - cron: '0 0,6,12,18 * * *'
-  workflow_dispatch:
+    # 与 fetch 一致：北京时间 4 / 10 / 16 / 22 点 = UTC 20 / 02 / 08 / 14 点
+    - cron: '0 20,2,8,14 * * *'
 
 permissions:
   contents: write
