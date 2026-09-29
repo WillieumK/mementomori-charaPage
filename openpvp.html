@@ -120,16 +120,16 @@ body:not(.side-collapsed) .side-open{display:none}
 .pvp-modal.open{display:flex}
 .pvp-modal .box{background:#151223;border:1px solid var(--panel-border);border-radius:14px;max-width:1020px;width:100%;padding:16px 18px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
 .pvp-modal .mhead,.char-panel .mhead{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-.pvp-modal .mhead img,.char-panel .mhead img{width:64px;height:64px;border-radius:12px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
+.pvp-modal .mhead img,.char-panel .mhead img{width:128px;height:128px;border-radius:12px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
 .pvp-modal .mname,.char-panel .mname{font-size:20px;font-weight:700}
 .pvp-modal .mtags,.char-panel .mtags{margin-top:4px}
 .pvp-modal .mmeta,.char-panel .mmeta{color:var(--muted);font-size:12px;margin-top:2px}
 .pvp-modal .mclose,.char-panel .mclose{margin-left:auto;width:34px;height:34px;border-radius:8px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);color:var(--gold);font-size:18px;cursor:pointer;flex:none}
 .team-tabs{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
-.team-tabs .ttab{width:48px;text-align:center;cursor:pointer;opacity:.55;transition:opacity .15s}
+.team-tabs .ttab{width:96px;text-align:center;cursor:pointer;opacity:.55;transition:opacity .15s}
 .team-tabs .ttab:hover{opacity:.85}
 .team-tabs .ttab.on{opacity:1}
-.team-tabs .ttab img{width:44px;height:44px;border-radius:9px;border:2px solid transparent;background:rgba(0,0,0,.3)}
+.team-tabs .ttab img{width:88px;height:88px;border-radius:9px;border:2px solid transparent;background:rgba(0,0,0,.3)}
 .team-tabs .ttab.on img{border-color:var(--gold);outline:1px solid rgba(217,178,106,.5)}
 .team-tabs .ttab .tlv{font-size:10px;color:var(--muted)}
 /* 展开面板：左=数值(独立框) · 右=装备+圣魔装(同一个框，中间只隔一条横线，不留间隙)
@@ -244,7 +244,11 @@ body:not(.side-collapsed) .side-open{display:none}
 .mavatar{position:relative;width:72px;height:72px;flex:none}
 .mavatar img.face{width:72px;height:72px;border-radius:12px;border:1px solid var(--panel-border);background:rgba(0,0,0,.3)}
 .mavatar img.frame{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:86px;height:86px;pointer-events:none}
-.mavatar .lvchip{position:absolute;right:-6px;bottom:-5px;background:#1c1730;border:1px solid var(--gold);color:var(--gold);border-radius:999px;font-size:11px;padding:1px 8px;font-weight:700;white-space:nowrap}
+
+/* 展开角色面板：头像放大 2 倍 */
+#char-panel .mavatar{width:144px;height:144px}
+#char-panel .mavatar img.face{width:144px;height:144px}
+#char-panel .mavatar img.frame{width:172px;height:172px}.mavatar .lvchip{position:absolute;right:-6px;bottom:-5px;background:#1c1730;border:1px solid var(--gold);color:var(--gold);border-radius:999px;font-size:11px;padding:1px 8px;font-weight:700;white-space:nowrap}
 .tag img{width:13px;height:13px;vertical-align:-2px;margin-right:3px}
 .sync-mark{display:inline-block;font-size:10px;color:#9fe3c0;border:1px solid rgba(159,227,192,.35);border-radius:4px;padding:0 4px;margin-left:4px}
 
@@ -1784,6 +1788,9 @@ async function waitWorkflowDone(token, timeoutMs){
 </script>
 </body>
 </html>
+
+
+
 
 
 
