@@ -120,8 +120,12 @@ section.card h2::before{content:"";width:5px;height:20px;border-radius:3px;backg
 .skill-card .sk-lv .lv-tag{display:inline-block;font-size:11px;color:#ffd76a;background:rgba(255,215,106,.1);border:1px solid rgba(255,215,106,.3);border-radius:6px;padding:1px 7px;margin-bottom:4px}
 .skill-card .sk-lv p{white-space:pre-wrap;margin:0;font-size:13px;line-height:1.75;color:#dcd9e8}
 /* 技能表（技能名称 / 冷却 / 技能描述） */
-.sk-table th:nth-child(1){width:170px}
+.sk-table th:nth-child(1){width:190px}
 .sk-table th:nth-child(2){width:64px}
+.sk-table .cell-name{display:flex;align-items:center;gap:9px}
+.sk-table .sk-ico{width:34px;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--panel-border);background:rgba(0,0,0,.3);flex:0 0 34px}
+.sk-table .sk-ico img{width:100%;height:100%;object-fit:cover;display:block}
+.sk-table .sk-ico .fallback{display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--muted);font-size:9px}
 .sk-table .cell-cd{text-align:center;color:#ffd76a;font-weight:600;font-variant-numeric:tabular-nums}
 .sk-table .cell-desc .d-line{display:block;font-size:13px;line-height:1.75;color:#dcd9e8}
 .sk-table .cell-desc .d-line+.d-line{margin-top:5px}
@@ -306,7 +310,7 @@ function charIcon(id, cls){
 }
 function skillIcon(sid){
   const p = String(sid).padStart(9, "0");
-  return '<span class="sk-ico"><img src="' + SKILL_ICO + p + '.png" alt="' + sid + '" loading="lazy" onerror="iconErr(this)"></span>';
+  return '<span class="sk-ico"><img src="' + SKILL_ICO + p + '.png" alt="" loading="lazy" onerror="iconErr(this)"></span>';
 }
 function rarityName(flags){
   const s = S.stats && S.stats.rname ? S.stats.rname[String(flags)] : null;
@@ -438,7 +442,7 @@ function renderHead(){
 }
 
 // ---------- 技能 ----------
-function skillRows(sids, passive){
+function skillRows(sids, passive, plain){
   let html = "";
   for (const sid of sids){
     const sk = S.skills["a_" + sid] || S.skills["p_" + sid];
@@ -446,7 +450,7 @@ function skillRows(sids, passive){
     const lines = (sk.d || []).map(d =>
       '<span class="d-line"><span class="d-lv">' + d[0] + ':</span> ' + esc(d[1]) + "</span>"
     ).join("");
-    html += '<tr><td class="cell-name">' + esc(sk.n) + "</td>"
+    html += '<tr><td class="cell-name">' + (plain ? "" : skillIcon(sid)) + "<span>" + esc(sk.n) + "</span></td>"
       + '<td class="cell-cd">' + (passive ? 0 : (sk.cd || 0)) + "</td>"
       + '<td class="cell-desc">' + (lines || '<span class="empty">—</span>') + "</td></tr>";
   }
@@ -454,7 +458,7 @@ function skillRows(sids, passive){
 }
 function renderSkills(){
   const c = S.chars[selChar];
-  const rows = skillRows([c.nor], false)
+  const rows = skillRows([c.nor], false, true)
     + skillRows(c.act || [], false)
     + skillRows(c.pas || [], true);
   document.getElementById("pane-skills").innerHTML = rows
